@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="这个可视化能展示递归算法的递归树。但是你也可以看到动态规划算法的有向无环图（DAG）的可视化">
+<meta name="keywords" content="递归树 有向无环图 动态规划">
+ 
+<meta name="csrf-token" content="kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<meta property="og:image" content="../img/png/recursion.png">
+<title>VisuAlgo - 递归树和有向无环图（动态规划）</title>
+<link rel="icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="114x114" href="../img/favicon.png">
+<link rel="stylesheet" type="text/css" href="../fonts/silkscreen/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="../css/common.css">
+<link rel="stylesheet" href="../css/viz-1.0.1.css">
+<link rel="stylesheet" href="../css/visual.css">
+<link rel="stylesheet" href="../css/drawgraph.css">
+<style>
+      #e-lecture {
+        top: 45px;
+        right: 130px;
+        width: 400px;
+        display: block;
+        background: none;
+        /*overflow: normal;*/
+        white-space: normal;
+        text-align: right;
+        color: black; font-weight: bold; font-size: 20px;
+      }
+      .electure-prev, .electure-next { /* force update, copied from viz.css */
+        position: absolute;
+        /* bottom: -12px; */
+        top: -20px;
+        /*bottom: '';*/
+        padding: 3px 8px;
+        background: #999;
+        color: white;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .electure-prev {
+        left: -10px;
+        /* right: 30px; */
+      }
+      .electure-next {
+        right: -10px;
+        color: white;
+      }
+    </style>
+<style>
+.run { bottom: 60px; }
+  #run-input input {
+    width: 140px;
+    padding: 6px 8px 5px;
+  }
+  #run-go p { padding: 5px 8px; }
+    #run-dp { padding: 5px 8px; }
+  #insert-err { padding: 5px 0px; }
+  
+#error {
+  left: 43px;
+  bottom: 230px;
+  position: relative;
+  color: red;
+}
+
+#run {
+  float: right;
+  padding: 5px 10px;
+}
+
+#run:hover{
+  color: white;
+  background-color: black;
+  cursor: pointer;
+}
+
+svg {
+  position: relative;
+  left: 150px;
+}
+  
+#switch-code:hover {
+  background: black;
+  color: white;
+  cursor: pointer;
+}
+
+#switch-code {
+  font-family: "PT Sans"; 
+  font-size: 13px;
+  padding: 5px 10px;
+  background : grey;
+  color : white;
+}
+</style>
+<script src="../js/external/dagre.min.js"></script>
+<script>
+      function changeURL() {
+        var URL = window.location.href.split('/');
+        var val = document.getElementById("Language").value;
+        URL[3] = val;
+        window.location.assign(URL.join('/'));
+      }
+    </script>
+</head>
+<body>
+<div id="top-bar">
+<a id="home" href="/">Visu<span class="colour">Algo</span><span style="font-size: 40%">.net</span></a>
+/
+<select id="Language" onchange="changeURL()">
+<option value="zh" selected>zh</option>
+</select>
+/recursion
+<span id="title">
+<a id='title-recursion' class='selected-viz'>递归树</a>
+<a id='title-dp'>递归有向无环图（动态规划）</a>
+</span>
+<div id="mode-menu">
+<div id='mode-button' title='exploration'>示例模式 &#9663;</div>
+<div id='other-modes'>
+<a title='e-Lecture'>电子讲座模式</a>
+</div>
+</div>
+</div>
+<div id="dark-overlay"></div>
+<div id="status" class="panel"><p></p></div>
+<div id="status-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide status panel" /></div>
+<div id="codetrace" class="panel">
+<p id="code1" style="padding-top: 10px;"></p>
+<p id="code2"></p>
+<p id="code3"></p>
+<p id="code4"></p>
+<p id="code5"></p>
+<p id="code6"></p>
+<p id="code7" style="padding-bottom: 10px;"></p>
+</div>
+<div id="codetrace-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide codetrace panel" /></div>
+<div id="left-bar"></div>
+<div id="right-bar"></div>
+<div id="media-controls">
+<div id='speed-control'>减速<div id='speed-input'></div>加速</div>
+<span id="go-to-beginning" class="media-control-button" title="go to beginning" onclick=goToBeginning()><img src="../img/goToBeginning.png" alt="go to beginning"></span>
+<span id="previous" class="media-control-button" title="step backward" onclick=stepBackward()><img src="../img/prevFrame.png" alt="previous frame"></span>
+<span id="pause" class="media-control-button" title="pause" onclick=pause()><img src="../img/pause.png" alt="pause"></span>
+<span id="play" class="media-control-button" title="play" onclick=play()><img src="../img/play.png" alt="play"></span>
+<span id="next" class="media-control-button" title="step forward" onclick=stepForward()><img src="../img/nextFrame.png" alt="next frame"></span>
+<span id="go-to-end" class="media-control-button" title="go to end" onclick=goToEnd()><img src="../img/goToEnd.png" alt="go to end"></span>
+<div id="progress-bar" class="media-control-button"></div>
+</div>
+<div id='viz'></div>
+<div id='current-action' class='panel'></div>
+<div id='e-lecture' class='panel'></div>
+<div id="overlay" hidden></div>
+<div id="dropdown-temp-holder" hidden></div>
+<div id="electure-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+这个可视化能展示递归算法的递归树。<div>但是你也可以看到动态规划算法的有向无环图（DAG）的可视化</div>
+<hr>
+<p><b>Remarks</b>: By default, we show e-Lecture Mode for first time (or non logged-in) visitor.<br>
+Please <a href="login"><u>login</u></a> if you are a repeated visitor or <a href="login"><u>register</u></a> for an (optional) free account first.</p>
+<div id='electure-dropdown'>
+<select class="lecture-dropdown" style="width:100%">
+<option value="1">1. 可视化</option>
+<option value="2">2. 递归树/ 有向无环图</option>
+<option value="3">3. 例</option>
+<option value="4">4. 阶乘例子</option>
+<option value="5">5. 斐波那契例子</option>
+<option value="6">6. 卡塔兰数例子</option>
+<option value="7">7. GCD example</option>
+<option value="8">8. N 选择 K</option>
+<option value="9">9. 区间求和例子</option>
+<option value="10">10. 背包问题</option>
+<option value="11">11. 硬币找零例子</option>
+<option value="12">12. 最长上升子序列例子</option>
+<option value="13">13. 旅行商例子</option>
+<option value="14">14. 配对问题</option>
+</select>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-next' data-nextid="2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2" class="electure-dialog" style="top:270px;left:50%;margin-left:-200px;width:400px;">
+这里是递归树/有向无环图的可视化区域。<div>请注意由于过多的组合变化，当数字很大时递归树很难可视化。</div><div>对于递归有向无环图来说，当有重复的子问题时，很难减少边的重叠。</div>
+<hr>
+<p>Pro-tip: Since you are not <a href="login"><u>logged-in</u></a>, you may be a first time visitor who are not aware of the following keyboard shortcuts to navigate this e-Lecture mode: <b>[PageDown]</b> to advance to the next slide, <b>[PageUp]</b> to go back to the previous slide, <b>[Esc]</b> to toggle between this e-Lecture mode and exploration mode.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3" class="electure-dialog" style="bottom:300px;left:60px;width:300px;">
+<p>Select one of the examples, or write your own code.<br>Note that the visualization can run <i>any</i> javascript code, including malicious code, so please be careful.<br>Click the &#39;Run&#39; button to start the visualization after you have selected or written a valid JavaScript code!</p>
+<hr>
+<p>Another pro-tip: We designed this visualization and this e-Lecture mode to look good on 1366x768 resolution <b>or larger</b> (typical modern laptop resolution in 2017). We recommend using Google Chrome to access VisuAlgo. Go to full screen mode (<b>F11</b>) to enjoy this setup. However, you can use zoom-in (<b>Ctrl +</b>) or zoom-out (<b>Ctrl -</b>) to calibrate this.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4" class="electure-dialog" style="bottom:300px;left:60px;width:300px;">
+这个阶乘的例子计算了数字<span style="white-space: normal;">&nbsp;</span><b style="white-space: normal;">N&nbsp;</b>的阶乘<div>这是最简单的且能被重新写成<span style="background-color: rgb(242, 242, 242); color: rgb(67, 67, 67); font-family: Tahoma, Arial, 宋体, &quot;Malgun Gothic&quot;; font-size: 12px; white-space: normal;">迭代版本的</span><span style="font-size: 13px;">（尾）递归函数</span><span style="font-size: 13px;">之一</span></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5" class="electure-dialog" style="bottom:300px;left:60px;width:300px;">
+斐波那契的例子计算出了第<b style="white-space: normal;">N</b>个斐波那契数。<div>与阶乘的例子不同的是这次每次递归都调用了两个子问题。当理解了动态规划后它也可以写成迭代的形式。斐波那契递归树（和有向无环图）是经常用来展示递归基本思路的例子。</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-6" class="electure-dialog" style="bottom:300px;left:60px;width:300px;">
+卡塔兰数的例子利用了递归来计算第<b style="white-space: normal;">N</b><span style="white-space: normal;">个卡塔兰数</span>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7" class="electure-dialog" style="bottom:300px;left:60px;width:300px;">
+<p>The GCD example computes the Greatest Common Divisor of two numbers <b>A</b> and <b>B</b> recursively.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="8">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-8" class="electure-dialog" style="bottom:300px;left:60px;width:300px;">
+N 选择 K 计算了二项系数<span style="white-space: normal;">C(</span><b style="white-space: normal;">N</b><span style="white-space: normal;">,&nbsp;</span><b style="white-space: normal;">K</b><span style="white-space: normal;">)</span>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="9">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-9" class="electure-dialog" style="bottom:300px;left:60px;width:300px;">
+数组指定区间求和的例子计算了<span style="white-space: normal;">S(l,r) 的最大值，给定 S(l,r) = a1[l] + a1[l+1] + ... + a1[r]，且&nbsp;1≤l≤r≤i。</span>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="8">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="10">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-10" class="electure-dialog" style="bottom:300px;left:60px;width:300px;">
+背包例子解决了0/1背包问题：有一个最大承重量为w的背包，第i件物品的价值为a1[i]，第i件物品的重量为a2[i]，将物品装入背包，求解背包内最大的价值总和可以为多少？
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="9">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="11">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-11" class="electure-dialog" style="bottom:300px;left:60px;width:300px;">
+硬币找零例子解决了硬币找零问题：给定一序列硬币的面值 a1，最少需要多少硬币数来得到面值v？
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="10">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="12">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-12" class="electure-dialog" style="bottom:300px;left:60px;width:300px;">
+最长上升子序列例子解决了最长上升子序列的问题：给定一个序列 a1，求出最长上升子序列的长度？
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="11">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="13">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-13" class="electure-dialog" style="bottom:300px;left:60px;width:300px;">
+旅行商例子利用了小图解决了旅行商问题：从城市 0 出发，求解访问每一座城市一次并回到起始城市 0 的最短回路。城市 i 和城市 j 之间的距离标注为a1[i][j]。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="12">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="14">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-14" class="electure-dialog" style="bottom:300px;left:60px;width:300px;">
+配对问题计算在一张以邻接矩阵a1呈现的小图上的最大的匹配对数。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="13">上一个 <u>PgUp</u></div>
+</div>
+<div id="popup" hidden>
+<div id="popup-content"></div>
+<span id="hide-popup" hidden>X <u>关闭</u></span>
+</div>
+<div id="error"></div>
+<div id="actions" class="panel">
+<div id="code-area">
+function f(<input type="text" id="arguments_textBox" size="10">){
+<select id="codeExample">
+
+<option id="Factorial" value="Factorial">阶乘数</option>
+<option id="Fibonacci" value="Fibonacci" selected="selected">斐波那契数</option>
+<option id="Catalan" value="Catalan">卡塔兰数</option>
+<option id="ModuloFunction" value="ModuloFunction">最大公约数（a，b）</option>
+<option id="NCK" value="NCK">N 选择 K</option>
+<option id="RangeSumQuery" value="RangeSumQuery">指定区间求和</option>
+
+<option id="Knapsack" value="Knapsack"><span style="white-space: normal;">0-1 背包</span></option>
+<option id="CoinChange" value="CoinChange">硬币找零</option>
+<option id="LongestIncreasingSubsequence" value="LongestIncreasingSubsequence">最长上升子序列</option>
+
+<option id="TravelingSalesman" value="TravelingSalesman">旅行推销员<div><br></div></option>
+<option id="Matching" value="Matching">匹配</option>
+<option id="CustomCode" value="CustomCode">自定义代码</option>
+</select>
+<div id="run" onclick=go()>运行</div>
+<br>
+<textarea id="code" rows="9" cols="45"></textarea>}
+</div>
+<div id="array-area">
+var a1 = <input type="text" id="variable1_textBox" size="39" value="">
+<br>
+var a2 = <input type="text" id="variable2_textBox" size="39" value="">
+</div>
+<br>
+</div>
+<div id="actions-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide actions panel" /></div>
+<div id="actions-extras">
+<div class="run action-menu-pullout">
+<div id="run-input" class="new-menu-option"><input type="text" id="n_input" title="Enter the arguments of the function, separated by comma." autocomplete="off" value=20 /></div>
+<div id="run-go" class="execAction coloured-menu-option" onclick=go()><p>开始</p></div>
+</div>
+</div>
+<div id="bottom-bar">
+<a id="trigger-about">关于</a>
+</div>
+<div id="about" class="overlays">
+<h4>关于</h4><span class='close-overlay'>&#x2715;</span>
+<div class='content'>
+VisuAlgo在2011年由Steven Halim博士概念化，作为一个工具，帮助他的学生更好地理解数据结构和算法，让他们自己和自己的步伐学习基础。<br>VisuAlgo包含许多高级算法，这些算法在Steven Halim博士的书（“竞争规划”，与他的兄弟Felix Halim博士合作）和其他书中讨论。今天，一些高级算法的可视化/动画只能在VisuAlgo中找到。<br>虽然专门为新加坡国立大学（NUS）学生采取各种数据结构和算法类（例如CS1010，CS1020，CS2010，CS2020，CS3230和CS3230），作为在线学习的倡导者，我们希望世界各地的好奇心发现这些可视化也很有用。<br>VisuAlgo不是从一开始就设计为在小触摸屏（例如智能手机）上工作良好，因为需要满足许多复杂的算法可视化，需要大量的像素和点击并拖动手势进行交互。一个令人尊敬的用户体验的最低屏幕分辨率为1024x768，并且只有着陆页相对适合移动设备。<br>VisuAlgo是一个正在进行的项目，更复杂的可视化仍在开发中。<br>最令人兴奋的发展是自动问题生成器和验证器（在线测验系统），允许学生测试他们的基本数据结构和算法的知识。这些问题是通过一些规则随机生成的，学生的答案会在提交给我们的评分服务器后立即自动分级。这个在线测验系统，当它被更多的世界各地的CS教师采用，应该技术上消除许多大学的典型计算机科学考试手动基本数据结构和算法问题。通过在通过在线测验时设置小（但非零）的重量，CS教练可以（显着地）增加他/她的学生掌握这些基本问题，因为学生具有几乎无限数量的可以立即被验证的训练问题他们参加在线测验。培训模式目前包含12个可视化模块的问题。我们将很快添加剩余的8个可视化模块，以便VisuAlgo中的每个可视化模块都有在线测验组件。<br>另一个积极的发展分支是VisuAlgo的国际化子项目。我们要为VisuAlgo系统中出现的所有英语文本准备一个CS术语的数据库。这是一个很大的任务，需要众包。一旦系统准备就绪，我们将邀请VisuAlgo游客贡献，特别是如果你不是英语母语者。目前，我们还以各种语言写了有关VisuAlgo的公共注释：<br>
+<a href="https://weibo.com/p/230418436e9ee80102v4rk" target='_blank'><u>zh</u></a>, <a href='https://www.facebook.com/notes/steven-halim/httpidvisualgonet-visualisasi-struktur-data-dan-algoritma-dengan-animasi/10153236934439689' target='_blank'><u>id</u></a>, <a href="https://blog.naver.com/visualgo_nus" target='_blank'><u>kr</u></a>, <a href='https://www.facebook.com/groups/163215593699283/permalink/824003417620494/' target='_blank'><u>vn</u></a>, <a href='http://pantip.com/topic/32736343' target='_blank'><u>th</u></a>.</p>
+</div>
+</div>
+
+<script src="../js/jquery-3.3.1.min.js"></script>
+<script>
+      var PHP_DOMAIN = "";
+
+      // surprise colour!
+      // Referenced to in  home.js and viz.js also
+      var colourArray = ["#52bc69", "#d65775"/*"#ed5a7d"*/, "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"]; // green, pink, blue, red, yellow, indigo, orange, lime
+
+      function disableScroll() { $('html').css('overflow', 'hidden'); }
+
+      function enableScroll() { $('html').css('overflow', 'visible'); }
+
+      function replaceAll(find, replace, str) { return str.replace(new RegExp(find, 'g'), replace); }
+
+      function getColours() {
+        var generatedColours = new Array();
+        while (generatedColours.length < 4) {
+          var n = (Math.floor(Math.random() * colourArray.length));
+          if ($.inArray(n, generatedColours) == -1)
+            generatedColours.push(n);
+        }
+        return generatedColours;
+      }
+
+      function isOn(value, position) {
+        return (value>>position) & 1 === 1;
+      }
+
+      function customAlert(msg) {
+        $('#custom-alert p').html(msg);
+        var m = -1 * ($('#custom-alert').outerHeight()/2);
+        $('#custom-alert').css('margin-top', m+'px');
+        $('#dark-overlay').fadeIn(function() {
+          $('#custom-alert').fadeIn(function() {
+            setTimeout(function() {
+              $('#custom-alert').fadeOut(function() {
+                $('#dark-overlay').fadeOut();
+              });
+            }, 1000);
+          });
+        });
+      }
+
+      function showLoadingScreen() {
+        $('#loading-overlay').show();
+        $('#loading-message').show();
+      }
+
+      function hideLoadingScreen() {
+        $('#loading-overlay').hide();
+      }
+
+      function commonAction(retval, msg) {
+        //setTimeout(function() {
+          if (retval) { // mode == "exploration" && // now not only for exploration mode, but check if this opens other problems
+            $('#current-action').show();
+            $('#current-action').html(mode == "exploration" ? msg : ("e-Lecture Example (auto play until done)<br>" + msg));
+            $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+            triggerRightPanels();
+            isPlaying = true;
+          }
+        //}, 500);
+      }
+
+      function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable)
+            return decodeURIComponent(pair[1]);
+        }
+        return "";
+      }
+
+      var generatedColours = getColours();
+      var surpriseColour = colourArray[generatedColours[0]];
+      var colourTheSecond = colourArray[generatedColours[1]];
+      var colourTheThird = colourArray[generatedColours[2]];
+      var colourTheFourth = colourArray[generatedColours[3]];
+
+      $(function() {
+        $('.links').css('background', surpriseColour);
+        $('.right-links').css('background', surpriseColour);
+        $('#login-go').css('background', surpriseColour);
+
+        $('.colour').css("color", surpriseColour); // name
+        $('h4').css("background-color", surpriseColour); // about, contact us etc. button background
+
+        // title
+        $('#title a').click(function() {
+          $('#title a').removeClass('selected-viz');
+          $(this).addClass('selected-viz');
+          // temporary quick fix for Google Chrome Aug 2016 issue...
+          setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 100); // force resize/redraw...
+          setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        });
+
+        // overlays stuffs
+        $('#trigger-about').click(function() {
+          if ($(window).width() > 600) {
+            $('#dark-overlay').fadeIn(function() {
+              $('#about').fadeIn();
+            });
+          }
+          else
+            alert('Sorry, this dialog is too big. Please load it on bigger screen');
+        });
+
+        $('.close-overlay').click(function() {
+          $('.overlays').fadeOut(function() {
+            $('#dark-overlay').fadeOut();
+          });
+        });
+
+        $('#dark-overlay').click(function() {
+          $('.overlays').fadeOut();
+          $('#dark-overlay').fadeOut();
+        });
+      });
+    </script>
+
+<script src="../js/jquery-ui.min.js"></script>
+<script src="../js/d3.min.js"></script>
+<script src="../js/viz-1.0.3.js"></script>
+<script src="../js/visualgo_print.js"></script>
+<script src="../js/graph_library.js"></script>
+<script>
+      function runSlide(slide) {
+        if (slide == '1') {
+          $("#e-lecture").html("slide " + slide + " (" + 7 + "%)");
+          
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2') {
+          $("#e-lecture").html("slide " + slide + " (" + 14 + "%)");
+          
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3') {
+          $("#e-lecture").html("slide " + slide + " (" + 21 + "%)");
+          
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4') {
+          $("#e-lecture").html("slide " + slide + " (" + 28 + "%)");
+          $('#codeExample').val('Factorial');
+factorial();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5') {
+          $("#e-lecture").html("slide " + slide + " (" + 35 + "%)");
+          $('#codeExample').val('Fibonacci');
+fibonacci();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '6') {
+          $("#e-lecture").html("slide " + slide + " (" + 42 + "%)");
+          $('#codeExample').val('Catalan');
+catalan();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7') {
+          $("#e-lecture").html("slide " + slide + " (" + 50 + "%)");
+          $('#codeExample').val('ModuloFunction');
+gcd();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '8') {
+          $("#e-lecture").html("slide " + slide + " (" + 57 + "%)");
+          $('#codeExample').val('NCK');
+nchoosek();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '9') {
+          $("#e-lecture").html("slide " + slide + " (" + 64 + "%)");
+          $('#codeExample').val('RangeSumQuery');
+rangeSumQuery();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '10') {
+          $("#e-lecture").html("slide " + slide + " (" + 71 + "%)");
+          $('#codeExample').val('Knapsack');
+knapsack();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '11') {
+          $("#e-lecture").html("slide " + slide + " (" + 78 + "%)");
+          $('#codeExample').val('CoinChange');
+coinChange();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '12') {
+          $("#e-lecture").html("slide " + slide + " (" + 85 + "%)");
+          $('#codeExample').val('LongestIncreasingSubsequence');
+longestSubsequence();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '13') {
+          $("#e-lecture").html("slide " + slide + " (" + 92 + "%)");
+          $('#codeExample').val('TravelingSalesman');
+travelingSalesman();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '14') {
+          $("#e-lecture").html("slide " + slide + " (" + 100 + "%)");
+          $('#codeExample').val('Matching');
+matching();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+      }
+
+      window.onpopstate = function(event) {
+        var slide = event.state['slide'];
+        openSlide(slide, function() {
+          runSlide(slide);
+        });
+      };
+
+      function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'), sParameterName, i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+          if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+      };
+
+      function pushState(slideValue) {
+        var url = '/zh/recursion';
+        if (typeof slideValue != 'undefined' && slideValue != null) url += '?slide=' + slideValue;
+        window.history.pushState({slide: slideValue}, "slide " + slideValue, url);
+      }
+
+      function showPopup(callback) {
+        $('#popup').fadeIn(100, callback);
+      }
+
+      function hidePopup(callback) {
+        $('#popup').fadeOut(100, callback);
+      }
+
+      function showOverlay() {
+        $('#overlay').css('opacity', 0.5); 
+        $('#overlay').show();
+      }
+
+      function hideOverlay() {
+        $('#overlay').hide();
+        $("#e-lecture").html("");
+      }
+
+      function makeOverlayTransparent() {
+        $('#overlay').css('opacity', 0);
+      }
+
+      function hideSlide(callback) {
+        isPlaying = true;
+        closeSlide(cur_slide, function() {
+          makeOverlayTransparent();
+          setTimeout(callback, 700); // don't immediately run the animation, wait for 500ms+ first
+        });
+      }
+
+      function showSlide() {
+        isPlaying = false;
+        openSlide(cur_slide);
+        showOverlay();
+      }
+
+      $(function() {
+        var slide = getUrlParameter('slide');
+        
+        $.get('/hasvisited' + '/recursion', function(data) {
+          var hasVisited = data['hasvisited'] == '1';
+          if (!hasVisited) {
+            var postData = {
+              '_token': 'kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh',
+              'page': '/recursion'.substring(1),
+            };
+
+            $.post("/visitpage", postData, function(data) {
+              // non critical request...
+            });
+
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+            }
+
+            $("#mode-menu a").trigger("click");
+          }
+          else {
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+              $('#mode-menu a').click();
+            }    
+          }
+        }).fail(function() {
+          if (typeof slide != undefined && slide != null) {
+            cur_slide = slide;
+            $('#mode-menu a').click();
+          }
+        });
+
+        $('.mcq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#mcq-answer-' + questionId).val();
+          var userAnswer = $('input[type=radio][name=mcq-'+questionId+'-choice]:checked').val();
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green"><b>Correct!</b></font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red"><b>Wrong Answer! Try again...</b></font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('.msq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#msq-answer-' + questionId).val();
+
+          var answers = [];
+          $('input[type=checkbox][class=msq-choice]:checked').each(function() {
+            answers.push($(this).attr('id').split('-')[3]);
+          });
+          answers.sort();
+          var userAnswer = answers.join(',');
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green">Correct!</font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red">Wrong Answer! Try again...</font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('select.lecture-dropdown').change(function() {
+          var nextSlide = $(this).val();
+          openSlide(nextSlide, function() {
+            runSlide(nextSlide);
+            pushState(nextSlide);
+          });
+        });
+
+        $('#hide-popup').click(function() {
+          hidePopup();
+        });
+
+        $('#popup').hover(function() {
+          $('#hide-popup').show();
+        }, function() {
+          $('#hide-popup').hide();
+        });
+
+        $('#electure-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+        $('#electure-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('1');
+          pushState('1');
+        });
+      
+        $('#electure-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+        $('#electure-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+        $('#electure-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+      
+        $('#electure-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('6');
+          pushState('6');
+        });
+        $('#electure-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+      
+        $('#electure-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7');
+          pushState('7');
+        });
+        $('#electure-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+      
+        $('#electure-7 .electure-next').click(function() {
+          hidePopup();
+          runSlide('8');
+          pushState('8');
+        });
+        $('#electure-7 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('6');
+          pushState('6');
+        });
+      
+        $('#electure-8 .electure-next').click(function() {
+          hidePopup();
+          runSlide('9');
+          pushState('9');
+        });
+        $('#electure-8 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7');
+          pushState('7');
+        });
+      
+        $('#electure-9 .electure-next').click(function() {
+          hidePopup();
+          runSlide('10');
+          pushState('10');
+        });
+        $('#electure-9 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('8');
+          pushState('8');
+        });
+      
+        $('#electure-10 .electure-next').click(function() {
+          hidePopup();
+          runSlide('11');
+          pushState('11');
+        });
+        $('#electure-10 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('9');
+          pushState('9');
+        });
+      
+        $('#electure-11 .electure-next').click(function() {
+          hidePopup();
+          runSlide('12');
+          pushState('12');
+        });
+        $('#electure-11 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('10');
+          pushState('10');
+        });
+      
+        $('#electure-12 .electure-next').click(function() {
+          hidePopup();
+          runSlide('13');
+          pushState('13');
+        });
+        $('#electure-12 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('11');
+          pushState('11');
+        });
+      
+        $('#electure-13 .electure-next').click(function() {
+          hidePopup();
+          runSlide('14');
+          pushState('14');
+        });
+        $('#electure-13 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('12');
+          pushState('12');
+        });
+      
+        $('#electure-14 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('13');
+          pushState('13');
+        });
+      
+ 
+
+        // temporary quick fix for Google Chrome Aug 2016 issue..., put at last part so that everything else has been loaded
+        // setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 500);
+        // setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        // I turn it off on 14 June 2018, seems 'ok'?
+      });
+
+
+      function adjustPopupToImageSize() {
+        var width = $('#popup-image').prop('width');
+        var height = $('#popup-image').prop('height');
+        $('#popup').width(width + 20);
+        $('#popup').height(height + 20);
+        if (width == 0 && height == 0) {
+          setTimeout(adjustPopupToImageSize, 200);
+        } else {
+          showPopup();  
+        }
+      }
+
+      function POPUP_IMAGE(url) {
+        $('#popup-content').html('<img id="popup-image" src="' + url + '">');
+        adjustPopupToImageSize();
+      }
+
+      function URL(url) {
+        window.open(url, '_blank');
+      }
+
+      // Implement these functions in each visualisation
+      // This function will be called before entering e-Lecture Mode
+      function ENTER_LECTURE_MODE() {}
+
+      // This function will be called before returning to Explore Mode
+      function ENTER_EXPLORE_MODE() {}
+
+      // Lecture action functions
+      function CUSTOM_ACTION(action, data, mode) {}
+    </script>
+<script src="../js/recursion_lib/misc.js"></script>
+<script src="../js/recursion_lib/map.js"></script>
+<script src="../js/recursion_lib/showCodes.js"></script>
+<script type="text/javascript">
+// Recursion Widget
+// original author: Phan Thi Quynh Trang, then significantly upgraded by Nathan Azaria
+
+function RecursionException(message) {
+  this.name = "RecursionException";
+  this.message = message;
+}
+
+function RecursionWidget() {
+  var isDP = false;
+  
+  var self = this;
+  var graphWidget = new GraphWidget();
+  
+  var recursionStack = [];
+  var memoNumber = new Map();
+  var memoValue = new Map();
+  var memoColor = new Map();
+    
+  var vertexCount = 0;
+  var vertexList = [];
+  var edgeCount = 0;
+  
+  var a;
+  var f;
+  var userFunction; //used to store user-defined function
+  var modifiedFunction = function() {
+    //Create a new vertex
+    var newVertex = {
+      cx : 0,
+      cy : 0,
+      adj : [],
+      edgeNumber : [],
+      index : vertexCount,
+      arguments : arguments,
+      parent : -1
+    }
+    vertexList.push(newVertex);
+    vertexCount++;
+    
+    if (vertexCount > 5000)
+      throw new RecursionException('Too many vertices');
+    
+    if (recursionStack.length > 0) {
+      vertexList[recursionStack[recursionStack.length-1]].adj.push(newVertex.index);
+      vertexList[recursionStack[recursionStack.length-1]].edgeNumber.push(edgeCount);
+      ++edgeCount;
+      newVertex.parent = recursionStack[recursionStack.length-1];
+    }
+    recursionStack.push(newVertex.index);
+    
+    var returnValue = userFunction.apply(self, arguments);
+    newVertex.result = returnValue;
+    
+    recursionStack.pop();
+    return returnValue;
+  }
+  
+  var modifiedFunctionDP = function() {
+    // console.log(arguments);
+    var prev = null;
+    if (recursionStack.length > 0) {
+      prev = recursionStack[recursionStack.length-1];
+    }
+    //check in memo
+    if (memoNumber.get(arguments) != null) {
+      var currentVertex = memoNumber.get(arguments);
+      if (prev != null) {
+        vertexList[prev].adj.push(currentVertex);
+        vertexList[prev].edgeNumber.push(edgeCount);
+        ++edgeCount;
+      }
+      
+      var returnValue = vertexList[currentVertex].result;
+      return returnValue;
+    }
+    else {
+      var newVertex = {
+        cx : 0,
+        cy : 0,
+        adj : [],
+        edgeNumber : [],
+        index : vertexCount,
+        arguments : arguments,
+        parent : -1
+      };
+      vertexList.push(newVertex);
+      vertexCount++;
+      
+      if (vertexCount > 5000)
+        throw new RecursionException('Too many vertices');
+        
+      if (prev != null) {
+        vertexList[prev].adj.push(newVertex.index);
+        vertexList[prev].edgeNumber.push(edgeCount);
+        newVertex.parent = prev;
+        ++edgeCount;
+      }
+      
+      recursionStack.push(newVertex.index);
+      
+      var returnValue = userFunction.apply(self, arguments);
+      newVertex.result = returnValue;
+      memoNumber.put(arguments, newVertex.index);
+      
+      recursionStack.pop();
+      return returnValue;
+    }
+  }
+  
+  function calcHeight(vertexNumber) {
+    if (vertexList[vertexNumber].parent == -1)
+      return 0;
+    else
+      return calcHeight(vertexList[vertexNumber].parent) + 1;
+  }
+  
+  function recalculatePosition() {
+    var numLeaf = 0;
+    var maxHeight = 0;
+    for (var i = 0; i < vertexCount; i++) {
+      if (vertexList[i].adj.length == 0)
+        ++numLeaf;
+      maxHeight = Math.max(maxHeight, calcHeight(i));
+    }
+    var leafProcessed = 0;
+    
+    // console.log(numLeaf);
+    calcPosition(0);
+    
+    function calcPosition(vertexNumber) {
+                  if (maxHeight == 0) {
+        vertexList[vertexNumber].cy = 1/2 * (MAIN_SVG_HEIGHT - 100) + 50;
+      } else {
+        vertexList[vertexNumber].cy = (calcHeight(vertexNumber)/maxHeight)*(MAIN_SVG_HEIGHT-100) + 50;
+      }
+      var adjSize = vertexList[vertexNumber].adj.length;
+      if (adjSize == 0) {
+        vertexList[vertexNumber].cx = ((leafProcessed+1)/(numLeaf+1))*(MAIN_SVG_WIDTH-100)+50;
+        ++leafProcessed;
+        return {
+          sumx : vertexList[vertexNumber].cx,
+          num : 1
+        };
+      }
+      var sumx = 0;
+      var num = 0;
+      for (var i = 0; i < adjSize; i++) {
+        var nextVertex = vertexList[vertexNumber].adj[i];
+        var returnValue = calcPosition(nextVertex);
+        sumx += vertexList[nextVertex].cx;
+        num += 1;
+      }
+      vertexList[vertexNumber].cx = sumx / num;
+      return {
+        sumx : sumx,
+        num : num
+      }
+    /*
+      vertexList[vertexNumber].cy = calcHeight(vertexNumber) * 75 + 50;
+      vertexList[vertexNumber].cx = (left + right) / 2;
+      var adjSize = vertexList[vertexNumber].adj.length;
+      for (var i = 0; i < adjSize; i++) {
+        var nextVertex = vertexList[vertexNumber].adj[i];
+        var nextLeft = (i * right + (adjSize - i) * left) / adjSize;
+        var nextRight = ((i+1) * right + (adjSize - i - 1) * left) / adjSize;
+        calcPosition(nextVertex, nextLeft, nextRight);
+      }*/
+    }
+  }
+  
+  function recalculatePositionDP() {
+    var g = new dagre.Digraph();
+    for (var i = 0; i < vertexCount; i++)
+      g.addNode(i, {label : "", width : 0, height: 0});
+    for (var i = 0; i < vertexCount; i++)
+      for (var j = vertexList[i].adj.length - 1; j >= 0; j--) {
+        g.addEdge(-vertexList[i].edgeNumber[j], i, vertexList[i].adj[j]);
+      }
+    var layout = dagre.layout().run(g);
+    var outputGraph = layout.graph();
+    //console.log(outputGraph);
+    layout.eachNode(function(u, value) {
+      if (outputGraph.width == 0)
+        vertexList[u].cx = MAIN_SVG_WIDTH/2;
+      else
+        vertexList[u].cx = (value.x * (MAIN_SVG_WIDTH-100)/outputGraph.width) + 50;
+      vertexList[u].cy = (value.y * (MAIN_SVG_HEIGHT-100)/outputGraph.height) + 50;
+    });
+    // layout.eachEdge(function(e, u, v, value) {
+    //   console.log(e + "  " + u + "->" + v + " " + JSON.stringify(value));
+    // });
+    // console.log(vertexList);
+  }
+  
+  function clear() {
+    while (vertexList.length > 0)
+      vertexList.pop();
+    while (recursionStack.length > 0)
+      recursionStack.pop();
+    memoNumber.clear();
+    memoValue.clear();
+    memoColor.clear();
+    vertexCount = 0;
+    edgeCount = 0;
+  }
+  
+  this.getGraphWidget = function() {
+    return graphWidget;
+  }
+  
+  this.setUserFunction = function(argumentList, body) {
+    var func = "function (" + argumentList + "){" + body + "}";
+    userFunction = eval("_f = " + func);
+  }
+  
+  this.init = function() {
+    recursionStack = [];
+    memoNumber = new Map();
+    memoColor = new Map();
+  }
+  
+  //Create the tree
+  this.createTree = function() {
+    f = modifiedFunction;
+    modifiedFunction.apply(self, arguments);
+  }
+  
+  this.createTreeDP = function() {
+    f = modifiedFunctionDP;
+    modifiedFunctionDP.apply(self, arguments);
+  }
+  
+  this.createAnimation = function() {
+    recalculatePosition();
+    var state = {
+      vl : {},
+      el : {},
+    }
+    var stateList = [];
+    for (var i = 0; i < vertexCount; i++) {
+      var newVertex = {
+        cx : vertexList[i].cx,
+        cy : vertexList[i].cy,
+        text : argToString(vertexList[i].arguments),
+        state : OBJ_HIDDEN,
+        extratext : ""
+      }
+      state.vl[i] = newVertex;
+    }
+    for (var i = 0; i < vertexCount; i++) {
+      for (var j = 0; j < vertexList[i].adj.length; j++) {
+        var newEdge = {
+          vertexA : i,
+          vertexB : vertexList[i].adj[j],
+          type : EDGE_TYPE_DE,
+          weight : 1,
+          state : OBJ_HIDDEN,
+          animateHighlighted : false
+        }
+        state.el[vertexList[i].edgeNumber[j]] = newEdge;
+      }
+    }
+    stateList.push(deepCopy(state));
+    traverse(0);
+    graphWidget.startAnimation(stateList);
+    //console.log(stateList);
+    function traverse(vertexNumber) {
+      state.vl[vertexNumber].state = VERTEX_HIGHLIGHTED,
+      stateList.push(deepCopy(state));
+      for (var i = 0; i < vertexList[vertexNumber].adj.length; i++) {
+        var nextVertex = vertexList[vertexNumber].adj[i];
+        var nextEdge = vertexList[vertexNumber].edgeNumber[i];
+        state.el[nextEdge].state = EDGE_HIGHLIGHTED;
+        state.el[nextEdge].animateHighlighted = true;
+        stateList.push(deepCopy(state));
+        state.el[nextEdge].animateHighlighted = false;
+        traverse(nextVertex);
+        state.el[nextEdge].state = EDGE_DEFAULT;
+      }
+      state.vl[vertexNumber].extratext = vertexList[vertexNumber].result;
+      if (vertexList[vertexNumber].adj.length == 0)
+        state.vl[vertexNumber].state = VERTEX_GREEN_FILL;
+      else if (memoColor.get(vertexList[vertexNumber].arguments) == null) {
+        state.vl[vertexNumber].state = VERTEX_DEFAULT;
+        memoColor.put(vertexList[vertexNumber].arguments, 1);
+      }
+      else
+        state.vl[vertexNumber].state = VERTEX_BLUE_FILL;
+      stateList.push(deepCopy(state));
+    }
+  }
+  
+  this.createAnimationDP = function() {
+    recalculatePositionDP();
+    var state = {
+      vl : {},
+      el : {},
+    }
+    var stateList = [];
+    for (var i = 0; i < vertexCount; i++) {
+      var newVertex = {
+        cx : vertexList[i].cx,
+        cy : vertexList[i].cy,
+        text : argToString(vertexList[i].arguments),
+        state : OBJ_HIDDEN,
+        extratext : ""
+      }
+      state.vl[i] = newVertex;
+    }
+    for (var i = 0; i < vertexCount; i++) {
+      for (var j = 0; j < vertexList[i].adj.length; j++) {
+        var newEdge = {
+          vertexA : i,
+          vertexB : vertexList[i].adj[j],
+          type : EDGE_TYPE_DE,
+          weight : 1,
+          state : OBJ_HIDDEN,
+          animateHighlighted : false
+        }
+        state.el[vertexList[i].edgeNumber[j]] = newEdge;
+        //console.log(vertexList[i].edgeNumber[j]);
+      }
+    }
+    stateList.push(deepCopy(state));
+    traverse(0);
+    graphWidget.startAnimation(stateList);
+    //console.log(stateList);
+    function traverse(vertexNumber) {
+      if (state.vl[vertexNumber].state == OBJ_HIDDEN) {
+        state.vl[vertexNumber].state = VERTEX_HIGHLIGHTED,
+        stateList.push(deepCopy(state));
+        for (var i = 0; i < vertexList[vertexNumber].adj.length; i++) {
+          var nextVertex = vertexList[vertexNumber].adj[i];
+          var nextEdge = vertexList[vertexNumber].edgeNumber[i];
+          state.el[nextEdge].state = EDGE_HIGHLIGHTED;
+          state.el[nextEdge].animateHighlighted = true;
+          stateList.push(deepCopy(state));
+          state.el[nextEdge].animateHighlighted = false;
+          traverse(nextVertex);
+          state.el[nextEdge].state = EDGE_DEFAULT;
+        }
+        state.vl[vertexNumber].extratext = vertexList[vertexNumber].result;
+        if (vertexList[vertexNumber].adj.length == 0)
+          state.vl[vertexNumber].state = VERTEX_GREEN_FILL;
+        else
+          state.vl[vertexNumber].state = VERTEX_DEFAULT;
+        stateList.push(deepCopy(state));
+      }
+    }
+  }
+  
+  
+  //Visualize the recursion, given the argument as a string
+  this.visualize = function(argumentList, code, argument, otherVar1, otherVar2) {
+    //console.log("HERE");
+    clear();
+    //console.log("HERE2");
+    recursionWidget.setUserFunction(argumentList, code);
+    a1 = eval(otherVar1);
+    a2 = eval(otherVar2);
+    //console.log(a1);
+    if (!isDP) {
+      eval("this.createTree(" + argument + ")");
+      //console.log(vertexList);
+      this.createAnimation();
+    }
+    else {
+      eval("this.createTreeDP(" + argument + ")");
+      //console.log(vertexList);
+      this.createAnimationDP();
+    }
+  }
+  
+  this.isDP = function(bool) {
+    if(typeof bool != 'boolean') return;
+    
+    if(bool != isDP){
+      var emptyState = {
+        vl : {},
+        el : {}
+      }
+      clear();
+      isDP = bool;
+    }
+  }
+}
+
+
+
+// Recursion action
+// actions panel stuff
+var actionsWidth = 355;
+var statusCodetraceWidth = 420;
+var isRunOpen = false;
+function openRun() {
+  if(!isRunOpen) {
+    $('.run').fadeIn('fast');
+    isRunOpen = true;
+  }
+}
+function closeRun() {
+  if(isRunOpen) {
+    $('.run').fadeOut('fast');
+    $('#run-err').html("");
+    isRunOpen = false;
+  }
+}
+function hideEntireActionsPanel() {
+  closeRun();
+  hideActionsPanel();
+}
+
+var oldCode = "";
+$('#code').on("change keyup keydown", function() {
+  var newCode = $('#code').val();
+  if (newCode != oldCode)
+    $('#codeExample').val('CustomCode');
+  oldCode = newCode;
+});
+
+$("#codeExample").change(function() {
+  choice = $(this).val();
+  switch (choice) {
+    case "Factorial":
+      factorial();
+      break;
+    case "ModuloFunction":
+      gcd();
+      break;
+    case "Catalan":
+      catalan();
+      break;
+    case "RangeSumQuery":
+      rangeSumQuery();
+      break;
+    case "Fibonacci":
+      fibonacci();
+      break;
+    case "NCK":
+      nchoosek();
+      break;
+    case "FlightPlanner":
+      flightPlanner();
+      break;
+    case "Knapsack":
+      knapsack();
+      break;
+    case "CoinChange":
+      coinChange();
+      break;
+    case "LongestIncreasingSubsequence":
+      longestSubsequence();
+      break;
+    case "UVa10702":
+      UVa10702();
+      break;
+    case "TravelingSalesman":
+      travelingSalesman();
+      break;
+    case "Matching":
+      matching();
+      break;
+    default:
+      ;
+  }
+});
+
+fibonacci(); // use this as the default example
+
+$('#play').hide();
+
+$('#title-recursion').click(function() {
+  if (isPlaying) stop();
+  showActionsPanel();
+  hideStatusPanel();
+  hideCodetracePanel();
+  recursionWidget.isDP(false);
+  if ($('#code').val() != '') go();
+});
+
+$('#title-dp').click(function() {
+  if (isPlaying) stop();
+  showActionsPanel();
+  hideStatusPanel();
+  hideCodetracePanel();
+  recursionWidget.isDP(true);
+  if ($('#code').val() != '') go();
+});
+
+$(function() {
+  var actionsHeight = 210;
+  $('#actions').css('height', actionsHeight);
+  $('#actions').css('width', actionsWidth);
+  var actionsHideTop = Math.floor((actionsHeight - 16) / 2);
+  var actionsHideBottom = (actionsHeight - 16) - actionsHideTop;
+  $('#actions-hide').css('padding-top', actionsHideTop);
+  $('#actions-hide').css('padding-bottom', actionsHideBottom);
+
+  var codeExample = getQueryVariable("example");
+  if (codeExample.length > 0) {
+    $('#codeExample').val(codeExample);
+    $('#codeExample').trigger('change');
+  }
+  var arguments = getQueryVariable("arguments");
+  if (arguments.length > 0) {
+    arguments = JSON.parse(arguments);
+    var functionArguments = "";
+    for (var key in arguments)
+      functionArguments += key + "=" + arguments[key] + ","
+    functionArguments = functionArguments.replace(/(^,)|(,$)/g, ""); // trim trailing comma
+    $('#arguments_textBox').val(functionArguments);
+  }
+});
+
+var recursionWidget = new RecursionWidget();
+var gw = recursionWidget.getGraphWidget();
+
+function go() {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if ((mode == "exploration")) {
+      var arguments = $('#arguments_textBox').val();
+      var arrayOfPairs = arguments.split(",");
+      for (var i = 0; i < arrayOfPairs.length; i++)
+        arrayOfPairs[i] = arrayOfPairs[i].split("=");
+      var arguments = "";
+      for (var i = 0; i < arrayOfPairs.length; i++) {
+        if (i > 0) arguments += ", ";
+        arguments += arrayOfPairs[i][0];
+      }
+      var parameters = "";
+      for (var i = 0; i < arrayOfPairs.length; i++) {
+        if (i > 0) parameters += ", ";
+        for (var j = 1; j < arrayOfPairs[i].length; j++) {
+          if (j > 1) parameters += "=";
+          parameters += arrayOfPairs[i][j];
+        }
+      }
+      try {
+        recursionWidget.visualize(arguments,
+          $('#code').val(),
+          parameters,
+          $('#variable1_textBox').val(),
+          $('#variable2_textBox').val());
+      }
+      catch (e) {
+        // console.log(e);
+        $('#error').html(e.message);
+        $('#error').show();
+        $('#error').fadeOut(3000);
+        return;
+      }
+      $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+      isPlaying = true;
+    }
+  }, 500);
+}
+
+function factorial() {
+  // showCodetracePanel();
+  showFactorialCode();
+  oldCode = $('#code').val();
+}
+function fibonacci() {
+  // showCodetracePanel();
+  showFibonacciCode();
+  oldCode = $('#code').val();
+}
+function catalan() {
+  // showCodetracePanel();
+  showCatalanCode();
+  oldCode = $('#code').val();
+}
+function gcd() {
+  // showCodetracePanel();
+  showGcdCode();
+  oldCode = $('#code').val();
+}
+function nchoosek() {
+  // showCodetracePanel();
+  showNChooseKCode();
+  oldCode = $('#code').val();
+}
+function rangeSumQuery() {
+  // showCodetracePanel();
+  showRangeSumQueryCode();
+  oldCode = $('#code').val();
+}
+// function flightPlanner() {
+//   showCodetracePanel();
+//   showFlightPlannerCode();
+//   oldCode = $('#code').val();
+// }
+function knapsack() {
+  // showCodetracePanel();
+  showKnapsackCode();
+  oldCode = $('#code').val();
+}
+function coinChange() {
+  // showCodetracePanel();
+  showCoinChangeCode();
+  oldCode = $('#code').val();
+}
+function longestSubsequence() {
+  // showCodetracePanel();
+  showLisCode();
+  oldCode = $('#code').val();
+}
+// function UVa10702() {
+//   // showCodetracePanel();
+//   showUVa10702Code();
+//   oldCode = $('#code').val();
+// }
+function travelingSalesman() {
+  // showCodetracePanel();
+  showTspCode();
+  oldCode = $('#code').val();
+}
+function matching() {
+  // showCodetracePanel();
+  showMatchingCode();
+  oldCode = $('#code').val();
+}
+var codeVisible = true;
+</script>
+</body>
+</html>

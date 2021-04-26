@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+
+<link rel="stylesheet" href="../css/book.css" />
+<script src="../js/book.js"></script>
+
+<style>
+pre.reveal { }  /* mark pre that should get this setup */
+span.phide { display:none; }
+span.pshow { color:darkgreen;} /* display:inline; */
+</style>
+
+</head>
+<body>
+
+<nav><div id="toc"></div></nav>
+
+<main>
+
+<h1>Python range() Function</h1>
+
+<ul>
+<li><a href=#range1>range(n)</a></li>
+<li><a href=#reversed>reversed()</a></li>
+<li><a href=#range2>range(start, stop)</a></li>
+<li><a href=#range3>range(start, stop, step</a></li>
+</ul>
+
+<p>The python <code>range()</code> function creates a collection of numbers on the fly, like
+0, 1, 2, 3, 4.
+This is very useful, since the numbers can be used to index into collections such as string. The range() function can be called in a few different ways.</p>
+
+<!-- njp could explain about motivation of making index numbers -->
+
+<a name=range1></a>
+<h2>range(n) - 1 Parameter Form</h2>
+
+<p>The most common form is <code>range(n)</code>, for integer n, which returns a numeric series starting with 0 and extending up to but not including n, e.g. <code>range(5)</code> returns <code>0, 1, 2, 3, 4</code>. This is perfect for generating the index numbers into, for example, a string..</p>
+
+<pre>
+>>><b> s = 'Python'</b>
+>>><b> len(s)</b>
+6
+>>><b> for i in range(len(s)):</b>
+...   print(i, s[i])
+...
+0 P
+1 y
+2 t
+3 h
+4 o
+5 n
+</pre>
+
+<p>Below are some more examples calling range(). For cosmetic reasons in the examples below, the call of the range() function is inside a list() so  the numbers will print out. This use of list() is only for printing, not needed to use range() in a loop.</p>
+
+<pre>
+>>><b> list(range(5))</b>
+[0, 1, 2, 3, 4]
+>>><b> list(range(10))</b>
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+>>><b> list(range(2))</b>
+[0, 1]
+</pre>
+
+<p>What is <code>range(0)</code>? Range is supposed to start at 0 and go up to but not including n. It turns out, the "not including" part dominates, so <code>range(0)</code> is no numbers at all.</p>
+
+<pre>
+>>><b> list(range(1))</b>
+[0]
+>>><b> list(range(0))  </b> # n <= 0, no numbers
+[]
+>>><b> list(range(-42))</b>
+[]
+</pre>
+<a name=reversed></a>
+<h2>reversed() Variation</h2>
+
+<p>Probably the second most common problem is to go through the standard index numbers, but in reverse order. The <code>reversed()</code> function takes in a linear collection and returns a reversed form of it. This works nicely with range() to go over the regular numbers in reverse order:</p>
+
+<pre>
+>>><b> s = 'Python'</b>
+>>><b> len(s)</b>
+6
+>>><b> for i in reversed(range(len(s))):</b>
+...   print(i, s[i])
+...
+5 n
+4 o
+3 h
+2 t
+1 y
+0 P
+</pre>
+
+<a name=range2></a>
+<h2>range(start, stop) - 2 Parameter Form</h2>
+
+<p>Range with 2 parameters specifies a start number other than 0, but is otherwise like the 1 parameter form above, going up to but not including the stop number.</p>
+
+<pre>
+>>><b> list(range(5, 10))</b>
+[5, 6, 7, 8, 9]
+>>><b> list(range(5, 7))</b>
+[5, 6]
+>>><b> list(range(5, 6))</b>
+[5]
+>>><b> list(range(5, 5)) </b> # start >= stop, no numbers
+[]
+>>><b> list(range(0, 5))</b>
+[0, 1, 2, 3, 4]
+>>><b> list(range(0, 0))</b>
+[]
+>>><b> list(range(0, -1))</b>
+[]
+</pre>
+
+<p>Mnemonic: the "stop" number is <b>strong</b>, so as soon as the numbers hit or exceed the stop the range is done (even if the start number initiates things in that position).</p>
+
+<a name=range3></a>
+<h2>range(start, stop, step) - 3 Parameter Form</h2>
+
+<p>The 3 parameter form begins with start number, up to but no including the stop number as usual. The difference is the "step" amount between numbers is now custom. Once the number is equal or goes beyond the stop, the range ends. As before, the stop number itself is always omitted.</p>
+
+<pre>
+>>><b> list(range(0, 10, 2))</b>
+[0, 2, 4, 6, 8]
+>>><b> list(range(0, 10, 6))</b>
+[0, 6]
+>>><b> list(range(200, 800, 100))</b>
+[200, 300, 400, 500, 600, 700]
+</pre>
+
+<p>If the step is negative, the range decreases from start down to stop. As always, numbers reaching or beyond the stop are omitted, but now step is decreasing.</p>
+
+<pre>
+>>><b> list(range(10, 5, -1))</b>
+[10, 9, 8, 7, 6]
+>>><b> list(range(10, 5, -2))</b>
+[10, 8, 6]
+>>><b> list(range(6, 5, -2))</b>
+[6]
+>>><b> list(range(5, 5, -2)) </b> # equal to stop is omitted
+[]
+>>><b> list(range(4, 5, -2)) </b> # beyond the stop is omitted
+[]
+</pre>
+
+<p>If you want to loop over the index numbers of a string or list backwards, it's easier to use <code>reversed()</code> above, vs. trying to do it manually with a negative increment.</p>
+
+<p>&nbsp;</p>
+
+<p class="small">Copyright 2020 Nick Parlante</p>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="Steiner Tree problem is ... [To be added]">
+<meta name="keywords" content="SteinerTree">
+ 
+<meta name="csrf-token" content="kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<meta property="og:image" content="../img/png/steinertree.png">
+<title>VisuAlgo - Steiner Tree</title>
+<link rel="icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="114x114" href="../img/favicon.png">
+<link rel="stylesheet" type="text/css" href="../fonts/silkscreen/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="../css/common.css">
+<link rel="stylesheet" href="../css/viz-1.0.1.css">
+<link rel="stylesheet" href="../css/visual.css">
+<link rel="stylesheet" href="../css/drawgraph.css">
+<style>
+      #e-lecture {
+        top: 45px;
+        right: 130px;
+        width: 400px;
+        display: block;
+        background: none;
+        /*overflow: normal;*/
+        white-space: normal;
+        text-align: right;
+        color: black; font-weight: bold; font-size: 20px;
+      }
+      .electure-prev, .electure-next { /* force update, copied from viz.css */
+        position: absolute;
+        /* bottom: -12px; */
+        top: -20px;
+        /*bottom: '';*/
+        padding: 3px 8px;
+        background: #999;
+        color: white;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .electure-prev {
+        left: -10px;
+        /* right: 30px; */
+      }
+      .electure-next {
+        right: -10px;
+        color: white;
+      }
+    </style>
+<style>
+.execAction { padding: 5px 8px; }
+.err { padding: 5px 0px; }
+#actions-extras input {
+  width: 35px;
+  padding: 5px 8px 7px;
+}
+
+.draw { bottom: 173px; }
+.random { bottom: 146px; }
+.examples { bottom: 119px; }
+.exact { bottom: 92px; }
+.approximation { bottom: 65px; }
+</style>
+<script>
+      function changeURL() {
+        var URL = window.location.href.split('/');
+        var val = document.getElementById("Language").value;
+        URL[3] = val;
+        window.location.assign(URL.join('/'));
+      }
+    </script>
+</head>
+<body>
+<div id="top-bar">
+<a id="home" href="/">Visu<span class="colour">Algo</span><span style="font-size: 40%">.net</span></a>
+/
+<select id="Language" onchange="changeURL()">
+<option value="zh" selected>zh</option>
+</select>
+/steinertree
+<span id="title">
+<a id='title-steinertree' class='selected-viz'>General Steiner Tree</a>
+</span>
+<div id="mode-menu">
+<div id='mode-button' title='exploration'>示例模式 &#9663;</div>
+<div id='other-modes'>
+<a title='e-Lecture'>电子讲座模式</a>
+</div>
+</div>
+</div>
+<div id="dark-overlay"></div>
+<div id="status" class="panel"><p></p></div>
+<div id="status-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide status panel" /></div>
+<div id="codetrace" class="panel">
+<p id="code1" style="padding-top: 10px;"></p>
+<p id="code2"></p>
+<p id="code3"></p>
+<p id="code4"></p>
+<p id="code5"></p>
+<p id="code6"></p>
+<p id="code7" style="padding-bottom: 10px;"></p>
+</div>
+<div id="codetrace-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide codetrace panel" /></div>
+<div id="left-bar"></div>
+<div id="right-bar"></div>
+<div id="media-controls">
+<div id='speed-control'>减速<div id='speed-input'></div>加速</div>
+<span id="go-to-beginning" class="media-control-button" title="go to beginning" onclick=goToBeginning()><img src="../img/goToBeginning.png" alt="go to beginning"></span>
+<span id="previous" class="media-control-button" title="step backward" onclick=stepBackward()><img src="../img/prevFrame.png" alt="previous frame"></span>
+<span id="pause" class="media-control-button" title="pause" onclick=pause()><img src="../img/pause.png" alt="pause"></span>
+<span id="play" class="media-control-button" title="play" onclick=play()><img src="../img/play.png" alt="play"></span>
+<span id="next" class="media-control-button" title="step forward" onclick=stepForward()><img src="../img/nextFrame.png" alt="next frame"></span>
+<span id="go-to-end" class="media-control-button" title="go to end" onclick=goToEnd()><img src="../img/goToEnd.png" alt="go to end"></span>
+<div id="progress-bar" class="media-control-button"></div>
+</div>
+<div id='viz'></div>
+<div id='current-action' class='panel'></div>
+<div id='e-lecture' class='panel'></div>
+<div id="overlay" hidden></div>
+<div id="dropdown-temp-holder" hidden></div>
+<div id="electure-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>Steiner Tree problem is ... [To be added]</p>
+<hr>
+<p><b>Remarks</b>: By default, we show e-Lecture Mode for first time (or non logged-in) visitor.<br>
+Please <a href="login"><u>login</u></a> if you are a repeated visitor or <a href="login"><u>register</u></a> for an (optional) free account first.</p>
+<div id='electure-dropdown'>
+<select class="lecture-dropdown" style="width:100%">
+<option value="1">1. Introduction</option>
+<option value="99">99. 状态面板</option>
+<option value="99-1">&nbsp;&nbsp;&nbsp;99-1. 代码追踪面板</option>
+<option value="99-2">&nbsp;&nbsp;&nbsp;99-2. 媒体控制</option>
+<option value="99-3">&nbsp;&nbsp;&nbsp;99-3. 返回 ”探索模式“</option>
+</select>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-next' data-nextid="99">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99" class="electure-dialog" style="right:150px;bottom:335px;width:500px;">
+当操作进行时，状态面板将会有每个步骤的描述。
+<hr>
+<p>Pro-tip: Since you are not <a href="login"><u>logged-in</u></a>, you may be a first time visitor who are not aware of the following keyboard shortcuts to navigate this e-Lecture mode: <b>[PageDown]</b> to advance to the next slide, <b>[PageUp]</b> to go back to the previous slide, <b>[Esc]</b> to toggle between this e-Lecture mode and exploration mode.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-1" class="electure-dialog" style="right:170px;bottom:275px;width:180px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<hr>
+<p>Another pro-tip: We designed this visualization and this e-Lecture mode to look good on 1366x768 resolution <b>or larger</b> (typical modern laptop resolution in 2017). We recommend using Google Chrome to access VisuAlgo. Go to full screen mode (<b>F11</b>) to enjoy this setup. However, you can use zoom-in (<b>Ctrl +</b>) or zoom-out (<b>Ctrl -</b>) to calibrate this.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-2" class="electure-dialog" style="bottom:70px;left:50%;margin-left:-120px;width:260px;">
+使用用户控件控制动画！可用的快捷键有：<div>空格键：绘制／停止／重绘</div><div>左／右箭头：上一步／下一步</div><div>-／+：减缓／增加速度</div><div><br></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-3" class="electure-dialog" style="top:70px;right:60px;width:300px;">
+<p>Return to &#39;Exploration Mode&#39; to start exploring!</p><br><p>Note that if you notice any bug in this visualization or if you want to request for a new visualization feature, do not hesitate to drop an email to the project leader: Dr Steven Halim via his email address: stevenhalim at gmail dot com.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-2">上一个 <u>PgUp</u></div>
+</div>
+<div id="popup" hidden>
+<div id="popup-content"></div>
+<span id="hide-popup" hidden>X <u>关闭</u></span>
+</div>
+<div id="actions" class="panel">
+<p id="draw" onclick=drawGraph()>绘制图表</p>
+<p id="examples" class="execAction">图示</p>
+<p id="exact" class="execAction">Exact</p>
+<p id="approximation" class="execAction">Approximation</p>
+</div>
+<div id="actions-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="显示/隐藏 动作面板" /></div>
+<div id="actions-extras">
+<div class="draw action-menu-pullout">
+<div id="draw-err" class="err"></div>
+</div>
+<div class="examples action-menu-pullout">
+<div id="example1" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_10)"><p>CP 4.10</p></div>
+<div id="example2" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_14)"><p>CP 4.14</p></div>
+<div id="example3" class="execAction new-menu-option coloured-menu-option" onclick="example(K5)"><p>K5</p></div>
+<div id="example4" class="execAction new-menu-option coloured-menu-option" onclick="example(RAIL)"><p>Rail</p></div>
+<div id="example5" class="execAction new-menu-option coloured-menu-option" onclick="example(TESSELLATION)"><p>Tessellation</p></div>
+<div id="example6" class="execAction new-menu-option coloured-menu-option" onclick="example(WHEEL)"><p>Wheel Graph</p></div>
+<div id="example7" class="execAction new-menu-option coloured-menu-option" onclick="example(K4)"><p>K4</p></div>
+</div>
+<div class="exact action-menu-pullout">
+<div id="exact-input" class="new-menu-option">s = <input type="number" id="exact-k" title="terminal}" autocomplete="off" min="2" max="99" value="2"></div>
+<div id="exact-exact" class="execAction coloured-menu-option" onclick="exact()"><p>执行</p></div>
+<div id="exact-err" class="err"></div>
+</div>
+<div class="approximation action-menu-pullout">
+<div id="approximation-input" class="new-menu-option">s = <input type="number" id="approximation-k" title="terminal}" autocomplete="off" min="2" max="99" value="2"></div>
+<div id="approximation-approximation" class="execAction coloured-menu-option" onclick="approximation()"><p>执行</p></div>
+<div id="approximation-err" class="err"></div>
+</div>
+</div>
+<div id="drawgraph" class="overlays"></div>
+<div id="bottom-bar">
+<a id="trigger-about">关于</a>
+</div>
+<div id="about" class="overlays">
+<h4>关于</h4><span class='close-overlay'>&#x2715;</span>
+<div class='content'>
+VisuAlgo在2011年由Steven Halim博士概念化，作为一个工具，帮助他的学生更好地理解数据结构和算法，让他们自己和自己的步伐学习基础。<br>VisuAlgo包含许多高级算法，这些算法在Steven Halim博士的书（“竞争规划”，与他的兄弟Felix Halim博士合作）和其他书中讨论。今天，一些高级算法的可视化/动画只能在VisuAlgo中找到。<br>虽然专门为新加坡国立大学（NUS）学生采取各种数据结构和算法类（例如CS1010，CS1020，CS2010，CS2020，CS3230和CS3230），作为在线学习的倡导者，我们希望世界各地的好奇心发现这些可视化也很有用。<br>VisuAlgo不是从一开始就设计为在小触摸屏（例如智能手机）上工作良好，因为需要满足许多复杂的算法可视化，需要大量的像素和点击并拖动手势进行交互。一个令人尊敬的用户体验的最低屏幕分辨率为1024x768，并且只有着陆页相对适合移动设备。<br>VisuAlgo是一个正在进行的项目，更复杂的可视化仍在开发中。<br>最令人兴奋的发展是自动问题生成器和验证器（在线测验系统），允许学生测试他们的基本数据结构和算法的知识。这些问题是通过一些规则随机生成的，学生的答案会在提交给我们的评分服务器后立即自动分级。这个在线测验系统，当它被更多的世界各地的CS教师采用，应该技术上消除许多大学的典型计算机科学考试手动基本数据结构和算法问题。通过在通过在线测验时设置小（但非零）的重量，CS教练可以（显着地）增加他/她的学生掌握这些基本问题，因为学生具有几乎无限数量的可以立即被验证的训练问题他们参加在线测验。培训模式目前包含12个可视化模块的问题。我们将很快添加剩余的8个可视化模块，以便VisuAlgo中的每个可视化模块都有在线测验组件。<br>另一个积极的发展分支是VisuAlgo的国际化子项目。我们要为VisuAlgo系统中出现的所有英语文本准备一个CS术语的数据库。这是一个很大的任务，需要众包。一旦系统准备就绪，我们将邀请VisuAlgo游客贡献，特别是如果你不是英语母语者。目前，我们还以各种语言写了有关VisuAlgo的公共注释：<br>
+<a href="https://weibo.com/p/230418436e9ee80102v4rk" target='_blank'><u>zh</u></a>, <a href='https://www.facebook.com/notes/steven-halim/httpidvisualgonet-visualisasi-struktur-data-dan-algoritma-dengan-animasi/10153236934439689' target='_blank'><u>id</u></a>, <a href="https://blog.naver.com/visualgo_nus" target='_blank'><u>kr</u></a>, <a href='https://www.facebook.com/groups/163215593699283/permalink/824003417620494/' target='_blank'><u>vn</u></a>, <a href='http://pantip.com/topic/32736343' target='_blank'><u>th</u></a>.</p>
+</div>
+</div>
+
+<script src="../js/jquery-3.3.1.min.js"></script>
+<script>
+      var PHP_DOMAIN = "";
+
+      // surprise colour!
+      // Referenced to in  home.js and viz.js also
+      var colourArray = ["#52bc69", "#d65775"/*"#ed5a7d"*/, "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"]; // green, pink, blue, red, yellow, indigo, orange, lime
+
+      function disableScroll() { $('html').css('overflow', 'hidden'); }
+
+      function enableScroll() { $('html').css('overflow', 'visible'); }
+
+      function replaceAll(find, replace, str) { return str.replace(new RegExp(find, 'g'), replace); }
+
+      function getColours() {
+        var generatedColours = new Array();
+        while (generatedColours.length < 4) {
+          var n = (Math.floor(Math.random() * colourArray.length));
+          if ($.inArray(n, generatedColours) == -1)
+            generatedColours.push(n);
+        }
+        return generatedColours;
+      }
+
+      function isOn(value, position) {
+        return (value>>position) & 1 === 1;
+      }
+
+      function customAlert(msg) {
+        $('#custom-alert p').html(msg);
+        var m = -1 * ($('#custom-alert').outerHeight()/2);
+        $('#custom-alert').css('margin-top', m+'px');
+        $('#dark-overlay').fadeIn(function() {
+          $('#custom-alert').fadeIn(function() {
+            setTimeout(function() {
+              $('#custom-alert').fadeOut(function() {
+                $('#dark-overlay').fadeOut();
+              });
+            }, 1000);
+          });
+        });
+      }
+
+      function showLoadingScreen() {
+        $('#loading-overlay').show();
+        $('#loading-message').show();
+      }
+
+      function hideLoadingScreen() {
+        $('#loading-overlay').hide();
+      }
+
+      function commonAction(retval, msg) {
+        //setTimeout(function() {
+          if (retval) { // mode == "exploration" && // now not only for exploration mode, but check if this opens other problems
+            $('#current-action').show();
+            $('#current-action').html(mode == "exploration" ? msg : ("e-Lecture Example (auto play until done)<br>" + msg));
+            $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+            triggerRightPanels();
+            isPlaying = true;
+          }
+        //}, 500);
+      }
+
+      function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable)
+            return decodeURIComponent(pair[1]);
+        }
+        return "";
+      }
+
+      var generatedColours = getColours();
+      var surpriseColour = colourArray[generatedColours[0]];
+      var colourTheSecond = colourArray[generatedColours[1]];
+      var colourTheThird = colourArray[generatedColours[2]];
+      var colourTheFourth = colourArray[generatedColours[3]];
+
+      $(function() {
+        $('.links').css('background', surpriseColour);
+        $('.right-links').css('background', surpriseColour);
+        $('#login-go').css('background', surpriseColour);
+
+        $('.colour').css("color", surpriseColour); // name
+        $('h4').css("background-color", surpriseColour); // about, contact us etc. button background
+
+        // title
+        $('#title a').click(function() {
+          $('#title a').removeClass('selected-viz');
+          $(this).addClass('selected-viz');
+          // temporary quick fix for Google Chrome Aug 2016 issue...
+          setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 100); // force resize/redraw...
+          setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        });
+
+        // overlays stuffs
+        $('#trigger-about').click(function() {
+          if ($(window).width() > 600) {
+            $('#dark-overlay').fadeIn(function() {
+              $('#about').fadeIn();
+            });
+          }
+          else
+            alert('Sorry, this dialog is too big. Please load it on bigger screen');
+        });
+
+        $('.close-overlay').click(function() {
+          $('.overlays').fadeOut(function() {
+            $('#dark-overlay').fadeOut();
+          });
+        });
+
+        $('#dark-overlay').click(function() {
+          $('.overlays').fadeOut();
+          $('#dark-overlay').fadeOut();
+        });
+      });
+    </script>
+
+<script src="../js/jquery-ui.min.js"></script>
+<script src="../js/d3.min.js"></script>
+<script src="../js/viz-1.0.3.js"></script>
+<script src="../js/visualgo_print.js"></script>
+<script src="../js/graph_library.js"></script>
+<script>
+      function runSlide(slide) {
+        if (slide == '1') {
+          $("#e-lecture").html("slide " + slide + " (" + 20 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99') {
+          $("#e-lecture").html("slide " + slide + " (" + 40 + "%)");
+          
+          hideEntireActionsPanel();
+ 
+          showStatusPanel();
+          showCodetracePanel();
+      
+        }
+        if (slide == '99-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 60 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 80 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 100 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+      }
+
+      window.onpopstate = function(event) {
+        var slide = event.state['slide'];
+        openSlide(slide, function() {
+          runSlide(slide);
+        });
+      };
+
+      function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'), sParameterName, i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+          if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+      };
+
+      function pushState(slideValue) {
+        var url = '/zh/steinertree';
+        if (typeof slideValue != 'undefined' && slideValue != null) url += '?slide=' + slideValue;
+        window.history.pushState({slide: slideValue}, "slide " + slideValue, url);
+      }
+
+      function showPopup(callback) {
+        $('#popup').fadeIn(100, callback);
+      }
+
+      function hidePopup(callback) {
+        $('#popup').fadeOut(100, callback);
+      }
+
+      function showOverlay() {
+        $('#overlay').css('opacity', 0.5); 
+        $('#overlay').show();
+      }
+
+      function hideOverlay() {
+        $('#overlay').hide();
+        $("#e-lecture").html("");
+      }
+
+      function makeOverlayTransparent() {
+        $('#overlay').css('opacity', 0);
+      }
+
+      function hideSlide(callback) {
+        isPlaying = true;
+        closeSlide(cur_slide, function() {
+          makeOverlayTransparent();
+          setTimeout(callback, 700); // don't immediately run the animation, wait for 500ms+ first
+        });
+      }
+
+      function showSlide() {
+        isPlaying = false;
+        openSlide(cur_slide);
+        showOverlay();
+      }
+
+      $(function() {
+        var slide = getUrlParameter('slide');
+        
+        $.get('/hasvisited' + '/steinertree', function(data) {
+          var hasVisited = data['hasvisited'] == '1';
+          if (!hasVisited) {
+            var postData = {
+              '_token': 'kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh',
+              'page': '/steinertree'.substring(1),
+            };
+
+            $.post("/visitpage", postData, function(data) {
+              // non critical request...
+            });
+
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+            }
+
+            $("#mode-menu a").trigger("click");
+          }
+          else {
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+              $('#mode-menu a').click();
+            }    
+          }
+        }).fail(function() {
+          if (typeof slide != undefined && slide != null) {
+            cur_slide = slide;
+            $('#mode-menu a').click();
+          }
+        });
+
+        $('.mcq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#mcq-answer-' + questionId).val();
+          var userAnswer = $('input[type=radio][name=mcq-'+questionId+'-choice]:checked').val();
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green"><b>Correct!</b></font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red"><b>Wrong Answer! Try again...</b></font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('.msq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#msq-answer-' + questionId).val();
+
+          var answers = [];
+          $('input[type=checkbox][class=msq-choice]:checked').each(function() {
+            answers.push($(this).attr('id').split('-')[3]);
+          });
+          answers.sort();
+          var userAnswer = answers.join(',');
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green">Correct!</font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red">Wrong Answer! Try again...</font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('select.lecture-dropdown').change(function() {
+          var nextSlide = $(this).val();
+          openSlide(nextSlide, function() {
+            runSlide(nextSlide);
+            pushState(nextSlide);
+          });
+        });
+
+        $('#hide-popup').click(function() {
+          hidePopup();
+        });
+
+        $('#popup').hover(function() {
+          $('#hide-popup').show();
+        }, function() {
+          $('#hide-popup').hide();
+        });
+
+        $('#electure-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+      
+        $('#electure-99 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+        $('#electure-99 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('1');
+          pushState('1');
+        });
+      
+        $('#electure-99-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+        $('#electure-99-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+      
+        $('#electure-99-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-3');
+          pushState('99-3');
+        });
+        $('#electure-99-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+      
+        $('#electure-99-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+      
+ 
+
+        // temporary quick fix for Google Chrome Aug 2016 issue..., put at last part so that everything else has been loaded
+        // setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 500);
+        // setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        // I turn it off on 14 June 2018, seems 'ok'?
+      });
+
+
+      function adjustPopupToImageSize() {
+        var width = $('#popup-image').prop('width');
+        var height = $('#popup-image').prop('height');
+        $('#popup').width(width + 20);
+        $('#popup').height(height + 20);
+        if (width == 0 && height == 0) {
+          setTimeout(adjustPopupToImageSize, 200);
+        } else {
+          showPopup();  
+        }
+      }
+
+      function POPUP_IMAGE(url) {
+        $('#popup-content').html('<img id="popup-image" src="' + url + '">');
+        adjustPopupToImageSize();
+      }
+
+      function URL(url) {
+        window.open(url, '_blank');
+      }
+
+      // Implement these functions in each visualisation
+      // This function will be called before entering e-Lecture Mode
+      function ENTER_LECTURE_MODE() {}
+
+      // This function will be called before returning to Explore Mode
+      function ENTER_EXPLORE_MODE() {}
+
+      // Lecture action functions
+      function CUSTOM_ACTION(action, data, mode) {}
+    </script>
+<script type="text/javascript">
+// Steiner Tree Widget
+
+var SteinerTree = function() {
+  var self = this;
+  var gw = new GraphWidget();
+
+  var iVL = {};
+  var iEL = {};
+  var iAL = {}; // special, for Tree
+  var amountVertex = 0;
+  var amountEdge = 0;
+
+  this.getGraphWidget = function() { return gw; }
+
+  fixJSON = function() {
+    amountVertex = 0;
+    amountEdge = 0;
+    for (var key in iVL) amountVertex++;
+    for (var key in iEL) amountEdge++;
+
+    var sortedArray = [];
+    for (key in iEL) {
+      sortedArray.push(new ObjectTriple(parseInt(iEL[key]["w"]), parseInt(iEL[key]["u"]), parseInt(iEL[key]["v"])));
+    }
+    sortedArray.sort(ObjectTriple.compare); // sort by increasing w, and if ties, by increasing u, and if still ties, by increasing v
+
+    for (var i = 0; i < sortedArray.length; i++) { // rearrange the keys in iEL based on our custom sort order
+      iEL[i]["w"] = sortedArray[i].getFirst();
+      iEL[i]["u"] = sortedArray[i].getSecond();
+      iEL[i]["v"] = sortedArray[i].getThird();
+    }
+
+    for (var key in iVL) iAL[key] = Array();
+    for (var key in iEL) { // transform EL to AL (for Tree)
+      iAL[iEL[key]["u"]].push(new ObjectTriple(iEL[key]["v"], iEL[key]["w"], key));
+      iAL[iEL[key]["v"]].push(new ObjectTriple(iEL[key]["u"], iEL[key]["w"], key)); // bidirectional
+    }
+  }
+
+  takeJSON = function(graph) {
+    if (graph == null) return;
+    graph = JSON.parse(graph);
+    iVL = graph["vl"];
+    iEL = graph["el"];
+    fixJSON();
+  }
+
+  statusChecking = function() {
+    $("#draw-status p").html("Draw several vertices");
+  }
+
+  warnChecking = function() {
+    var warn = "";
+    if (amountVertex >= 17) warn += "Too many vertices";
+    if (warn == "") $("#draw-warn p").html("No Warning");
+    else            $("#draw-warn p").html(warn);
+  }
+
+  errorChecking = function() {
+    var error = "";
+    if (amountVertex <= 1) {
+      $("#draw-err p").html("Graph must have at least one vertex");
+      return;
+    }
+
+    var visited = [];
+    var stack = [];
+    stack.push(0);
+    visited[0] = true;
+    while (stack.length > 0) {
+      var now = stack.pop();
+      for (var key2 in iEL) {
+        if (iEL[key2]["u"] == now && !visited[iEL[key2]["v"]]) {
+          visited[iEL[key2]["v"]] = true;
+          stack.push(+iEL[key2]["v"]);
+        }
+        if (iEL[key2]["v"] == now && !visited[iEL[key2]["u"]]) {
+          visited[iEL[key2]["u"]] = true;
+          stack.push(+iEL[key2]["u"]);
+        }
+      }
+    }
+
+    for (var i = 0; i < amountVertex; i++)
+      if (!visited[i]) {
+        error = error + "The graph is not connected".replace("{i}", i);
+        break;
+      }
+
+    if (error == "") $("#draw-err p").html("No error");
+    else             $("#draw-err p").html(error);
+  }
+
+  var intervalID;
+
+  this.startLoop = function() {
+    intervalID = setInterval(function() {
+      takeJSON(JSONresult);
+      warnChecking();
+      errorChecking();
+      statusChecking();
+    }, 100);
+  }
+
+  this.stopLoop = function() {
+    clearInterval(intervalID);
+  }
+
+  this.draw = function() {
+    if ($("#draw-err p").html() != "No error")
+      return false;
+    if ($("#submit").is(':checked'))
+      this.submit(JSONresult);
+    if ($("#copy").is(':checked'))
+      window.prompt("Copy to clipboard:", JSONresult);
+
+    fixJSON(); // to re-sort the edges
+
+    graph = createState({iVL: iVL, iEL: iEL});
+    gw.updateGraph(graph, 500);
+    return true;
+  }
+
+  this.importjson = function(text) {
+    takeJSON(text);
+    statusChecking();
+    graph = createState(iVL, iEL);
+    gw.updateGraph(graph, 500);
+  }
+
+  this.getGraph = function() {
+    return {
+      'vl': iVL,
+      'el': iEL
+    };
+  }
+
+  this.getV = function() {
+    return amountVertex;
+  }
+   
+  this.solveExact = function(input, callback) {
+    amountTerminal = input;
+    if (amountTerminal === 2) {
+      return this.dijkstra(input, callback);
+    }
+    if (amountTerminal === amountVertex) {
+      return this.mst(input, callback);
+    }
+    if (this.isTree()) {
+      return this.on_tree(input, callback);
+    }
+    return this.bruteforce(input, callback);
+  }
+
+  this.solveApproximation = function(input, callback) {
+    amountTerminal = input;
+    return this.approximation(input, callback);
+  }
+
+  this.isTree = function() {
+    var visited = new Array(amountVertex);
+    for (var i = 0; i < amountVertex; i++) {
+      visited[i] = false;
+    }
+    isTree = true;
+    function dfs(u, parent) {
+      visited[u] = true;
+      for (var key in iEL) {
+	var a = iEL[key]['u'];
+	var b = iEL[key]['v'];
+	if (a !== u && b !== u) {
+	  continue;
+	}
+	if ((a === u && b === parent) || (b === u && a === parent)) {
+	  continue;
+	}
+	var other = (a === u) ? b : a;
+	if (visited[other]) {
+	  isTree = false;
+	  break;
+	}
+	dfs(other, u);
+      }
+    }
+    dfs(0, -1);
+    return isTree;
+  }
+
+   // TODO(raisfathin): This is so messy :(
+  function calcMst(mask, edges) {
+    var tempUfds = new UfdsHelper();
+
+    for (var i = 0; i < amountVertex; i++) {
+      if (mask & (1 << i)) {
+	tempUfds.insert(i);
+      }
+    }
+
+    var newEl = [];
+    for (var key in edges) {
+      var u = edges[key]['u'];
+      var v = edges[key]['v'];
+      var w = edges[key]['w'];
+      if ((mask & (1 << u)) === 0 || (mask & (1 << v)) === 0) {
+	continue;
+      }
+      newEl.push(new ObjectPair(w, key));
+    }
+
+    newEl.sort(ObjectPair.compare);
+
+    var setCount = 0;
+
+    for (var i = 0; i < amountVertex; i++) {
+      if (mask & (1 << i)) {
+	setCount++;
+      }
+    }
+
+    var totalCost = 0;
+    var usedEdges = [];
+    for (var edgeKey in newEl) {
+      var realEdgeKey = newEl[edgeKey].getSecond();
+      var u = edges[realEdgeKey]['u'];
+      var v = edges[realEdgeKey]['v'];
+      if (!tempUfds.isSameSet(u, v)) {
+	totalCost += newEl[edgeKey].getFirst();
+	usedEdges.push(realEdgeKey);
+	tempUfds.unionSet(u, v);
+	setCount--;
+      }
+    }
+
+    if (setCount != 1) {
+      return {
+	'cost': 1e9,
+	'edges': [],
+      };
+    }
+
+    return {
+      'cost': totalCost,
+      'edges': usedEdges,
+    };
+  }
+
+  function getMetricDistance() {
+    var dist = new Array(amountVertex);
+    for (var i = 0; i < amountVertex; i++) {
+      dist[i] = runDijkstra(i);
+    }
+    return dist;
+  }
+
+  function runDijkstra(source) {
+    var dist = new Array(amountVertex);
+    var settled = new Array(amountVertex);
+    for (var i = 0; i < amountVertex; i++) {
+      settled[i] = false;
+      dist[i] = {'cost': 1e9, 'edges': []};
+    }
+    function relax_edge(from, to, cost, edgeKey) {
+      if (dist[to]['cost'] > dist[from]['cost'] + cost) {
+	dist[to]['cost'] = dist[from]['cost'] + cost;
+	dist[to]['edges'] = dist[from]['edges'].slice(0);
+	dist[to]['edges'].push(edgeKey);
+      }
+    }
+    dist[source] = {'cost': 0, 'edges': []};
+    while (true) {
+      var arg_min = -1;
+      for (var i = 0; i < amountVertex; i++) {
+	if (!settled[i] && (arg_min === -1 || dist[i]['cost'] < dist[arg_min]['cost'])) {
+	  arg_min = i;
+	}
+      }
+      if (arg_min == -1) {
+	break;
+      }
+      settled[arg_min] = true;
+      for (var key in iEL) {
+	if (iEL[key]['u'] === arg_min) {
+	  relax_edge(iEL[key]['u'], iEL[key]['v'], iEL[key]['w'], key);
+	}
+	if (iEL[key]['v'] === arg_min) {
+	  relax_edge(iEL[key]['v'], iEL[key]['u'], iEL[key]['w'], key);
+	}
+      }
+    }
+
+    return dist;
+  }
+
+  function calcOptimalCost() {
+    var optimalCost = 1e9;
+    for (var i = 0; i < (1 << (amountVertex - amountTerminal)); i++) {
+      var mask = ((1 << amountTerminal) - 1) | (i << amountTerminal);
+      var currentCost = calcMst(mask, iEL);
+      if (currentCost['cost'] < optimalCost) {
+	optimalCost = currentCost['cost'];
+      }
+    }
+    return optimalCost;
+  }
+  
+  this.bruteforce = function(input, callback) {
+    if (amountVertex === 0) {
+      $('#exact-err').html("没有图表运行此项。请首先选择图表。.");
+      return false;
+    }
+    if (amountTerminal <= 0 || amountTerminal > amountVertex) {
+      $('#exact-err').html("Invalid number of terminal. Please enter a value between 1 and N.")
+    }
+
+    var cs, stateList = [];
+
+    var minCost = {
+      'cost': 1e9,
+      'edges': [],
+    };
+
+    function getJsonForMst(mask) {
+      var vl = [], el = [];
+      var mapping = new Array(amountVertex);;
+      var id = 0;
+      for (var i = 0; i < amountVertex; i++) {
+	if (mask & (1 << i)) {
+	  mapping[i] = id++;
+	} else {
+	  mapping[i] = -1;
+	}
+      }
+      for (var i = 0; i < amountVertex; i++) {
+	if (mapping[i] !== -1) {
+	  vl.push(iVL[i]);
+	}
+      }
+      for (var key in iEL) {
+	if (mapping[iEL[key]['u']] !== -1 && mapping[iEL[key]['v']] !== -1) {
+	  el.push({'u': mapping[iEL[key]['u']], 'v': mapping[iEL[key]['v']], 'w': iEL[key]['w']});
+	}
+      }
+      return JSON.stringify({'vl': vl, 'el': el});
+    }
+
+    for (var i = 0; i < (1 << (amountVertex - amountTerminal)); i++) {
+      var mask = (i << amountTerminal) | ((1 << amountTerminal) - 1);
+      var selectedTerminal = [];
+      var selectedSteiner = [];
+      var vertexHighlighted = {};
+      var vertexCovered = {};
+      var edges = [];
+      for (var j = 0; j < amountVertex - amountTerminal; j++) {
+	if (i & (1 << j)) {
+	  vertexHighlighted[j + amountTerminal] = true;
+	  selectedSteiner.push(j + amountTerminal);
+	}
+      }
+      for (var j = 0; j < amountTerminal; j++) {
+	vertexCovered[j] = true;
+	selectedTerminal.push(j);
+      }
+      for (var key in iEL) {
+	var u = iEL[key]['u'];
+	var v = iEL[key]['v'];
+	var w = iEL[key]['w'];
+	if ((mask & (1 << u)) !== 0 && (mask & (1 << v)) !== 0) {
+	  edges.push({
+	    'u': u,
+	    'v': v,
+	    'w': w,
+	    'edges': [key],
+	  });
+	}
+      }
+      cs = createState({
+	iVL: iVL,
+	iEL: iEL,
+	vertexHighlighted: vertexHighlighted,
+	vertexCovered: vertexCovered,
+      });
+      cs['status'] = 'Trying terminal vertices {terminal_subset} + steiner vertices {steiner_subset}'
+	.replace('{terminal_subset}', JSON.stringify(selectedTerminal))
+	.replace('{steiner_subset}', JSON.stringify(selectedSteiner));
+      cs['lineNo'] = 1;
+      stateList.push(cs);
+      var currentCost = calcMst(mask, edges);
+      if (currentCost['cost'] >= 1e9) {
+	cs = createState({
+	  iVL: iVL,
+	  iEL: iEL,
+	  vertexHighlighted: vertexHighlighted,
+	  vertexCovered: vertexCovered,
+	});
+	cs['status'] = 'Could not find an MST that uses only vertices in terminal vertices {terminal_subset} + steiner vertices {steiner_subset}'
+	  .replace('{terminal_subset}', JSON.stringify(selectedTerminal))
+	  .replace('{steiner_subset}', JSON.stringify(selectedSteiner));
+	cs['lineNo'] = 2;
+	stateList.push(cs);
+      } else {
+	var edgeHighlighted = {};
+	for (var key in currentCost['edges']) {
+	  var currentEdgeKey = currentCost['edges'][key];
+	  edgeHighlighted[edges[currentEdgeKey]['edges'][0]] = true;
+	}
+	cs = createState({
+	  iVL: iVL,
+	  iEL: iEL,
+	  vertexHighlighted: vertexHighlighted,
+	  vertexCovered: vertexCovered,
+	  edgeHighlighted: edgeHighlighted,
+	});
+	var mstJson = getJsonForMst(mask);
+	cs['status'] = 'Obtained an MST of cost = {cost}. Click <a target="blank" href="mst?create={json}"><u>here</u></a> for MST visualization'.replace('{cost}', currentCost['cost']).replace('{json}', encodeURIComponent(mstJson));
+	cs['lineNo'] = [2, 3]
+	stateList.push(cs);
+      }
+      if (currentCost['cost'] < minCost['cost']) {
+	minCost['cost'] = currentCost['cost'];
+	minCost['edges'].length = 0;
+	for (var edgeKey in currentCost['edges']) {
+	  var edgeIndexInNewEdges = currentCost['edges'][edgeKey];
+	  minCost['edges'].push(edges[edgeIndexInNewEdges]['edges'][0]);
+	}
+	argMin = mask;
+      }
+    }
+
+    var edgeCovered = {};
+    var vertexCovered = {};
+    for (var i = 0; i < amountTerminal; i++) {
+      vertexCovered[i] = true;
+    }
+    for (var key in minCost['edges']) {
+      edgeCovered[minCost['edges'][key]] = true;
+    }
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      vertexCovered: vertexCovered,
+      edgeCovered: edgeCovered,
+    });
+    cs['status'] = 'Cost of optimal steiner tree = {cost}'.replace('{cost}', minCost['cost']);
+    cs['lineNo'] = [];
+    stateList.push(cs);
+
+    populatePseudocode('bruteforce');
+    gw.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.mst = function(callback) {
+    var cs, stateList = [];
+
+    var mstResult = calcMst((1 << amountVertex) - 1, iEL);
+    var edgeHighlighted = {};
+    for (var key in mstResult['edges']) {
+      edgeHighlighted[mstResult['edges'][key]] = true;
+    }
+    var mstJson = JSON.stringify({'vl': iVL, 'el': iEL});
+    cs = createState({
+      'iVL': iVL,
+      'iEL': iEL,
+      'edgeHighlighted': edgeHighlighted,
+    });
+    cs['status'] = 'Cost = {cost}. Click <a target="blank" href="mst?create={json}"><u>here</u></a> for MST visualization'.replace('{cost}', mstResult['cost']).replace('{json}', encodeURIComponent(mstJson));
+    cs['lineNo'] = 1;
+    stateList.push(cs);
+
+    populatePseudocode('mst');
+    gw.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.dijkstra = function(callback) {
+    var cs, stateList = [];
+
+    var dijkstraResult = runDijkstra(0);
+    var edgeHighlighted = {};
+    for (var key in dijkstraResult[1]['edges']) {
+      edgeHighlighted[dijkstraResult[1]['edges'][key]] = true;
+    }
+    cs = createState({
+      'iVL': iVL,
+      'iEL': iEL,
+      'edgeHighlighted': edgeHighlighted,
+    });
+    cs['status'] = 'Cost = {cost}'.replace('{cost}', dijkstraResult[1]['cost']);
+    cs['lineNo'] = 1;
+    stateList.push(cs);
+
+    populatePseudocode('dijkstra');
+    gw.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.approximation = function(callback) {
+    var cs, stateList = [];
+    var vertexCovered = {};
+
+    for (var i = 0; i < amountTerminal; i++) {
+      vertexCovered[i] = true;
+    }
+
+    cs = createState({
+      'iVL': iVL,
+      'iEL': iEL,
+      'vertexCovered': vertexCovered,
+    });
+    cs['status'] = '';
+    cs['lineNo'] = 1;
+    stateList.push(cs);
+
+    var metricDistance = getMetricDistance();
+    var completeEl = [];
+    for (var i = 0; i < amountVertex; i++) {
+      for (var j = i + 1; j < amountVertex; j++) {
+	completeEl.push({'u': i, 'v': j, 'w': metricDistance[i][j]['cost']});
+      }
+    }
+    cs = createState({
+      'iVL': iVL,
+      'iEL': completeEl,
+      'vertexCovered': vertexCovered,
+    });
+    cs['status'] = '';
+    cs['lineNo'] = 1;
+    stateList.push(cs);
+
+    var edges = [];
+    for (var i = 0; i < amountTerminal; i++) {
+      for (var j = i + 1; j < amountTerminal; j++) {
+	edges.push({'u': i, 'v': j, 'w': metricDistance[i][j]['cost']});
+      }
+    }
+
+    var mstCost = calcMst((1 << amountTerminal) - 1, edges);
+    var usedEdgeInNewGraph = {};
+    var usedEdgeInRealGraph = {};
+    for (var edgeKey in mstCost['edges']) {
+      var newEdgeKey = mstCost['edges'][edgeKey];
+      var u = edges[newEdgeKey]['u'];
+      var v = edges[newEdgeKey]['v'];
+      var id = -1;
+      for (var key in completeEl) {
+	if ((completeEl[key]['u'] === u && completeEl[key]['v'] === v) ||
+	    (completeEl[key]['u'] === v && completeEl[key]['v'] === u)) {
+	  id = key;
+	  break;
+	}
+      }
+      usedEdgeInNewGraph[id] = true;
+      for (var realEdgeIndex in metricDistance[u][v]['edges']) {
+	usedEdgeInRealGraph[metricDistance[u][v]['edges'][realEdgeIndex]] = true;
+      }
+    }
+    cs = createState({
+      'iVL': iVL,
+      'iEL': completeEl,
+      'edgeHighlighted': usedEdgeInNewGraph,
+      'vertexCovered': vertexCovered,
+    });
+    cs['status'] = 'Cost = {cost}'.replace('{cost}', mstCost['cost']);
+    cs['lineNo'] = 2;
+    stateList.push(cs);
+
+    var realCost = 0;
+    for (var edgeKey in usedEdgeInRealGraph) {
+      realCost += iEL[parseInt(edgeKey)]['w'];
+    }
+    cs = createState({
+      'iVL': iVL,
+      'iEL': iEL,
+      'edgeHighlighted': usedEdgeInRealGraph,
+      'vertexCovered': vertexCovered,
+    });
+    cs['status'] = 'Approximation cost = {approximation_cost} while the optimal cost = {optimal_cost}.'.replace('{approximation_cost}', realCost).replace('{optimal_cost}', calcOptimalCost());
+    cs['lineNo'] = 3;
+    stateList.push(cs);
+    populatePseudocode('approximation');
+    gw.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.on_tree = function(callback) {
+    if (amountVertex === 0) {
+      $('#on_tree-err').html("没有图表运行此项。请首先选择图表。.");
+      return false;
+    }
+    if (amountTerminal <= 0 || amountTerminal > amountVertex) {
+      $('#on_tree-err').html("Invalid number of terminal. Please enter a value between 1 and N..");
+      return false;
+    }
+    var cs, stateList = [];
+    var requiredEdges = {};
+    var ans = 0;
+    function dfs(u, parent = -1) {
+      var vertexHighlighted = {};
+      vertexHighlighted[u] = true;
+      cs = createState({
+	iVL: iVL,
+	iEL: iEL,
+	vertexHighlighted: vertexHighlighted,
+	edgeCovered: requiredEdges,
+      });
+      cs['status'] = 'Processing vertex {vertex_id}'.replace('{vertex_id}', u);
+      cs['lineNo'] = 1;
+      stateList.push(cs);
+      var has_terminal = u < amountTerminal;
+      cs = createState({
+	iVL: iVL,
+	iEL: iEL,
+	vertexHighlighted: vertexHighlighted,
+	edgeCovered: requiredEdges,
+      });
+      if (u < amountTerminal) {
+	cs['status'] = 'Vertex {vertex_id} is a terminal, set has_terminal to true'.replace('{vertex_id}', u);
+	cs['lineNo'] = 2;
+      } else {
+	cs['status'] = 'Vertex {vertex_id} is not a terminal, set has_terminal to false'.replace('{vertex_id}', u);
+	cs['lineNo'] = 2;
+      }
+      stateList.push(cs);
+      for (var key in iEL) {
+	var other = -1;
+	if (iEL[key]['u'] === u) {
+	  other = iEL[key]['v'];
+	}
+	if (iEL[key]['v'] === u) {
+	  other = iEL[key]['u'];
+	}
+	if (other === -1 || other === parent) {
+	  continue;
+	}
+	var edgeHighlighted = {};
+	edgeHighlighted[key] = true;
+	cs = createState({
+	  iVL: iVL,
+	  iEL: iEL,
+	  vertexHighlighted: vertexHighlighted,
+	  edgeCovered: requiredEdges,
+	});
+	cs['status'] = 'Processing edge {vertex_from} -> {vertex_to}'.replace('{vertex_from}', u).replace('{vertex_to}', other);
+	cs['lineNo'] = 4;
+	stateList.push(cs);
+	var ret = dfs(other, u);
+	has_terminal |= ret;
+	cs = createState({
+	  iVL: iVL,
+	  iEL: iEL,
+	  vertexHighlighted: vertexHighlighted,
+	  edgeCovered: requiredEdges,
+	});
+	if (ret) {
+	  cs['status'] = 'Found some terminal inside the subtree rooted at {neighbor}. Take {current} -> {neighbor}'.replace('{current}', u).replace('{neighbor}', other).replace('{neighbor}', other);
+	  requiredEdges[key] = true;
+	  cs['lineNo'] = [5, 6];
+	  ans += iEL[key]['w'];
+	} else {
+	  cs['status'] = 'There is no terminal inside the subtree rooted at {vertex}'.replace('{vertex}', other);
+	  cs['lineNo'] = 5;
+	}
+	stateList.push(cs);
+      }
+      cs = createState({
+	iVL: iVL,
+	iEL: iEL,
+	vertexHighlighted: vertexHighlighted,
+	edgeCovered: requiredEdges,
+      });
+      cs = createState({
+	iVL: iVL,
+	iEL: iEL,
+	vertexHighlighted: vertexHighlighted,
+	edgeCovered: requiredEdges,
+      });
+      cs['status'] = 'Done processing vertex {vertex}'.replace('{vertex}', u);
+      cs['lineNo'] = 7;
+      stateList.push(cs);
+      return has_terminal;
+    }
+    dfs(0, -1);
+    var terminals = {};
+    for (var i = 0; i < amountTerminal; i++) {
+      terminals[i] = true;
+    }
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      edgeCovered: requiredEdges,
+      vertexCovered: terminals,
+    });
+    cs['status'] = 'Steiner tree cost = {cost}'.replace('{cost}', ans);
+    stateList.push(cs);
+    populatePseudocode('on_tree');
+    gw.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.examples = function(id) {
+    var vertexList = getExampleGraph(id, VL);
+    var edgeList = getExampleGraph(id, EL);
+    this.loadGraph(vertexList, edgeList);
+    return true;
+  }
+
+  this.loadGraph = function(vertexList, edgeList) {
+    iVL = vertexList;
+    iEL = edgeList;
+    fixJSON();
+    var newState = createState({iVL: iVL, iEL: iEL});
+    gw.updateGraph(newState, 500);
+  }
+
+  function createState(options) {
+    var iVLObject = options["iVL"];
+    var iELObject = options["iEL"];
+    var vertexHighlighted = options["vertexHighlighted"];
+    var edgeHighlighted = options["edgeHighlighted"];
+    var vertexTraversed = options["vertexTraversed"];
+    var edgeTraversed = options["edgeTraversed"];
+    var edgeQueued = options["edgeQueued"];
+    var edgeCovered = options["edgeCovered"];
+    var vertexCovered = options["vertexCovered"];
+    var vertexGreyed = options["vertexGreyed"];
+    var edgeAnimated = options["edgeAnimated"];
+
+    var isDefaultGrey = true;
+    if ((vertexHighlighted == null) && (edgeHighlighted == null) && (vertexTraversed == null) && (edgeTraversed == null) && (edgeQueued == null) && (vertexGreyed == null))
+      isDefaultGrey = false;
+    if (vertexHighlighted == null) vertexHighlighted = {};
+    if (edgeHighlighted == null) edgeHighlighted = {};
+    if (vertexTraversed == null) vertexTraversed = {};
+    if (edgeTraversed == null) edgeTraversed = {};
+    if (edgeQueued == null) edgeQueued = {};
+    if (vertexGreyed == null) vertexGreyed = {};
+    if (edgeAnimated == null) edgeAnimated = [];
+
+    var key;
+    var state = {
+      "vl": {},
+      "el": {}
+    };
+
+    if (isDefaultGrey) {
+      for (key in iVLObject) {
+        state["vl"][key] = {};
+        state["vl"][key]["cx"] = iVLObject[key]["x"];
+        state["vl"][key]["cy"] = iVLObject[key]["y"];
+        state["vl"][key]["text"] = key;
+        state["vl"][key]["state"] = VERTEX_GREY_OUTLINE;
+        state["vl"][key]["extratext"] = iVLObject[key]["extratext"];
+      }
+      for (key in iELObject) {
+        state["el"][key] = {};
+        state["el"][key]["vertexA"] = iELObject[key]["u"];
+        state["el"][key]["vertexB"] = iELObject[key]["v"];
+        state["el"][key]["type"] = EDGE_TYPE_UDE;
+        state["el"][key]["weight"] = iELObject[key]["w"];
+        state["el"][key]["state"] = EDGE_GREY;
+        state["el"][key]["displayWeight"] = true;
+        state["el"][key]["animateHighlighted"] = false;
+      }
+    }
+    else {
+      for (key in iVLObject) {
+        state["vl"][key] = {};
+        state["vl"][key]["cx"] = iVLObject[key]["x"];
+        state["vl"][key]["cy"] = iVLObject[key]["y"];
+        state["vl"][key]["text"] = key;
+        state["vl"][key]["state"] = VERTEX_DEFAULT;
+        state["vl"][key]["extratext"] = iVLObject[key]["extratext"];
+      }
+      for (key in iELObject) {
+        state["el"][key] = {};
+        state["el"][key]["vertexA"] = iELObject[key]["u"];
+        state["el"][key]["vertexB"] = iELObject[key]["v"];
+        state["el"][key]["type"] = EDGE_TYPE_UDE;
+        state["el"][key]["weight"] = iELObject[key]["w"];
+        state["el"][key]["state"] = EDGE_DEFAULT;
+        state["el"][key]["displayWeight"] = true;
+        state["el"][key]["animateHighlighted"] = false;
+      }
+    }
+
+    for (key in edgeAnimated) {
+      var edgeKey = edgeAnimated[key];
+      state["el"][edgeKey]["animateHighlighted"] = true;
+    }
+
+    for (key in edgeQueued) {
+      key1 = state["el"][key]["vertexA"];
+      key2 = state["el"][key]["vertexB"]
+      state["vl"][key1]["state"] = VERTEX_DEFAULT;
+      state["vl"][key2]["state"] = VERTEX_DEFAULT;
+      state["el"][key]["state"] = EDGE_DEFAULT;
+    }
+
+    for (key in iVL) {
+      if (vertexGreyed[key] === undefined) {
+        state["vl"][key]["state"] = VERTEX_DEFAULT;
+      }
+    }
+
+    for (key in edgeCovered) state["el"][key]["state"] = EDGE_BLUE;
+    for (key in vertexCovered) state["vl"][key]["state"] = VERTEX_BLUE_FILL;
+    for (key in vertexHighlighted) state["vl"][key]["state"] = VERTEX_HIGHLIGHTED; // VERTEX_BLUE_FILL;
+    for (key in edgeHighlighted) state["el"][key]["state"] = EDGE_HIGHLIGHTED; // EDGE_BLUE;
+    for (key in vertexTraversed) state["vl"][key]["state"] = VERTEX_TRAVERSED; // VERTEX_GREEN_FILL;
+    for (key in edgeTraversed) state["el"][key]["state"] = EDGE_TRAVERSED; // EDGE_GREEN;
+
+    return state;
+  }
+
+  function populatePseudocode(act) {
+    switch (act) {
+      case 'bruteforce':
+	$('#code1').html('for every possible set S of steiner points');
+	$('#code2').html('&nbsp;&nbsp;Calculate the MST of S union terminals');
+	$('#code3').html('&nbsp;&nbsp;ans = min(ans, cost(MST))');
+	$('#code4').html('');
+	$('#code5').html('');
+	$('#code6').html('');
+	$('#code7').html('');
+        break;
+      case 'on_tree':
+        $('#code1').html('function dfs(u)');
+        $('#code2').html('&nbsp;&nbsp;has_terminal = u is a terminal');
+        $('#code3').html('&nbsp;&nbsp;for (neighbour v of u)');
+        $('#code4').html('&nbsp;&nbsp;&nbsp;&nbsp;v_has_terminal = dfs(v)');
+        $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;if v_has_terminal');
+        $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;take edge u -> v');
+	$('#code7').html('&nbsp;&nbsp;return has_terminal');
+	break;
+      case 'approximation':
+	$('#code1').html('Do metric completion with dijkstra');
+	$('#code2').html('Calculate the MST of terminals');
+	$('#code3').html('Map edges used in the MST to those in original graph');
+	$('#code4').html('');
+	$('#code5').html('');
+	$('#code6').html('');
+	$('#code7').html('');
+        break;
+      case 'mst':
+	$('#code1').html('Calculate the MST of the entire graph');
+	$('#code2').html('');
+	$('#code3').html('');
+	$('#code4').html('');
+	$('#code5').html('');
+	$('#code6').html('');
+	$('#code7').html('');
+	break;
+      case 'dijkstra':
+	$('#code1').html('Run Dijkstra from vertex 0 to vertex 1');
+	$('#code2').html('');
+	$('#code3').html('');
+	$('#code4').html('');
+	$('#code5').html('');
+	$('#code6').html('');
+	$('#code7').html('');
+	break;
+      default:
+	alert("WUT");
+    }
+  }
+}
+
+
+
+// Steiner Tree Actions
+var actionsWidth = 150;
+var statusCodetraceWidth = 430;
+
+var isExamplesOpen = false, isExactOpen = false, isApproximationOpen = false;
+
+function openExamples() {
+  if (!isExamplesOpen) {
+    $('.examples').fadeIn('fast');
+    isExamplesOpen = true;
+  }
+}
+
+function closeExamples() {
+  if (isExamplesOpen) {
+    $('.examples').fadeOut('fast');
+    isExamplesOpen = false;
+  }
+}
+
+function openExact() {
+  if (!isExactOpen) {
+    $('.exact').fadeIn('fast');
+    isExactOpen = true;
+  }
+}
+
+function closeExact() {
+  if (isExactOpen) {
+    $('.exact').fadeOut('fast');
+    $('#exact-err').html("");
+    isExactOpen = false;
+  }
+}
+
+
+function openApproximation() {
+  if (!isApproximationOpen) {
+    $('.approximation').fadeIn('fast');
+    isApproximationOpen = true;
+  }
+}
+
+function closeApproximation() {
+  if (isApproximationOpen) {
+    $('.approximation').fadeOut('fast');
+    $('#approximation-err').html("");
+    isApproximationOpen = false;
+  }
+}
+
+function hideEntireActionsPanel() {
+  closeExamples();
+  closeExact();
+  closeApproximation();
+  hideActionsPanel();
+}
+
+
+
+// local
+write(true, false);
+var mw, gw, randomGraphID;
+
+$(function() {
+  $('#play').hide();
+  mw = new SteinerTree();
+  gw = mw.getGraphWidget();
+  var options = [CP3_4_10, CP3_4_14, K5, RAIL, TESSELLATION];
+  mw.examples(options[Math.floor(Math.random()*5)]);
+  randomGraphID = -1;
+
+  var graphJSON = getQueryVariable("create");
+  if (graphJSON.length > 0) {
+    importjson(graphJSON);
+    window.history.pushState("object or string", "Title", window.location.href.split('?')[0]);
+  }
+
+  $('#draw').click(function() {
+    closeExamples();
+    closeApproximation();
+    closeExact();
+  });
+
+  $('#examples').click(function() {
+    openExamples();
+    closeApproximation();
+    closeExact();
+  })
+
+  $('#exact').click(function() {
+    openExact();
+    closeApproximation();
+    closeExamples();
+  });
+
+  $('#approximation').click(function() {
+    openApproximation();
+    closeExact();
+    closeExamples();
+  });
+});
+
+function importjson(text) {
+  if (isPlaying) stop();
+  if (mode == "exploration") {
+    mw.importjson(text);
+    closeExamples();
+    isPlaying = false;
+  }
+}
+
+function drawGraph() {
+  if (isPlaying) stop();
+  if (mode == "exploration") {
+    $('#dark-overlay').fadeIn(function() {
+      $('#drawgraph').fadeIn();
+    });
+    mw.startLoop();
+    isPlaying = false;
+  }
+}
+
+function drawDone() {
+  if (!mw.draw()) return false;
+  mw.stopLoop();
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+function drawCancel() {
+  mw.stopLoop();
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+function example(id) {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if ((mode == "exploration") && mw.examples(id)) {
+      $('#progress-bar').slider("option", "max", 0);
+      closeExamples();
+      isPlaying = false;
+    }
+  }, 500);
+}
+
+function exact(callback) {
+  if (isPlaying) stop();
+  var input = parseInt($('#exact-k').val());
+  commonAction(mw.solveExact(input, callback), "Steiner Tree (Exact)");
+}
+
+function approximation(callback) {
+  if (isPlaying) stop();
+  var input = parseInt($('#approximation-k').val());
+  commonAction(mw.solveApproximation(input, callback), "Steiner Tree (Approximation)");
+}
+
+function loadGraph(graph) {
+  if (mw) {
+    mw.loadGraph(graph['vl'], graph['el']);
+  }
+}
+
+// Implement these functions in each visualisation
+var userGraph = {
+  'vl': {},
+  'el': {},
+};
+
+// This function will be called before entering E-Lecture Mode
+function ENTER_LECTURE_MODE() {
+  if (mw) userGraph = mw.getGraph();
+}
+
+// This function will be called before returning to Explore Mode
+function ENTER_EXPLORE_MODE() {
+  loadGraph(userGraph);
+}
+
+// Lecture action functions
+function CUSTOM_ACTION(action, data, mode) {
+  go(data, showSlide);
+}
+</script>
+ </body>
+</html>

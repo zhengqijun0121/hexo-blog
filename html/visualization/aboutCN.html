@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <link rel="stylesheet" href="visualPages.css" />
+        <title>数据结构可视化</title>
+        <link rel="shortcut icon" href="favicon.ico"/>
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-7XF2LE3X13"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-7XF2LE3X13');
+        </script>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="header"><h1>数据结构可视化</h1></div>
+            <div class="menu">
+                <ul>
+                    <li><a href="aboutCN.html">关于</a></li>
+                    <li><a href="AlgorithmsCN.html">算法</a></li>
+                    <li><a href="faqCN.html">常问问题</a></li>
+                    <li><a href="bugfeatureCN.html">已知错误 /<br /> &nbsp; &nbsp; 功能请求</a></li>
+                    <li><a href="sourceCN.html">创建自己的 /<br /> &nbsp; &nbsp; 源代码</a></li>
+                    <li><a href="contactCN.html">联系</a></li>
+                </ul>
+                <br /><br />
+                <div class="about">
+                    <a href="http://www.cs.usfca.edu/galles"> David Galles </a><br />
+                    <a href="http://www.cs.usfca.edu">计算机科学系</a><br />
+                    <a href="http://www.usfca.edu">旧金山大学</a>
+                </div>
+            </div>
+            <div class="content">
+                <h1>可视化算法</h1>
+
+                <p>
+                理解复杂数据结构的最好方法是看到它们的实际作用。我们已经为各种数据结构和算法开发了交互式动画。
+                我们的可视化工具是使用 HTML5 canvas 元素用 javascript 编写的，
+                并且几乎可以在任何现代浏览器中运行 -- 包括 iPhone 和 iPad 等 iOS 设备，甚至是 Kindle 中的 web 浏览器！
+                （Kindle 中的帧速率足够低，因此可视化效果并不十分有用，但基于树的可视化效果 -- BSTs 和 AVL 树 -- 似乎足够好）
+                </p>
+
+                <br />
+                检查 <a href="AlgorithmsCN.html">算法</a> 菜单所有最新的 javascript 实现的。
+
+                <h1>如何使用可视化</h1>
+
+                <p>
+                尽管有一些高级使用的子类，但是这些可视化是相当自我解释的。看一下二叉搜索树的典型可视化：
+                </p>
+
+                <br />
+
+                <img class="bst" src="Screenshot.png" alt="BST Screenshot" />
+                <br />
+
+                <h2>算法专用控件</h2>
+
+                <p>
+                屏幕顶部（上述屏幕截图中的红色框）是特定于算法的控件 -- 这些控件将根据你要可视化的算法而改变。
+                在此示例中，你可以在 BST 中插入，删除或查找元素，方法是在适当的字段中输入文本，然后按回车键或单击相关按钮。
+                单击打印按钮可以打印树。发出命令后，可视化将开始，并且可以由屏幕底部的常规动画控件进行控制。
+                </p>
+
+                <h2>常规动画控件</h2>
+
+                <ul>
+                    <li>跳过如果你在动画的中间，则此按钮将完全撤消当前命令。如果你不在动画中间，则此按钮将撤消上一个命令</li>
+                    <li>后退仅当你暂停了当前动画（使用播放/暂停按钮）时，此按钮才处于活动状态。在当前动画中退后一步。
+                    如果你当前没有动画，请退回到上一个命令。你可以使用此按钮（有足够的按键）来备份所有已完成操作的全部历史记录</li>
+                    <li>播放/暂停在播放模式（算法可以免费运行直到完成）之间切换和暂停模式（你需要按"前进"或"后退"按钮以推进动画）</li>
+                    <li>前进仅当你暂停了当前动画（使用"播放/暂停"按钮）并且当前动画尚未完成时，此按钮才处于活动状态。在当前动画中前进一个步骤。</li>
+                    <li>向前跳过仅当当前动画尚未完成时，此按钮才处于活动状态。跳到当前动画的末尾</li>
+                    <li>动画速度（滑块）更改动画的速度。此滑块的值保存在 cookie 中，因此，如果你具有首选速度，则只需设置一次即可</li>
+                    <li>w, h, Chnage 画布大小更改显示区域的宽度/高度。当更改立即生效时，动画将不会在此新字段中居中，直到你重新加载页面。
+                    这将清除当前动画，但是 width 和 height 值也保存在 cookie 中，因此你只需要更改一次此字段，
+                    然后如果你使用的是智能手机或台式机，并且屏幕负载很大，一切都应该正常工作。</li>
+                    <li>移动控件在网页顶部或底部的常规控件之间切换</li>
+
+                    <br />
+                    <p>
+                    请注意，通过向后移动动画会很容易使自己感到困惑 -- 你可能会将动画的下一步与上一步混淆，并误解了算法的工作原理。
+                    你可能希望只在第一次研究特定算法时才向前走。
+                    </p>
+                </ul>
+
+                <h1>Java/Swing 版本</h1>
+
+                <p>
+                这项工作基于我们使用 Swing 在 Java 中创建的可视化效果 -- 尽管不再维护该代码，但该代码仍在<a href="https://www.cs.usfca.edu/~galles/visualization/java/visualization.html">此处</a>可用。
+                我们尚未将一些算法移植到新系统中，因此较旧的版本可能仍然有用。
+                </p>
+
+                <h1>Flash 版本</h1>
+
+                <p>
+                我们还开发了可视化的 <a href="https://www.cs.usfca.edu/~galles/visualization/flash.html">flash</a> 版本，其中包含用 javascript 开发的算法的子集。
+                flash 版本不如主要的 javascript 版本受支持，但是我们将为那些可能比 javascript 更好地使用 flash 框架的人提供 flash 版本。
+                但是，javascript 版本是首选版本，并且最快会得到更新和错误修复。
+                </p>
+
+                <h1>自己写</h1>
+
+                <p>
+                <a href="sourceCN.html">用于创建自己的可视化的教程现已在线！</a>所有源代码也都在那里。
+                如果你想创建自己的可视化文件，但在使工作正常进行方面遇到困难，请告诉我。
+                一切都在 FreeBSD 下获得许可，你可以随心所欲使用它。如果你使用的是代码，请告诉我 -- 我很好奇它的用途。
+                </p>
+            </div>
+            <div class="footer">Copyright 2011 <a href="http://www.cs.usfca.edu/galles">David Galles </a></div>
+        </div>
+    </body>
+</html>

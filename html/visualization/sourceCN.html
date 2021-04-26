@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<link rel="stylesheet" href="visualPages.css" />
+<title>数据结构可视化</title>
+<link rel="shortcut icon" href="favicon.ico" />
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7XF2LE3X13"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-7XF2LE3X13');
+</script>
+</head>
+<body>
+<div id="topAnchor"></div>
+<div class="container">
+<div class="header"><h1>数据结构可视化（ <a href="source.html">English Version</a> ）</h1></div>
+<div class="menu">
+<ul>
+<li><a href="aboutCN.html">关于</a></li>
+<li><a href="AlgorithmsCN.html">算法</a></li>
+<li><a href="faqCN.html">常问问题</a></li>
+<li><a href="bugfeatureCN.html">已知错误 /<br /> &nbsp; &nbsp; 功能请求</a></li>
+<li><a href="sourceCN.html">创建自己的 /<br /> &nbsp; &nbsp; 源代码</a></li>
+<li><a href="contactCN.html">联系</a></li>
+</ul>
+
+<br /><br />
+<div class="about">
+<a href="http://www.cs.usfca.edu/galles"> David Galles </a><br />
+<a href="http://www.cs.usfca.edu">计算机科学系</a><br />
+<a href="http://www.usfca.edu">旧金山大学</a>
+</div>
+
+</div>
+
+<div class="content">
+
+<h1>源代码</h1>
+
+<p>
+你可以在此处下载可视化的 HTML5/Javascript 版本的完整源代码（压缩和未压缩）：
+</p>
+
+<ul>
+<li><a href="https://www.cs.usfca.edu/~galles/visualization/visualization1.5.tar.gz">visualization1.5.tar.gz</a>, <a href="https://www.cs.usfca.edu/~galles/visualization/visualization1.5.tar">visualization.1.5.tar</a></li>
+<li><a href="https://www.cs.usfca.edu/~galles/visualization/visualization1.4.tar.gz">visualization1.4.tar.gz</a>, <a href="https://www.cs.usfca.edu/~galles/visualization/visualization1.4.tar">visualization.1.4.tar</a></li>
+<li><a href="https://www.cs.usfca.edu/~galles/visualization/visualization1.3.tar.gz">visualization1.3.tar.gz</a>, <a href="https://www.cs.usfca.edu/~galles/visualization/visualization1.3.tar">visualization.1.3.tar</a></li>
+<li><a href="https://www.cs.usfca.edu/~galles/visualization/visualization1.2.tar.gz">visualization1.2.tar.gz</a>, <a href="https://www.cs.usfca.edu/~galles/visualization/visualization1.2.tar">visualization.1.2.tar</a></li>
+<li><a href="https://www.cs.usfca.edu/~galles/visualization/visualization1.1.tar.gz">visualization1.1.tar.gz</a>, <a href="https://www.cs.usfca.edu/~galles/visualization/visualization1.1.tar">visualization.1.1.tar</a></li>
+</ul>
+
+<p>
+一些注意事项/警告：
+</p>
+
+<ol>
+<li>不要试图看代码来理解算法。
+我做了一两件棘手的事情，以使可视化效果发挥作用，而这些效果却使算法本身难以理解。
+你偏爱的教科书，甚至是 wikipedia，对于适当的源代码都是更好的选择。</li>
+<li>像所有软件项目一样，这是一件活生生的事 -- 它以 Java 项目开始，然后用 ActionScript3（即 Flash）重写，然后移植到 Javascript。
+这也是我学习 flash 和 javascript 的机会，因此当我找到最佳的做事方法时，一半的软件已经编写完毕。
+我已经做了一些回头工作以清理东西，但是仍然有很多丑陋之处。下次，我所有的代码都会很漂亮 :) 。</li>
+</ol>
+
+
+<h1>可视化创建教程</h1>
+
+<p>
+要创建新的可视化效果，你需要创建一个 javascript 文件和 HTML 文件。
+HTML 文件应仅从模板复制，仅更改一项或两项（例如 javascript 文件的名称）。
+HTML 模板的示例及其更改方法在本教程的结尾。
+在 javascript 文件中，你将创建一个函数（实际上是一个对象，但是函数是 javascript 中的对象）：
+</p>
+
+<ol>
+<li>创建任何适当的控件来控制你的可视化（插入元素，删除元素等）</li>
+<li>为实现可视化的这些控件创建回调。通过向动画管理器发送字符串数组来实现可视化效果 -- 然后动画管理器将实现动画，并为你处理所有动画控件</li>
+<li>监听来自动画管理器的撤消事件。当检测到撤消事件时，回退上一个操作</li>
+</ol>
+
+
+<h2>使用算法功能</h2>
+
+<p>
+即使使用库的其余部分，创建 javascript 函数也仍然很复杂。
+如果你的函数"子类化" Algorithm 函数（位于 <a href="AlgorithmLibrary/Algorithm.js">AlgorithmLibrary/Algorithm.js</a>（有点像"类"），则许多丑陋的细节可以自动实现。
+考虑一下 tar 文件中包含的框架 "MyAlgorithm" 函数：
+</p>
+
+<ul>
+<li><a href="AlgorithmLibrary/MyAlgorithm.js">AlgorithmLibrary/MyAlgorithm.js</a></li>
+</ul>
+
+<p>
+依次查看文件的各个部分：
+<br />
+版权：代码是在 FreeBSD 许可下发布的。
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+// Copyright 2011 David Galles, University of San Francisco. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification, are
+// permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice, this list of
+// conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice, this list
+// of conditions and the following disclaimer in the documentation and/or other materials
+// provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY David Galles ``AS IS'' AND ANY EXPRESS OR IMPLIED
+// WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+// FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL David Galles OR
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+// ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+// ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// The views and conclusions contained in the software and documentation are those of the
+// authors and should not be interpreted as representing official policies, either expressed
+// or implied, of the University of San Francisco
+</pre>
+</div>
+
+<p>
+接下来，算法定义。我们正在 javascript 中进行某种"伪造"继承。
+我们定义函数，将函数的原型设置为超类的原型，将构造函数重置为我们自己的构造函数，然后缓存超类的原型，以模拟 Java 风格的 "super" 调用。
+请注意，为了使继承在协同构造函数上正常工作，除了调用 init 函数外，我们在主构造函数中没有做任何事情
+（那样我们可以让 init 函数调用超类的 init 函数。是的，这有点 hack！）。
+</p>
+
+<div class="code" style="overflow: auto" style="overflow: auto">
+<pre>
+function MyAlgorithm(am, w, h)
+{
+    this.init(am, w, h);
+}
+
+MyAlgorithm.prototype = new Algorithm();
+MyAlgorithm.prototype.constructor = MyAlgorithm;
+MyAlgorithm.superclass = Algorithm.prototype;
+</pre>
+</div>
+
+<p>
+接下来，我们有我们的构造函数。通常，我们需要在我们的构造函数中执行以下操作：
+</p>
+
+<ul>
+<li>调用超类的构造函数。请注意语法，这有点奇怪，但是我们将 javascript 强制为传统的面向对象范例，因此它会对我们有些抱怨。</li>
+<li>添加必要的控件</li>
+<li>初始化我们的"内存管理器"。在大多数情况下，我们将使用一个非常简单的内存管理器 -- 旧的 Pascal 风格的"永不免费"内存管理器。
+将空闲列表从 0 开始，然后在每次需要新的内存时将其递增。</li>
+<li>初始化我们将要使用的任何数据结构</li>
+</ul>
+
+<div class="code" style="overflow: auto">
+<pre>
+MyAlgorithm.prototype.init = function(am, w, h)
+{
+    // Call the unit function of our "superclass", which adds a couple of
+    // listeners, and sets up the undo stack
+    MyAlgorithm.superclass.init.call(this, am, w, h);
+
+    this.addControls();
+
+    // Useful for memory management
+    this.nextIndex = 0;
+
+    // TODO:  Add any code necessary to set up your own algorithm.  Initialize data
+    // structures, etc.
+}
+</pre>
+</div>
+
+<p>
+接下来，我们具有添加控件的功能。有几个帮助程序功能可添加控件。
+有关这些帮助程序功能的更多信息，请参见 <a href="AlgorithmLibrary/Algorithm.js">Algorithm.js</a> 文件。
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+MyAlgorithm.prototype.addControls = function()
+{
+    this.controls = [];
+
+    // Add any necessary controls for your algorithm.
+    //   There are libraries that help with text entry, buttons, check boxes, radio groups
+    //
+    // To add a button myButton:
+    //     this.myButton = addControlToAlgorithmBar("Button", "MyButtonText");
+    //     this.myButton.onclick = this.myCallback.bind(this);
+    //     this.controls.push(this.myButton);
+    //   where myCallback is a method on this function that implements the callback
+    //
+    // To add a text field myField:
+    //    this.myField = addControlToAlgorithmBar("Text", "");
+    //    this.myField.onkeydown = this.returnSubmit(this.myField,
+    //                                               this.anotherCallback.bind(this), // callback to make when return is pressed
+    //                                               maxFieldLen,                     // integer, max number of characters allowed in field
+    //                                               mode);                           // only digits, only letters, digits & letters, multi digits, multi letters, multi digits & letters
+    //    this.controls.push(this.myField);
+    //
+    // To add a textbox:
+    //      this.myCheckbox = addCheckboxToAlgorithmBar("Checkbox Label");
+    //      this.myCheckbox.onclick = this.checkboxCallback.bind(this);
+    //      this.controls.push(myCheckbox);
+    //
+    // To add a radio button group:
+    //    this.radioButtonList = addRadioButtonGroupToAlgorithmBar(["radio button label 1",
+    //                                                              "radio button label 2",
+    //                                                              "radio button label 3"],
+    //                                                             "MyButtonGroupName");
+    //    this.radioButtonList[0].onclick = this.firstRadioButtonCallback.bind(this);
+    //    this.controls.push(this.radioButtonList[0]);
+    //    this.radioButtonList[1].onclick = this.secondRadioButtonCallback.bind(this);
+    //    this.controls.push(this.radioButtonList[1]);
+    //    this.radioButtonList[2].onclick = this.thirdRadioButtonCallback.bind(this);
+    //    this.controls.push(this.radioButtonList[2]);
+    //
+    // Note that we are adding the controls to the controls array so that they can be enabled / disabled
+    // by the animation manager (see enableUI / disableUI below)
+}
+</pre>
+</div>
+
+<p>
+我们将需要"替代"重置方法。每当动画管理器想要撤消操作时：
+</p>
+
+<ul>
+<li>调用此重置方法，该方法将对象的状态完全重置为执行任何操作之前的状态。</li>
+<li>重播直到最后一个操作的所有操作（尽管会丢弃动画信息）</li>
+<li>我们最终处于与上一次操作完成之前相同的状态</li>
+</ul>
+
+<div class="code" style="overflow: auto">
+<pre>
+MyAlgorithm.prototype.reset = function()
+{
+    // Reset all of your data structures to *exactly* the state they have immediately after the init
+    // function is called.  This method is called whenever an "undo" is performed.  Your data
+    // structures are completely cleaned, and then all of the actions *up to but not including* the
+    // last action are then redone.  If you implement all of your actions through the "implementAction"
+    // method below, then all of this work is done for you in the Animation "superclass"
+
+    // Reset the (very simple) memory manager
+    this.nextIndex = 0;
+}
+</pre>
+</div>
+
+<p>
+回调，做实际工作
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+//////////////////////////////////////////////
+// Callbacks:
+//////////////////////////////////////////////
+//
+//   All of your callbacks should *not* do any work directly, but instead should go through the
+//   implement action command.  That way, undoes are handled by ths system "behind the scenes"
+//
+//   A typical example:
+
+MyAlgorithm.prototype.insertCallback = function(event)
+{
+    // Get value to insert from textfield (created in addControls above)
+    var insertedValue = this.insertField.value;
+
+    // If you want numbers to all have leading zeroes, you can add them like this:
+    insertedValue = this.normalizeNumber(insertedValue, 4);
+
+    // Only do insertion if the text field is not empty ...
+    if (insertedValue != "")
+    {
+        // Clear text field after operation
+        this.insertField.value = "";
+        // Do the actual work.  The function implementAction is defined in the algorithm superclass
+        this.implementAction(this.insertElement.bind(this), insertedValue);
+    }
+}
+//  Note that implementAction takes as parameters a function and an argument, and then calls that
+//  function using that argument (while also storing the function/argument pair for future undoes)
+
+//////////////////////////////////////////////
+// Doing actual work
+//////////////////////////////////////////////
+//   The functions that are called by implementAction (like insertElement in the comments above) need to:
+//
+//      1. Create an array of strings that represent commands to give to the animation manager
+//      2. Return this array of commands
+//
+//    We strongly recommend that you use the this.cmd function, which is a handy utility function that
+//    appends commands onto the instance variable this.commands
+//
+//    A simple example:
+
+MyAlgorithm.simpleAction(input)
+{
+    this.commands = [];  // Empty out our commands variable, so it isn't corrupted by previous actions
+
+    // Get a new memory ID for the circle that we are going to create
+    var circleID = nextIndex++;
+    var circleX = 50;
+    var circleY = 50;
+
+    // Create a circle
+    this.cmd("CreateCircle", circleID, "Label", circleX, circleY);
+    circleX = 100;
+    // Move the circle
+    this.cmd("Move", circleID, circleX, circleY);
+    // First Animation step done
+    this.cmd("Step");
+    circleX = 50;
+    circleY = 100;
+    // Move the circle again
+    this.cmd("Move", circleID, circleX, circleY);
+    // Next Animation step done
+    this.cmd("Step");
+    // Return the commands that were generated by the "cmd" calls:
+    return this.commands;
+}
+</pre>
+</div>
+
+<p>
+启用，禁用 UI
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+// Called by our superclass when we get an animation started event -- need to wait for the
+// event to finish before we start doing anything
+MyAlgorithm.prototype.disableUI = function(event)
+{
+    for (var i = 0; i < this.controls.length; ++i)
+    {
+        this.controls[i].disabled = true;
+    }
+}
+
+// Called by our superclass when we get an animation completed event -- we can
+/// now interact again.
+MyAlgorithm.prototype.enableUI = function(event)
+{
+    for (var i = 0; i < this.controls.length; ++i)
+    {
+        this.controls[i].disabled = false;
+    }
+}
+</pre>
+</div>
+
+<p>
+启动一切的脚本
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+////////////////////////////////////////////////////////////
+// Script to start up your function, called from the webpage:
+////////////////////////////////////////////////////////////
+
+var currentAlg;
+
+function init()
+{
+    var animMgr = initCanvas();
+    currentAlg = new MyAlgorithm(animMgr, canvas.width, canvas.height);
+}
+</pre>
+</div>
+
+<h2>动画指令</h2>
+
+<p>
+我们提供给动画管理器的命令是一个字符串列表（数组）。
+每个字符串均以命令名称开头（不区分大小写），后跟参数列表，并用标记 <;> 分隔。
+（几乎）每个命令的第一个参数是你要创建或访问的对象的 ID。
+因此，将元素 37 移动到位置 (100, 120) 的字符串将是：
+</p>
+
+<ul>
+<li> "Move&lt;;&gt;37&lt;;&gt;100&lt;;&gt;120" </li>
+</ul>
+
+<p>
+命令可以分为两组：创建动画对象的命令和操作先前创建的对象的命令。
+</p>
+
+<h3>对象创建和删除命令</h3>
+
+<p>
+对象创建命令将代表要创建的对象索引的整数作为第一个参数。
+该整数不能与系统中当前处于活动状态的另一个对象相同（尽管一旦删除了对象，你就可以重用数字）。
+像所有命令一样，创建命令具有一些必需参数和一些可选参数。
+</p>
+
+<ul>
+<li> CreateCircle: objectID, label, [initial_x, initial_y] </li>
+<ul>
+<li> objectID: 表示此对象 ID 的非负整数。必须不同于当前活动的任何 ID。应尽可能小，以获得更好的性能。</li>
+<li> label: 出现在圆圈中间的标签。它可能包含行尾（\n）字符，这使你可以在圆中放置多行标签。标签以圆圈为中心。</li>
+<li> initial_x: （可选，默认为 0）圆的初始x位置</li>
+<li> initial_y: （可选，默认为 0）圆的初始u位置</li>
+</ul>
+<li> CreateRectangle: objectID, label, width, height, [initial_x, initial_y, xJustify, yJustify, backgroundColor, foregroundColor]</li>
+<ul>
+<li> objectID: 表示此对象 ID 的非负整数。必须不同于当前活动的任何 ID。应尽可能小，以获得更好的性能。</li>
+<li> label: 出现在矩形中间的标签。它可能包含行尾（\n）字符，这使你可以在矩形中放置多行标签。标签以矩形居中。</li>
+<li> width: 矩形的宽度，以像素为单位</li>
+<li> height: 矩形的高度，以像素为单位</li>
+<li> initial_x: （可选，默认为0）矩形的初始x位置</li>
+<li> initial_y: （可选，默认为0）矩形的初始u位置</li>
+<li> xJustify: （可选，默认为"center"）。"center"，"left"，"right"之一 -- 如果矩形位于位置 (x, y)，则 x 代表矩形的左侧，中心还是右侧</li>
+<li> yJustify: （可选，默认为"center"）。"center"，"top"，"bottom"之一 -- 如果矩形位于位置 (x, y)，则 y 代表矩形的顶部，中心还是底部</li>
+<li> backgroundColor: 矩形背景的初始颜色，使用 HTML 颜色的字符串表示形式（"#FF0000"代表红色，"#00FF00"代表绿色，依此类推）。默认为"#FFFFFF"白色。</li>
+<li> foregroundColor: 矩形前框的初始颜色，使用 HTML 颜色的字符串表示形式（"#FF0000"代表红色，"#00FF00"代表绿色，依此类推）。默认为"#000000"黑色。</li>
+</ul>
+
+<li> CreateHighlightCircle: objectID, color, [initial_x, initial_y, radius]</li>
+<p>
+光圆非常类似于标准圆，除了它没有标签并且没有背景色之外，因此它不会像圆一样遮盖其他对象。
+</p>
+<ul>
+<li> objectID: 表示此对象 ID 的非负整数。必须不同于当前活动的任何 ID。应尽可能小，以获得更好的性能。</li>
+<li> color: 圆的初始颜色，使用 HTML 颜色（"#FF0000"代表红色，"#00FF00"代表绿色，依此类推）</li>
+<li> initial_x: （可选，默认为 0）圆的初始 x 位置</li>
+<li> initial_y: （可选，默认为 0）圆的初始 u 位置</li>
+<li> radius: （可选，默认为 20）圆的半径。</li>
+</ul>
+
+<li> CreateLabel: objectID, label, [initial_x, initial_x, centered] </li>
+<ul>
+<li> objectID: 表示此对象 ID 的非负整数。必须不同于当前活动的任何 ID。应尽可能小，以获得更好的性能。</li>
+<li> label: 出现在矩形中间的标签。它可能包含行尾（\n）字符，这使你可以在矩形中放置多行标签。标签以矩形居中。</li>
+<li> initial_x: （可选，默认为 0）标签的初始 x 位置</li>
+<li> initial_y: （可选，默认为 0）标签的初始 y 位置</li>
+<li> centered: （可选，默认为 true）true 或 1（如果标签应该居中），false 或 0（如果标签不应该居中）。</li>
+</ul>
+
+<li> CreateLinkedList: objectID, label, width, height, [initial_x, initial_y, linkPercent, verticalOrientation, linkPosEnd, numLabels]</li>
+<ul>
+<li> objectID: 表示此对象 ID 的非负整数。必须不同于当前活动的任何 ID。应尽可能小，以获得更好的性能。</li>
+<li> label: 此链接链表元素中的标签（如果有多个，则为第一个标签）</li>
+<li> width: 链表元素的宽度，以像素为单位</li>
+<li> height: 链表元素的高度，以像素为单位</li>
+<li> initial_x: （可选，默认为 0）链接链表元素的初始 x 位置</li>
+<li> initial_y: （可选，默认为 0）链接链表元素的初始 y 位置</li>
+<li> linkPercent: （可选，默认为 0.25）传出指针占用的链表元素的百分比。</li>
+<li> verticalOrientation: （可选，默认为 true）链表元素应该是垂直（true）还是水平（false）</li>
+<li> linkPosEnd: （可选，默认为 false）。指针应出现在链接链表元素的底部或左侧（true），还是出现在链接链表元素的顶部或右侧（false）</li>
+<li> numLabels: （可选，默认为 1）。链表元素可以容纳的标签数。有关具有多个标签的链接链表元素的示例，请参见图可视化的邻接链表实现。</li>
+</ul>
+
+<li> CreateBTreeNode: objectID, widthPerLabel, height, numLabels, initial_x, initial_y, backgroundColor, foregroundColor</li>
+<p>
+为 B 树创建的某种特殊用途的动画对象。包含任意数量标签的单个矩形，标签之间没有分隔线。
+可以在每个标签之间，最左侧标签的左侧和最右侧标签的右侧附加边缘。有关示例，请参见 B 树和 B+ 树可视化。
+</p>
+<ul>
+<li> objectID: 表示此对象 ID 的非负整数。必须不同于当前活动的任何 ID。应尽可能小，以获得更好的性能。</li>
+<li> widthPerLabel: B 树节点的宽度是标签数 * 每个标签的宽度。值以像素为单位。</li>
+<li> height: B 树节点的高度，以像素为单位</li>
+<li> numLabels: B 树节点中的标签数。</li>
+<li> initial_x: B 树节点的初始 x 位置</li>
+<li> initial_y: B 树节点的初始 y 位置</li>
+<li> backgroundColor: 矩形背景的初始颜色，使用 HTML 颜色（"#FF0000"代表红色，"#00FF00"代表绿色，依此类推）</li>
+<li> foregroundColor: 矩形前景的初始颜色，使用 HTML 颜色（"#FF0000"代表红色，"#00FF00"代表绿色，依此类推）</li>
+</ul>
+
+<li> Delete: objectID </li>
+<ul>
+<li> objectID: 要删除的对象的 ID。入射到该对象的所有边缘将被删除。
+（如果撤消删除操作，则将还原所有此类边缘）。删除动画元素后，即可自由使用其 ID。
+请注意，不必要建议过于复杂的 ID 管理（实际上是内存管理，因为 ID 只是活动动画对象的"内存数组"中的索引），因为它会导致一些细微的错误。</li>
+</ul>
+</ul>
+
+<p>
+请注意，使用已经在使用的 objectID 创建对象将引发异常！删除当前未使用的 ID 也会引发异常！
+</p>
+
+<h3>对象操纵命令</h3>
+
+
+<ul>
+<li> Move: objectID, toX, toY</li>
+<p>
+在下一步中将对象从当前位置平稳移动到新位置
+</p>
+<ul>
+<li> objectID: 要移动的对象的 ID。该对象必须存在，否则将引发异常</li>
+<li> toX: 要移至的新 X 位置</li>
+<li> toY: 要移至的新 Y 位置</li>
+</ul>
+
+<li> SetPosition: objectID, toX, toY</li>
+<p>
+在下一步开始时将对象立即移动到新位置
+</p>
+<ul>
+<li> objectID: 要移动的对象的 ID。该对象必须存在，否则将引发异常</li>
+<li> toX: 要移至的新 X 位置</li>
+<li> toY: 要移至的新 Y 位置</li>
+</ul>
+
+<li> SetForegroundColor: objectID, color</li>
+<p>
+设置对象的前景色（轮廓色和标签色）。请注意，如果一个对象具有多个标签，这将设置<em>所有</em>标签的颜色。
+</p>
+<ul>
+<li> objectID: 要修改的对象的 ID。该对象必须存在，否则将引发异常</li>
+<li> color: 新的前景色（代表 HTML 颜色的字符串，例如"#ff0000"）</li>
+</ul>
+
+<li> SetBackgroundColor: objectID, color</li>
+<p>
+设置当前对象的背景颜色。请注意，如果一个对象具有多个标签，这将设置一个对象的颜色。
+</p>
+<ul>
+<li> objectID: 要修改的对象的 ID。该对象必须存在，否则将引发异常</li>
+<li> color: 新的背景色</li>
+</ul>
+
+<li> SetHighlight: objectID, highlightVal</li>
+<p>
+根据 highlightVal 的值，将对象标记为突出显示或未突出显示。高亮显示的对象将以红色闪烁。
+可以突出显示任何对象（突出显示标签时，标签很难读）。
+请注意，如果在动画结束后将对象突出显示，则直到重新开始动画时，该对象才会产生脉冲。
+可以使用 highlight edge 命令突出显示边缘。
+</p>
+<ul>
+<li> objectID: 要修改的对象的 ID。该对象必须存在，否则将引发异常</li>
+<li> highlightVal: 1 或 true，打开突出显示。0 或 false，关闭突出显示。</li>
+</ul>
+
+<li> SetText: objectID, newText, [textIndex]</li>
+<p>
+设置与对象关联的标签的值（例如，带有圆圈的打印）。
+</p>
+<ul>
+<li> objectID: 要修改的对象的 ID。该对象必须存在，否则将引发异常</li>
+<li> newText: 标签的新文本</li>
+<li> textIndex: （可选，默认为 0）要更改的文本标签的索引。仅用于具有多个文本标签的对象（B 树节点，链接列表节点）。
+如果对象不支持多个标签，则将其忽略。</li>
+</ul>
+
+<li> SetAlpha: objectID, alphaVal</li>
+<p>
+设置对象的 Alpha（透明度）。
+</p>
+<ul>
+<li> objectID: 要修改的对象的 ID。该对象必须存在，否则将引发异常</li>
+<li> alphaVal: 0 是完全透明的，1 是完全不透明的。适用于所有对象。</li>
+</ul>
+
+<li> SetHeight: objectID, newHeight</li>
+<p>
+设置对象的高度（以像素为单位）。
+</p>
+<ul>
+<li> objectID: 要修改的对象的 ID。该对象必须存在，否则将引发异常</li>
+<li> newHeight: 对象的新高度。</li>
+</ul>
+
+<li> SetWidth: objectID, newWidth</li>
+<p>
+设置对象的宽度（以像素为单位）。
+</p>
+<ul>
+<li> objectID: 要修改的对象的 ID。该对象必须存在，否则将引发异常</li>
+<li> newWidth: 对象的新宽度。</li>
+</ul>
+
+<li> SetTextColor: objectID, newColor, [textIndex]</li>
+<p>
+设置与对象关联的标签的颜色
+</p>
+<ul>
+<li> objectID: 要修改的对象的 ID。该对象必须存在，否则将引发异常</li>
+<li> newColor: 要设置的新颜色。与所有颜色一样，应为 HTML 颜色字符串</li>
+<li> textIndex: （可选，默认为 0）如果对象包含多个标签（例如链表节点或 B 树节点），请确定要更改颜色的标签。
+如果对象只有一个标签，则忽略此参数。</li>
+</ul>
+
+<li> SetNull: objectID, nullValue</li>
+<p>
+当前仅用于链接列表元素。是否应该在链接列表对象中为指针留出的区域绘制为空指针（在字段中使用斜线）？
+这可能应该是自动化的（当且仅当节点未连接任何东西时才绘制斜线），但是现在必须手动完成。
+</p>
+<ul>
+<li> objectID: 要修改的对象的 ID。该对象必须存在，否则将引发异常</li>
+<li> nullValue: 0 或 false 是不绘制斜线，1 或 true 是绘制斜线。</li>
+</ul>
+
+<li> SetNumElements: objectID, numElements</li>
+<p>
+当前仅用于 B 树节点。更改此 B 树节点中存储的标签数。应该至少应扩展到"链表"节点。
+</p>
+<ul>
+<li> objectID: 要修改的对象的 ID。该对象必须存在，否则将引发异常</li>
+<li> numElements: 整数，此 B 树节点应具有的元素数</li>
+</ul>
+
+<li> AlignRight: object1ID, object2ID</li>
+<p>
+对齐对象 1，使其紧靠对象 2 的右侧。非常方便地排列标签（你不一定知道标签的宽度），但是可以与任何两个对象一起使用。
+</p>
+<ul>
+<li> object1ID: 要移动的对象的 ID。对象必须存在，否则将引发异常</li>
+<li> object2ID: 用于对齐 object1 的对象的 ID。该对象必须存在，否则将引发异常</li>
+</ul>
+
+<li> AlignLeft: object1ID, object2ID</li>
+<p>
+对齐对象 1，使其紧靠对象 2 的左侧。非常方便地排列标签（你不一定知道标签的宽度），但是可以与任何两个对象一起使用。
+</p>
+<ul>
+<li> object1ID: 要移动的对象的 ID。对象必须存在，否则将引发异常</li>
+<li> object2ID: 用于对齐 object1 的对象的 ID。该对象必须存在，否则将引发异常</li>
+</ul>
+
+<li> AlignTop: object1ID, object2ID</li>
+<p>
+对齐对象 1，使其紧靠对象 2 的上侧。非常方便地排列标签（你不一定知道标签的宽度），但是可以与任何两个对象一起使用。
+</p>
+<ul>
+<li> object1ID: 要移动的对象的 ID。对象必须存在，否则将引发异常</li>
+<li> object2ID: 用于对齐 object1 的对象的 ID。该对象必须存在，否则将引发异常</li>
+</ul>
+
+<li> AlignBottom: object1ID, object2ID</li>
+<p>
+对齐对象 1，使其紧靠对象 2 的下侧。非常方便地排列标签（你不一定知道标签的宽度），但是可以与任何两个对象一起使用。
+</p>
+<ul>
+<li> object1ID: 要移动的对象的 ID。对象必须存在，否则将引发异常</li>
+<li> object2ID: 用于对齐 object1 的对象的 ID。该对象必须存在，否则将引发异常</li>
+</ul>
+
+</ul>
+
+<h3>边缘处理命令</h3>
+
+<p>
+通过给与边缘关联的两个对象来操纵边缘。尽管边缘可以以图形方式定向或不定向，但引擎盖下的所有边缘都有一个方向，即在创建边缘时给定的方向。
+从任何对象到任何其他对象都只能有一条边（尽管从 object1 到 object2 可能有一条边，但是 object2 到 object1 则有另一条边）。
+边总是由两个 ID 引用 -- "from" 对象的 objectID，后跟 "to" 对象的 objectID。任何对象都可以连接到任何其他对象。
+</p>
+
+<ul>
+<li> Connect: fromID, toID, [linkColor, curve, directed, label, anchorPosition] </li>
+<ul>
+<li> fromID: 位于新边缘尾部对象的 ID</li>
+<li> toID: 位于新边缘开头对象的 ID</li>
+<li> linkColor: （可选，默认为"#000000"）边缘的颜色</li>
+<li> curve: （可选，默认为 0.0）边缘的"弯曲度"。0.0 是完全笔直的，正值向右圆弧，负值向左圆弧。</li>
+<li> directed: （可选，默认为 true）。如果边缘是有向的，则为 true；如果边缘是无向的，则为 false。</li>
+<li> label: （可选，默认为""）。沿边缘出现的标签（用于图形中的边缘成本等）</li>
+<li> anchorPosition: （可选，默认为 0），如果边缘在 "from" 节点上有多个附件位置（当前仅用于 B 树节点，但很可能会扩展为双向链接链表）使用的附件位置。
+对于没有多个附件位置的动画对象，将被忽略</li>
+</ul>
+
+<li> Disconnect: fromID, toID</li>
+<p>
+删除两个元素之间的边。如果没有边缘，则此操作为无操作。
+</p>
+<ul>
+<li> fromID: 边缘"从"方向的 ID</li>
+<li> toID: 边缘"到"方向的 ID</li>
+</ul>
+<p>
+请注意，即使"无向"边也具有"从"和"到"，这取决于使用 Connect 命令创建边的方式。
+</p>
+
+<li> SetEdgeHighlight: fromID, toID, highlightVal</li>
+<p>
+根据 highlightVal 的值，将边缘标记为突出显示或未突出显示。突出显示的边缘将发出红色脉冲。
+</p>
+<ul>
+<li> fromID: 边缘"从"方向的 ID</li>
+<li> toID: 边缘"到"方向的 ID</li>
+<li> highlightVal: 0 或 false 关闭高亮。1 或 true 打开高亮。</li>
+</ul>
+
+<li> SetEdgeColor: fromID, toID, newColor</li>
+<p>
+设置与对象关联的边的颜色
+</p>
+<ul>
+<li> fromID: 位于新边缘尾部对象的 ID</li>
+<li> toID: 位于新边缘开头对象的 ID</li>
+<li> newColor: 要设置的新颜色。与所有颜色一样，应为 HTML 颜色字符串</li>
+</ul>
+
+<li> SetEdgeAlpha: fromID, toID, alphaVal</li>
+<p>
+设置与对象关联的边的 Alpha（透明度）。
+</p>
+<ul>
+<li> fromID: 位于新边缘尾部对象的 ID</li>
+<li> toID: 位于新边缘开头对象的 ID</li>
+<li> alphaVal: 0 是完全透明的，1 是完全不透明的。适用于所有对象。</li>
+</ul>
+
+</ul>
+
+<h3>特殊命令</h3>
+
+<ul>
+<li>Step: &lt;无参数&gt;</li>
+<p>
+使用 step 命令可以阻止所有事情立即发生。
+大多数动画的工作方式是创建一组对象，然后执行一个步骤，然后执行一些动作，然后执行一个步骤，然后执行更多的动作，然后执行一个步骤，依此类推。
+相邻步骤之间出现的所有命令将同时发生。每个步骤都表示动画处于单步模式时将在哪里暂停。
+</p>
+<li>SetLayer: objectID, newLayer </li>
+<p>
+设置对象的图层。所有对象默认为第 0 层，"显示"层始终默认为 0。
+你可以更改不同对象的层，然后更改当前显示的层的列表，以动态显示或隐藏对象。
+（这通常对于允许用户显示或隐藏信息，或在表示的不同版本之间交替很有用）。
+仅当对象的层是列出的要显示的层之一时，该对象才会出现。一条边只会在要连接的每个对象上显示。
+虽然在动画运行时无法执行命令，但是可以在动画运行时更改全局可见层集
+</p>
+<ul>
+<li>objectID: 要修改的对象的 ID。该对象必须存在，否则将引发异常</li>
+<li>layer: 此对象的新层。每个对象只能位于一层中（尽管可以在任何给定时间显示层的任何组合）</li>
+</ul>
+</ul>
+
+<h2>简单堆栈示例</h2>
+
+<p>
+到目前为止一切都有意义吗？是时候给出一个简单，完整的示例了。可以在以下位置找到简单的堆栈可视化：
+</p>
+
+<ul>
+<li><a href="AlgorithmLibrary/SimpleStack.js">AlgorithmLibrary/SimpleStack.js</a></li>
+<li><a href="SimpleStack.html">观看实际的可视化</a></li>
+</ul>
+
+<p>
+完整地查看完整的 SimpleStack.js 文件：
+<br />
+在 FreeBSD 许可下发布的所有代码
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+// Copyright 2011 David Galles, University of San Francisco. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification, are
+// permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice, this list of
+// conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice, this list
+// of conditions and the following disclaimer in the documentation and/or other materials
+// provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY David Galles ``AS IS'' AND ANY EXPRESS OR IMPLIED
+// WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+// FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL David Galles OR
+// CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+// ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+// NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+// ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// The views and conclusions contained in the software and documentation are those of the
+// authors and should not be interpreted as representing official policies, either expressed
+// or implied, of the University of San Francisco
+</div>
+</pre>
+
+<p>
+接下来是初始设置。任何可视化 javascript 的前几行将如下所示，将 SimpleStack 替换为你编写的任何函数
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+function SimpleStack(am, w, h)
+{
+    this.init(am, w, h);
+}
+
+SimpleStack.prototype = new Algorithm();
+SimpleStack.prototype.constructor = SimpleStack;
+SimpleStack.superclass = Algorithm.prototype;
+</div>
+</pre>
+
+<p>
+文件中的下一项是一些常量。我们将它们放置在函数的名称空间中，以避免符号冲突：
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+SimpleStack.ELEMENT_WIDTH = 30;
+SimpleStack.ELEMENT_HEIGHT = 30;
+SimpleStack.INSERT_X = 30;
+SimpleStack.INSERT_Y = 30;
+SimpleStack.STARTING_X = 30;
+SimpleStack.STARTING_Y = 100;
+SimpleStack.FOREGROUND_COLOR = "#000055";
+SimpleStack.BACKGROUND_COLOR = "#AAAAFF";
+</div>
+</pre>
+
+<p>
+接下来是构造函数。从技术上讲，构造函数是第一个：
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+function SimpleStack( ...
+</div>
+</pre>
+
+<p>
+但是，构造函数的所有工作都是在 init 函数中完成的 -- 子类的构造函数可以有效地调用其超类的构造函数。
+对于这种情况下的 init 函数，我们只需要做很少的工作。
+在这个简单的示例中，我们不会在加载时向画布添加任何元素。
+我们需要做的就是建立自己的内部数据结构。
+我们跟踪两个数组 -- 一个存储实际堆栈的数组（stackValues）和一个存储堆栈元素的 objectIDs 的数组（stackID）
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+SimpleStack.prototype.init = function(am, w, h)
+{
+    // Call the unit function of our "superclass", which adds a couple of
+    // listeners, and sets up the undo stack
+    SimpleStack.superclass.init.call(this, am, w, h);
+
+    this.addControls();
+
+    // Useful for memory management
+    this.nextIndex = 0;
+
+    this.stackid=[];
+    this.stackValues = [];
+
+    this.stackTop = 0;
+}
+</div>
+</pre>
+
+<p>
+接下来是添加算法控件和回调的方法。棘手的一点是，我们无法执行以下操作：
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+this.popButton.onclick = this.popCallback
+</div>
+</pre>
+
+<p>
+添加我们的回调。为什么不呢？
+这会传入适当的函数，但不会传入适当的顶点 -- 本质上，它将传递一个指向函数代码的指针，而无需保存 "this" 指针。
+因此，在存储函数之前，需要将 "this" 指针绑定到函数。
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+SimpleStack.prototype.addControls = function()
+{
+    this.controls = [];
+
+    this.pushField = addControlToAlgorithmBar("Text", "");
+    this.pushField.onkeydown = this.returnSubmit(this.pushField,
+                                               this.pushCallback.bind(this), // callback to make when return is pressed
+                                               4,                            // integer, max number of characters allowed in field
+                                               "OnlyDitLet");                // only digits, only letters, digits & letters, multi digits, multi letters, multi digits & letters
+    this.controls.push(this.pushField);
+
+    this.pushButton = addControlToAlgorithmBar("Button", "Push");
+    this.pushButton.onclick = this.pushCallback.bind(this);
+    this.controls.push(this.pushButton);
+
+    this.popButton = addControlToAlgorithmBar("Button", "Pop");
+    this.popButton.onclick = this.popCallback.bind(this);
+    this.controls.push(this.popButton);
+}
+</div>
+</pre>
+
+<p>
+附带说明一下，这是位于 CustomEvents.js 中的 bind 函数的代码
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+Function.prototype.bind = function() {
+    var _function = this;
+
+    var args = Array.prototype.slice.call(arguments);
+    var scope = args.shift()
+    return function() {
+        for (var i = 0; i &lt; arguments.length; ++i)
+        {
+            args.push(arguments[i]);
+        }
+        return _function.apply(scope, args);
+    }
+}
+</div>
+</pre>
+
+<p>
+继续... 接下来是重置功能。 所有可视化都必须实现 reset 方法。
+reset 方法需要将我们所有的变量恢复到调用 init 之后的状态。
+在我们的案例中，我们只有两个重要的变量。
+我们可以重新创建数组 stackID 和 stackValues，但是在这种情况下这不是必需的，因为我们不在乎那些数组中的当前值 -- 一旦栈顶为 0，我们将在读取任何值之前将其覆盖。
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+SimpleStack.prototype.reset = function()
+{
+    // Reset the (very simple) memory manager.
+    //  NOTE:  If we had added a number of objects to the scene *before* any user
+    //         input, then we would want to set this to the appropriate value based
+    //         on objects added to the scene before the first user input
+    this.nextIndex = 0;
+
+    // Reset our data structure.  (Simple in this case)
+    this.stackTop = 0;
+}
+</div>
+</pre>
+
+<p>
+接下来，是回调。请注意，我们不会直接对回调执行任何操作，而是使用 ImplementAction 方法，
+该方法接受一个绑定函数（使用 bind 方法）和一个参数，然后他们使用该参数调用该函数。
+ImplementAction 还保存了已执行的所有动作的列表，因此撤消将很好地工作。
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+SimpleStack.prototype.pushCallback = function()
+{
+    var pushedValue = this.pushField.value;
+
+    if (pushedValue != "")
+    {
+        this.pushField.value = "";
+        this.implementAction(this.push.bind(this), pushedValue);
+    }
+}
+
+SimpleStack.prototype.popCallback = function()
+{
+    this.implementAction(this.pop.bind(this), "");
+}
+</div>
+</pre>
+
+<p>
+最后，我们了解可视化的实际内容 -- 完成工作的代码。请注意，我们主要只是执行操作，使用对 cmd 的一些调用来记录我们在做什么。
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+SimpleStack.prototype.push = function(pushedValue)
+{
+    this.commands = [];
+
+    this.stackID[this.stackTop] = this.nextIndex++;
+
+    this.cmd("CreateRectangle", this.stackID[this.stackTop],
+                                pushedValue,
+                                SimpleStack.ELEMENT_WIDTH,
+                                SimpleStack.ELEMENT_HEIGHT,
+                                SimpleStack.INSERT_X,
+                                SimpleStack.INSERT_Y);
+    this.cmd("SetForegroundColor", this.stackID[this.stackTop], SimpleStack.FOREGROUND_COLOR);
+    this.cmd("SetBackgroundColor", this.stackID[this.stackTop], SimpleStack.BACKGROUND_COLOR);
+    this.cmd("Step");
+    var nextXPos = SimpleStack.STARTING_X + this.stackTop * SimpleStack.ELEMENT_WIDTH;
+    var nextYPos = SimpleStack.STARTING_Y;
+    this.cmd("Move", this.stackID[this.stackTop], nextXPos, nextYPos);
+    this.cmd("Step"); // Not necessary, but not harmful either
+    this.stackTop++;
+    return this.commands;
+}
+
+SimpleStack.prototype.pop = function(unused)
+{
+    this.commands = [];
+
+    if (this.stackTop > 0)
+    {
+        this.stackTop--;
+
+        this.cmd("Move", this.stackID[this.stackTop], SimpleStack.INSERT_X, SimpleStack.INSERT_Y);
+        this.cmd("Step");
+        this.cmd("Delete", this.stackID[this.stackTop]);
+        this.cmd("Step");
+
+        // OPTIONAL:  We can do a little better with memory leaks in our own memory manager by
+        //            reclaiming this memory.  It is recommended that you *NOT* do this unless
+        //            you really know what you are doing (memory management leads to tricky bugs!)
+        //            *and* you really need to (very long running visualizations, not common)
+        //            Because this is a stack, we can reclaim memory easily.  Most of the time, this
+        //            is not the case, and can be dangerous.
+        // nextIndex = this.stackID[this.stackTop];
+    }
+    return this.commands;
+}
+</div>
+</pre>
+
+<p>
+快完成了！一些在动画运行时启用/禁用我们的算法控件的代码...
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+// Called by our superclass when we get an animation started event -- need to wait for the
+// event to finish before we start doing anything
+SimpleStack.prototype.disableUI = function(event)
+{
+    for (var i = 0; i &lt; this.controls.length; ++i)
+    {
+        this.controls[i].disabled = true;
+    }
+}
+
+// Called by our superclass when we get an animation completed event -- we can
+/// now interact again.
+SimpleStack.prototype.enableUI = function(event)
+{
+    for (var i = 0; i &lt; this.controls.length; ++i)
+    {
+        this.controls[i].disabled = false;
+    }
+}
+</div>
+</pre>
+
+<p>
+最后，开始一切准备工作。你可以将以下内容剪切并粘贴到你自己的代码中，用你的函数替换 SimpleStack：
+</p>
+
+<div class="code" style="overflow: auto">
+<pre>
+////////////////////////////////////////////////////////////
+// Script to start up your function, called from the webpage:
+////////////////////////////////////////////////////////////
+
+var currentAlg;
+
+function init()
+{
+    var animMgr = initCanvas();
+    currentAlg = new SimpleStack(animMgr, canvas.width, canvas.height);
+}
+</div>
+</pre>
+
+<p>
+我们完成了。我们只需要创建适当的 HTML 文件以将其嵌入其中，我们就可以开始了。
+</p>
+
+
+<h2>HTML 模板</h2>
+
+<p>
+此可视化系统是 HTML 和 javascript 的组合 -- 你需要一个网页来嵌入 javascript，并且该网页需要以下各项：
+</p>
+
+<ul>
+<li>head 中有一堆 &lt;script&gt; 标记，用于加载所有必要脚本。这些文件需要根据相关性以正确的顺序包括在内。
+（如果 javascript 具有标准的 #include-like 机制，可以避免在 HTML 中手动插入所有这些文件，那将是很好的选择。
+虽然有一些解决方法 -- 使用 javascript 调用动态插入 &lt;script&gt; 标签 -- 并非全部浏览器似乎可以使用这些有点怪异的方法。
+以适当的顺序强行包含所有文件，可以在任何地方使用）</li>
+<li>ID 为 "algoControlSection" 的空表，将放置算法特定的控件</li>
+<li>canvas 元素，将在其中显示动画</li>
+<li>id 为 "GeneralAnimationControls" 的空表，将在其中放置常规动画控件</li>
+<li>body 标记中的 onload = "init();" 命令启动所有操作</li>
+</ul>
+
+<p>
+最简单的选择就是使用以下模板，更改特定于你的应用程序的值
+</p>
+
+<ul>
+<li><a href="template.html">template.html</a></li>
+</ul>
+
+<p>
+模板文件复制如下，你需要进行的更改以 <font color="red">红色</font> 突出显示
+</p>
+
+<div class="code" style="overflow: auto" style="overflow: auto">
+<pre>
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+    &lt;head&gt;
+        &lt;meta charset="utf-8" /&gt;
+        &lt;meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /&gt;
+
+        &lt;title&gt;<font color="red">Place your title here</font>&lt;/title&gt;
+
+        &lt;!-- css sheet for how the page is laid out --&gt;
+        &lt;link rel="stylesheet" href="visualizationPageStyle.css" /&gt;
+
+        &lt;!-- jqueury stuff.  Only used for the animation speed slider. --&gt;
+        &lt;link rel="stylesheet" href="ThirdParty/jquery-ui-1.8.11.custom.css" /&gt;
+
+        &lt;script src="ThirdParty/jquery-1.5.2.min.js"&gt;&lt;/script&gt;
+        &lt;script src="ThirdParty/jquery-ui-1.8.11.custom.min.js"&gt;&lt;/script&gt;
+
+        &lt;!-- Javascript for the actual visualization code --&gt;
+        &lt;script src="AnimationLibrary/CustomEvents.js"&gt;&lt;/script&gt;
+        &lt;script src="AnimationLibrary/UndoFunctions.js"&gt;&lt;/script&gt;
+        &lt;script src="AnimationLibrary/AnimatedObject.js"&gt;&lt;/script&gt;
+        &lt;script src="AnimationLibrary/AnimatedLabel.js"&gt;&lt;/script&gt;
+        &lt;script src="AnimationLibrary/AnimatedCircle.js"&gt;&lt;/script&gt;
+        &lt;script src="AnimationLibrary/AnimatedRectangle.js"&gt;&lt;/script&gt;
+        &lt;script src="AnimationLibrary/AnimatedLinkedList.js"&gt;&lt;/script&gt;
+        &lt;script src="AnimationLibrary/AnimatedHighlightCircle.js"&gt;&lt;/script&gt;
+        &lt;script src="AnimationLibrary/AnimatedLine.js"&gt;&lt;/script&gt;
+        &lt;script src="AnimationLibrary/ObjectManager.js"&gt;&lt;/script&gt;
+        &lt;script src="AnimationLibrary/AnimationMain.js"&gt;&lt;/script&gt;
+        &lt;script src="AlgorithmLibrary/Algorithm.js"&gt;&lt;/script&gt;
+        &lt;script src="<font color="red">Place path to your javascript file here</font>"&gt;&lt;/script&gt;
+    &lt;/head&gt;
+
+    &lt;body onload="init();" class="VisualizationMainPage"&gt;
+        &lt;div id="container"&gt;
+            &lt;div id="header"&gt;
+                &lt;h1&gt;<font color="red">Place your Header here</font>&lt;/h1&gt;
+            &lt;/div&gt;
+            &lt;div id="mainContent"&gt;
+                &lt;div id="algoControlSection"&gt;
+                    &lt;!-- Table for buttons to control specific animation (insert/find/etc) --&gt;
+                    &lt;!-- (filled in by javascript code specific to the animation) --&gt;
+                    &lt;table id="AlgorithmSpecificControls"&gt;&lt;/table&gt;
+                &lt;/div&gt;
+                &lt;!-- Drawing canvas where all animation is done.  Note:  can be resized in code --&gt;
+                &lt;canvas id="canvas" width="1000" height="500"&gt;&lt;/canvas&gt;
+                &lt;div id="generalAnimationControlSection"&gt;
+                    &lt;!-- Table for buttons to control general animation (play/pause/undo/etc) --&gt;
+                    &lt;!-- (filled in by javascript code, specifically AnimationMain.js)  --&gt;
+                    &lt;table id="GeneralAnimationControls"&gt;&lt;/table&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;&lt;!-- mainContent --&gt;
+            &lt;div id="footer"&gt;
+                &lt;p&gt;&lt;a href="Algorithms.html"&gt;Algorithm Visualizations&lt;/a&gt;&lt;/p&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;&lt;!-- container --&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</pre>
+</div>
+
+<h2>怪癖和先进技术</h2>
+
+<h3>对象显示顺序</h3>
+
+<p>
+如果两个对象重叠，则哪个放在顶部？动画系统使用以下规则来确定绘制顺序：
+</p>
+
+<ol>
+<li>所有未突出显示的项目都在所有突出显示的项目之前绘制（因此突出显示的项目将出现在未突出显示的项目的顶部）</li>
+<li>具有相同突出显示状态的所有项目均按其标识符顺序绘制（因此，具有较大标识符的对象将在具有较小标识符的对象之前绘制）</li>
+</ol>
+
+<p>
+这个系统不是很复杂，但是足够好用。你只需要确保如果希望对象 A 出现在对象 B 的前面，则对象 A 必须具有更高的对象 ID。如果需要更复杂的系统，则可以在将来的版本中对其进行修改。
+</p>
+
+
+<h3>调试</h3>
+
+<p>
+用 javascript 开发？ <a href="http://getfirebug.com/">Firebug</a> 是一个非常好的（也是非常免费的）javascript 调试器。
+但是，断点可能存在问题。该系统中的动画严重依赖 javascript setTimeout 命令。
+如果设置了超时，然后 Firebug 达到断点，则超时将丢失。
+因此，在错误的代码段（AnimationMain.js 中的几乎所有内容）上达到断点，将导致动画停止。
+我已经管理了 setTimeout 调用的使用，以便在使用动画库的代码中达到断点（与库本身中的代码相反）不会导致此问题。
+</p>
+
+<br />
+<p>
+<a href="#topAnchor">回到顶部</a>
+</p>
+
+</div>
+<div class="footer">Copyright 2011 <a href="http://www.cs.usfca.edu/galles">David Galles </a></div>
+</div>
+</body>
+</html>

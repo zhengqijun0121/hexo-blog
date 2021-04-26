@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+
+<link rel="stylesheet" href="../css/book.css" />
+<script src="../js/book.js"></script>
+
+<style>
+pre.reveal { }  /* mark pre that should get this setup */
+span.phide { display:none; }
+span.pshow { color:darkgreen;} /* display:inline; */
+</style>
+
+</head>
+<body>
+
+<nav><div id="toc"></div></nav>
+
+<main>
+
+<h1>File Read Write</h1>
+
+<p>We'll talk about file reading first which is much more common; see <a href="#write">file writing</a> at the end.</p>
+
+<p>Python makes it easy to read the data out of a text file. There are a few different forms, depending on if you want to process the file line by line or all at once.</p>
+
+<p>Here is the canonical code to open a file, read all the lines out of it, handling one line at a time.</p>
+
+<pre>
+with open(filename) as f:
+    for line in f:
+        # look at line in loop
+        print(line, end='')
+</pre>
+
+<p>The open part can be written a <code>open(filename, 'r')</code> where the <code>'r'</code> means reading. Reading mode is the default, so the 'r' can be omitted. The mode <code>'w'</code> is for file writing, shown below.</p>
+
+<p>When reading lines out of a file, each line has a <code>'\n'</code> char at its end. The lines from the file are fundamentally <b>text</b>. Use functions like int() to convert text to int:</p>
+
+<pre>
+>>><b> line = '123\n'  </b> # line is textual
+>>><b> int(line)       </b> # Compute int value
+123
+</pre>
+
+<p>Use s.split() with a parameter to separate one line into parts, like this:</p>
+
+<pre>
+>>><b> line = 'apple,12,donut\n'</b>
+>>><b> line.split(',') </b> # note ',' param
+['apple', '12', 'donut\n']
+</pre>
+
+<p>Use s.strip() to remove whitespace</p>
+
+<pre>
+>>><b> line = '   this   \n'</b>
+>>><b> line.strip()</b>
+'this'
+</pre>
+
+<p>The advantage of processing one line at a time is that it does not require memory to hold every byte of the file at once. It's not uncommon to have data in a text file with millions of lines. With this form, only one line at a time must be stored in RAM, not all of the lines at once.</p>
+
+<h2>Unicode Encoding</h2>
+
+<p>The form <code>open(filename, encoding='utf-8')</code> specifies the encoding to use to interpret the file to unicode chars, in this case <code>'utf-8'</code> which is a very common encoding.</p>
+
+<p>If reading a file crashes with a "UnicodeDecodeError", probably the reading code needs to specify an encoding as above. Try the <code>'utf-8'</code> encoding first since it is so common.</p>
+
+<h2>Other Ways To Read A File</h2>
+
+<p>Here are two other ways to read a file.</p>
+
+<p>Suppose we have this 2 line file:</p>
+
+<pre>
+Roses are red
+Violets are blue
+</pre>
+
+<h2>1. text = f.read()</h2>
+
+<p>(Can try these in >>> Interpreter, running Python3 in a folder that has a text file in it we can read, such as the "wordcount" folder.)</p>
+
+<p>You can read the whole file into a single string &mdash; less code and bother than going line by line. This is handy if the code does not need to consider each line separately.</p>
+
+<pre>
+with open(filename) as f:
+    text = f.read()
+    # Look at text str
+</pre>
+
+<p>In this example text is the string <code>'Roses are red\nViolets are blue\n'</code> &mdash; the whole contents of the file in one string.</p>
+
+<p>This approach will require memory in Python to store all of the bytes of the file. As an estimate, look at the byte size of the file in your operating system file viewer.</p>
+
+<p>The <code>read()</code> function is designed to be called <b>once</b>, returning the contents of the file. Do not call <code>read()</code> a second time; store the string returned in a variable and use that to access the file contents.</p>
+
+<h2>File split()</h2>
+
+<p>Recall the string function <code>s.split()</code> with no parameters, splits on whitespace, returning a list of "words". Whitespace includes <code>'\n'</code>, and the no-param form of split merges multiple whitespace chars together.</p>
+
+<p>Therefore, split() works beautifully with the whole text of a file, treating <code>'\n'</code> like just another whitespace char. Here it is applied to our text file:</p>
+
+<pre>
+>>><b> text = 'Roses are red\nViolets are blue\n'</b>
+>>><b> text.split()</b>
+['Roses', 'are', 'red', 'Violets', 'are', 'blue']
+</pre>
+
+<p>So <code>text = f.read()</code> may be followed by a <code>words = text.split()</code>. Now we have a
+list of words easily, without bothering with lines or looping.</p>
+
+<p>Demo - read the whole book into 1 string, split into words. Python looks powerful here.</p>
+
+<pre>
+>>><b> with open('alice-book.txt') as f:</b>
+...   text = f.read()
+>>><b> len(text)  </b> # num chars,  len > 149,000 !
+149103
+>>><b> </b>
+>>><b> text[:200] </b> # first 200 chars
+"Alice's Adventures in Wonderland\n\n                ALICE'S ADVENTURES IN WONDERLAND\n\n                          Lewis Carroll\n\n               THE MILLENNIUM FULCRUM EDITION 3.0\n\n\n\n\n                     "
+>>><b></b>
+>>><b> words = text.split() </b> # split into words
+>>><b> len(words) </b> # num words
+26963
+>>><b> words[:20] </b> # Look at first 20
+["Alice's", 'Adventures', 'in', 'Wonderland', "ALICE'S", 'ADVENTURES', 'IN', 'WONDERLAND', 'Lewis', 'Carroll', 'THE', 'MILLENNIUM', 'FULCRUM', 'EDITION', '3.0', 'CHAPTER', 'I', 'Down', 'the', 'Rabbit-Hole']
+</pre>
+
+<p>Conclusion: 3 lines of Python, can just have a list of all the words, ready for a loop or whatever.</p>
+
+<h2>2. lines = f.readlines()</h2>
+
+<p>Another technique, the call <code>f.readlines()</code> returns a list of strings, one for each line. Sometimes it's more useful to have all the lines at once, vs. getting them one at a time in the standard loop. Can access the lines in any order, or use a slice to get rid of some, and so on.</p>
+
+<pre>
+with open(filename) as f:
+    lines = f.readlines()
+    # lines[0], lines[1], .. are the file lines
+</pre>
+
+<p>For our example, the lines list is <code>['Roses are red\n', 'Violets are blue\n']</code>. The lines in the list are analogous to the lines you would get with for-line-in-f, but in the form of a list.</p>
+
+<h2>What The "With" Does</h2>
+
+<p>The <code>with open(...)</code> form automates closing the file reference when the code is done using it. Closing the file frees up some memory resources associated with keeping the file open. In older versions of Python (and in other languages) the programmer is supposed to call <code>f.close()</code> manually when done with the file. Here is an example of file reading written the old way:</p>
+
+<pre>
+# old way to do it, call f.close() manually
+f = open(filename)
+...use f...
+f.close()
+</pre>
+
+<p>Nowadays, using the <code>with open(..)</code> structure, code can concentrate on reading and the closing is automatic and we don't have to think about it.</p>
+
+<a name="write"></a>
+<h2>File Writing</h2>
+
+<p>File "writing" is the opposite direction of reading &mdash; writing taking data in Python variables and writes it out to a text file. The CS106A projects typically do lots of reading, which is the most common form.</p>
+
+<p>Here is example code writing to file (and you can try this in the interpreter). First specify <code>'w'</code> in the open(). Then call <code>print('Hello', file=f)</code> to print data out to the file as a series of text lines. This is the same <code>print()</code> function that writes to standard output, here used to write to the opened file.</p>
+
+<pre>
+>>><b> with open('out.txt', 'w') as f:</b>
+...   print('Hello there', file=f)
+...   print('Opposite or reading!', file=f)
+</pre>
+
+<p>After running those lines, a file <code>out.txt</code> now exists in the directory from which we ran Python:</p>
+
+<pre>
+$ <b>cat out.txt</b>
+Hello there
+Opposite or reading!
+</pre>
+
+<h2>Output Redirection</h2>
+
+<p>Instead of coding the file-writing in your program, there is an alternative in the terminal that handles simple cases easily. This feature works in Mac, Windows, and Linux.</p>
+
+<p>Many programs print output to standard output. When you run the program in the terminal, you see this printed out right there, like this run of a <code>super.py</code> program that prints out that today is just great.</p>
+
+<pre>
+$ <b>python3 super.py</b>
+Everything today is just super
+Most excellent
+$
+</pre>
+
+<p>What if we wanted to write that text to an <code>out.txt</code> file? An easy way is to use the <code class="b">></code> output redirection feature in the terminal, like this:</p>
+
+<pre>
+$ <b>python3 super.py > out.txt</b>  # send output to out.txt
+$
+$ <b>cat out.txt</b>   # see what's in the file
+Everything today is just super
+Most excellent
+$
+</pre>
+
+<p>The <code class="b">></code> takes the output of a program and stores it in the file instead of showing it on screen. So a simple form of program prints its output to standard output. This way the user can see the output right away in the terminal. If the user wants to save the output in a file, they can run the program again with <code class="b">></code> to save the output to a file. This is why file-writing code is so rare compared to file-reading code &mdash; output redirection handles simple writing cases without any python code required.</p>
+
+<!-- njp - talk about file output redirection as an alternative -->
+
+&nbsp;
+
+<p>&nbsp;</p>
+
+<p class="small">Copyright 2020 Nick Parlante</p>
+
+</main>
+
+</body>
+</html>

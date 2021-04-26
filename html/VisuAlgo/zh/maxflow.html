@@ -1,0 +1,2650 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="最大流是和网络中的流有关的一系列问题中的一个。在最大流问题中，我们意在寻找一个带权有向图G中从一个特定的源点s到一个特定的汇点t的最大流。寻找最大流有几种不同的算法，包括Ford Fulkerson算法，Edmonds Karp算法和Dinic算法（也有其他的算法，但还没有被包含在这个可视化里）。最大流的对偶问题是最小割，也就是在寻找图G的最大s-t流的同时找到图G的最小s-t割，也就是为了使图G中s和t不连通所需要移除的权重最小的边的集合。">
+<meta name="keywords" content="Maximum Flow Network Flow MF Minimum Cut Ford Fulkerson Edmonds Karp Dinic Dinitz">
+ 
+<meta name="csrf-token" content="3vGP7gQSBk7YN9CNegUCqF6mu3QfSwjPmmcVUQ1S">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<meta property="og:image" content="../img/png/maxflow.png">
+<title>VisuAlgo - 网络流（最大流，最小割）</title>
+<link rel="icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="114x114" href="../img/favicon.png">
+<link rel="stylesheet" type="text/css" href="../fonts/silkscreen/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="../css/common.css">
+<link rel="stylesheet" href="../css/viz-1.0.1.css">
+<link rel="stylesheet" href="../css/visual.css">
+<link rel="stylesheet" href="../css/drawgraph.css">
+<style>
+      #e-lecture {
+        top: 45px;
+        right: 130px;
+        width: 400px;
+        display: block;
+        background: none;
+        /*overflow: normal;*/
+        white-space: normal;
+        text-align: right;
+        color: black; font-weight: bold; font-size: 20px;
+      }
+      .electure-prev, .electure-next { /* force update, copied from viz.css */
+        position: absolute;
+        /* bottom: -12px; */
+        top: -20px;
+        /*bottom: '';*/
+        padding: 3px 8px;
+        background: #999;
+        color: white;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .electure-prev {
+        left: -10px;
+        /* right: 30px; */
+      }
+      .electure-next {
+        right: -10px;
+        color: white;
+      }
+    </style>
+<style>
+.execAction { padding: 5px 8px; }
+.err { padding: 5px 0px; }
+#actions-extras input {
+  width: 35px;
+  padding: 5px 8px 7px;
+}
+
+#rookattack-input input {
+  width: 20px;
+  padding: 8px;
+  margin-right: 2px;
+  float:left;
+}
+#rookattack-input p { padding: 5px 8px; float : left;}
+#rookattack-go p { 
+  padding: 8px 8px 7px; 
+  float:right;
+}
+#rookattack-board {
+  height: 470px;
+  width: 600px;
+  margin-left: -300px;
+  margin-top: -235px;
+}
+
+#baseball-input input {
+  width: 25px;
+  padding: 8px;
+  margin-right: 2px;
+  float:left;
+}
+#baseball-input p { padding: 5px 8px; float : left;}
+#baseball-go p { 
+  padding: 8px 8px 7px; 
+  float:right;
+}
+#baseball-board {
+  height: 470px;
+  width: 600px;
+  margin-left: -300px;
+  margin-top: -235px;
+}
+#baseball-board input {
+  width: 25px;
+  padding: 8px;
+  margin-right: 2px;
+}
+
+#bipartite0, #bipartite1, #bipartite2, #bipartite3 {
+  float: left;
+  padding: 2px;
+}
+
+/*  .modeling-actions {
+    bottom: 200px;
+    left: 200px;
+    float:left;
+  }
+  .modeling-actions p { padding: 5px 10px; cursor: pointer; }
+  .modeling-actions p:hover { background: black; color: white;}
+  .modeling-actions p:first-of-type { padding-top: 10px; }
+  .modeling-actions p:last-of-type { padding-bottom: 10px; }
+  .modeling-actions-hide {
+    bottom: 60px;
+    left: 0px;
+    padding-left: 14px;
+    padding-right: 15px;
+  }
+*/
+
+.modeling { bottom: 119px; }
+.examples { bottom: 92px; }
+.countmaxflow { bottom: 65px; }
+
+#countmaxflow-fordfulkerson, #countmaxflow-edmondskarp, #countmaxflow-dinic { float: left; }
+</style>
+<script>
+      function changeURL() {
+        var URL = window.location.href.split('/');
+        var val = document.getElementById("Language").value;
+        URL[3] = val;
+        window.location.assign(URL.join('/'));
+      }
+    </script>
+</head>
+<body>
+<div id="top-bar">
+<a id="home" href="/">Visu<span class="colour">Algo</span><span style="font-size: 40%">.net</span></a>
+/
+<select id="Language" onchange="changeURL()">
+<option value="zh" selected>zh</option>
+</select>
+/maxflow
+<span id="title">
+<a id='title-maxflow' class='selected-viz'>最大流/最小割</a>
+</span>
+<div id="mode-menu">
+<div id='mode-button' title='exploration'>示例模式 &#9663;</div>
+<div id='other-modes'>
+<a title='e-Lecture'>电子讲座模式</a>
+</div>
+</div>
+</div>
+<div id="dark-overlay"></div>
+<div id="status" class="panel"><p></p></div>
+<div id="status-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide status panel" /></div>
+<div id="codetrace" class="panel">
+<p id="code1" style="padding-top: 10px;"></p>
+<p id="code2"></p>
+<p id="code3"></p>
+<p id="code4"></p>
+<p id="code5"></p>
+<p id="code6"></p>
+<p id="code7" style="padding-bottom: 10px;"></p>
+</div>
+<div id="codetrace-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide codetrace panel" /></div>
+<div id="left-bar"></div>
+<div id="right-bar"></div>
+<div id="media-controls">
+<div id='speed-control'>减速<div id='speed-input'></div>加速</div>
+<span id="go-to-beginning" class="media-control-button" title="go to beginning" onclick=goToBeginning()><img src="../img/goToBeginning.png" alt="go to beginning"></span>
+<span id="previous" class="media-control-button" title="step backward" onclick=stepBackward()><img src="../img/prevFrame.png" alt="previous frame"></span>
+<span id="pause" class="media-control-button" title="pause" onclick=pause()><img src="../img/pause.png" alt="pause"></span>
+<span id="play" class="media-control-button" title="play" onclick=play()><img src="../img/play.png" alt="play"></span>
+<span id="next" class="media-control-button" title="step forward" onclick=stepForward()><img src="../img/nextFrame.png" alt="next frame"></span>
+<span id="go-to-end" class="media-control-button" title="go to end" onclick=goToEnd()><img src="../img/goToEnd.png" alt="go to end"></span>
+<div id="progress-bar" class="media-control-button"></div>
+</div>
+<div id='viz'></div>
+<div id='current-action' class='panel'></div>
+<div id='e-lecture' class='panel'></div>
+<div id="overlay" hidden></div>
+<div id="dropdown-temp-holder" hidden></div>
+<div id="electure-1" class="electure-dialog" style="bottom:60px;left:50%;margin-left:-250px;width:500px;">
+最大流是和网络中的流有关的一系列问题中的一个。<div>在最大流问题中，我们意在寻找一个带权有向图<b>G</b>中从一个特定的源点<b>s</b>到一个特定的汇点<b>t</b>的最大流。</div><div>寻找最大流有几种不同的算法，包括Ford Fulkerson算法，Edmonds Karp算法和Dinic算法（也有其他的算法，但还没有被包含在这个可视化里）。</div><div>最大流的对偶问题是最小割，也就是在寻找图<b>G</b>的最大<b>s-t</b>流的同时找到图<b>G</b>的最小<b>s-t</b>割，也就是为了使图<b>G</b>中<b>s</b>和<b>t</b>不连通所需要移除的权重最小的边的集合。</div>
+<hr>
+<p><b>Remarks</b>: By default, we show e-Lecture Mode for first time (or non logged-in) visitor.<br>
+Please <a href="../login"><u>login</u></a> if you are a repeated visitor or <a href="../login"><u>register</u></a> for an (optional) free account first.</p>
+<div id='electure-dropdown'>
+<select class="lecture-dropdown" style="width:100%">
+<option value="1">1. Maximum (Max) Flow</option>
+<option value="2">2. Visualization </option>
+<option value="2-1">&nbsp;&nbsp;&nbsp;2-1. Residual Graph</option>
+<option value="3">3. Input</option>
+<option value="4">4. Max Flow Algorithms</option>
+<option value="4-1">&nbsp;&nbsp;&nbsp;4-1. Similar But Not The Same</option>
+<option value="5">5. Implementation</option>
+<option value="99">99. 状态面板</option>
+<option value="99-1">&nbsp;&nbsp;&nbsp;99-1. 代码追踪面板</option>
+<option value="99-2">&nbsp;&nbsp;&nbsp;99-2. 媒体控制</option>
+<option value="99-3">&nbsp;&nbsp;&nbsp;99-3. 返回 ”探索模式“</option>
+</select>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-next' data-nextid="2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2" class="electure-dialog" style="bottom:60px;left:50%;margin-left:-250px;width:500px;">
+<p>This visualization page will show the execution of a chosen Max Flow algorithm running on a flow (residual) graph.</p><br><p>The input for a Max Flow algorithm is a flow graph (a <b>directed</b> graph <b>G</b> = <b>(V, E)</b> where edge weight represent the (unit) capacity of flow that can go through that edge) with two distinguished vertices: The source vertex <b>s</b> and the sink/target/destination vertex <b>t</b>.</p><br><p>To make the visualization of these flow graphs consistent, we enforce a graph drawing rule for this page whereby the source vertex <b>s</b>/sink vertex <b>t</b> is always vertex 0/<b>V</b>-1 and is always drawn on the leftmost/rightmost side of the visualization, respectively.</p><br><p>Another constraint is that the edge capacities are integers between [1..99].</p>
+<hr>
+<p>Pro-tip: Since you are not <a href="../login"><u>logged-in</u></a>, you may be a first time visitor who are not aware of the following keyboard shortcuts to navigate this e-Lecture mode: <b>[PageDown]</b> to advance to the next slide, <b>[PageUp]</b> to go back to the previous slide, <b>[Esc]</b> to toggle between this e-Lecture mode and exploration mode.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="2-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2-1" class="electure-dialog" style="bottom:60px;left:50%;margin-left:-250px;width:500px;">
+<p>At the start of the three Max Flow algorithms discussed in this visualization (Ford Fulkerson&#39;s method, Edmonds Karp&#39;s algorithm, and Dinic&#39;s algorithm), the initial flow graph is converted into residual graph.</p><br><p>The edges in the residual graph store the <i>remaining</i> capacities of those edges that can be used by future flow(s). At the beginning, these remaining capacities equal to the original capacities as specified in the input flow graph.</p><br><p>A Max Flow algorithm will send flows to use some (or all) of these available capacities, iteratively.</p><br><p>Once the remaining capacity of an edge reaches 0, that edge can no longer admit any more flow.</p>
+<hr>
+<p>Another pro-tip: We designed this visualization and this e-Lecture mode to look good on 1366x768 resolution <b>or larger</b> (typical modern laptop resolution in 2017). We recommend using Google Chrome to access VisuAlgo. Go to full screen mode (<b>F11</b>) to enjoy this setup. However, you can use zoom-in (<b>Ctrl +</b>) or zoom-out (<b>Ctrl -</b>) to calibrate this.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3" class="electure-dialog" style="bottom:190px;left:60px;width:500px;">
+<p>There are three different sources for specifying an input graph:</p><ol><li><b>Draw Graph</b>: You can draw <b>any</b> directed weighted graph as the input graph with vertex 0 as the default source vertex (left side of the screen) and vertex <b>V</b>-1 as the default sink vertex (right side of the screen),</li><li><b>Modeling</b>: Several graph problems can be reduced into a max flow problem. In this visualization, we have the modeling examples for the famous Maximum Cardinality Bipartite Matching (MCBM) problem, Rook Attack problem (currently disabled), and Baseball Elimination problem (currently disabled),</li><li><b>Example Graphs</b>: You can select from the list of our selected example flow graphs to get you started.</li></ol>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4" class="electure-dialog" style="bottom:190px;left:60px;width:500px;">
+这里有三种不同的最大流算法的可视化：<div>1. 速度慢，复杂度为O(mf*E)的Ford Fulkerson算法，</div><div>2. 复杂度为O(V*E^2)的Edmonds Karp算法，或者</div><div>3. 复杂度为O(V^2*E)的Dinic算法</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-1" class="electure-dialog" style="bottom:60px;left:50%;margin-left:-250px;width:500px;">
+<p>For the three Max Flow algorithms discussed in this visualization, successive flows are sent from the source vertex <b>s</b> to the sink vertex <b>t</b> via available <b>augmenting paths</b>.</p><br><p>The three Max Flow algorithms in this visualization have different behavior on how they find augmenting paths.</p><br><p>However, all three Max Flow algorithms in this visualization stop when there is no more augmenting path possible and report the max flow value (and the assignment of flow on each edge in the flow graph).</p><br><p>Later we will discuss that this max flow value is also the min cut value of the flow graph.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>You are allowed to use/modify our implementation code for Max Flow Algorithms (Edmonds-Karp/Dinic&#39;s):<br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch8/maxflow.cpp" target="_blank"><u>maxflow.cpp</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch8/maxflow.java" target="_blank"><u>maxflow.java</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch8/maxflow.py" target="_blank"><u>maxflow.py</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch8/maxflow.ml" target="_blank"><u>maxflow.ml</u></a><br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99" class="electure-dialog" style="right:150px;bottom:335px;width:500px;">
+当操作进行时，状态面板将会有每个步骤的描述。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-1" class="electure-dialog" style="right:170px;bottom:275px;width:180px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-2" class="electure-dialog" style="bottom:70px;left:50%;margin-left:-120px;width:260px;">
+使用用户控件控制动画！可用的快捷键有：<div>空格键：绘制／停止／重绘</div><div>左／右箭头：上一步／下一步</div><div>-／+：减缓／增加速度</div><div><br></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-3" class="electure-dialog" style="top:70px;right:60px;width:300px;">
+<p>Return to &#39;Exploration Mode&#39; to start exploring!</p><br><p>Note that if you notice any bug in this visualization or if you want to request for a new visualization feature, do not hesitate to drop an email to the project leader: Dr Steven Halim via his email address: stevenhalim at gmail dot com.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-2">上一个 <u>PgUp</u></div>
+</div>
+<div id="popup" hidden>
+<div id="popup-content"></div>
+<span id="hide-popup" hidden>X <u>关闭</u></span>
+</div>
+<div id="actions" class="panel">
+<p id="draw" onclick="drawGraph()">绘制图表</p>
+<p id="modeling">Modeling</p>
+<p id="examples">图示</p>
+<p id="countmaxflow">计算最大流</p>
+</div>
+<div id="actions-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide actions panel" /></div>
+<div id="actions-extras">
+<div class="modeling action-menu-pullout">
+
+<div id="bipartite" class="execAction new-menu-option coloured-menu-option" onclick=modelingOpen("bipartite")>
+<p>二分图匹配</p>
+<div id="bipartite-input" class="new-menu-option">
+<div id="bipartite0" class="execAction new-menu-option coloured-menu-option" onclick="bipartiteRandom(0)"><p>随机</p></div>
+<div id="bipartite1" class="execAction new-menu-option coloured-menu-option" onclick="bipartiteRandom(1)"><p>左1</p></div>
+<div id="bipartite2" class="execAction new-menu-option coloured-menu-option" onclick="bipartiteRandom(2)"><p>右1</p></div>
+<div id="bipartite3" class="execAction new-menu-option coloured-menu-option" onclick="bipartiteRandom(3)"><p>全部1</p></div>
+</div>
+</div>
+<div id="modeling-err" class="err"></div>
+</div>
+<div class="examples action-menu-pullout">
+<div id="example0" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_24)"><p>CP3 4.24*</p></div>
+<div id="example1" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_26_1)"><p>CP3 4.26.1 (s-lim)</p></div>
+<div id="example2" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_26_2)"><p>CP3 4.26.2 (t-lim)</p></div>
+<div id="example3" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_26_3)"><p>CP3 4.26.3</p></div>
+<div id="example4" class="execAction new-menu-option coloured-menu-option" onclick="example(FORDFULKERSON_KILLER)"><p>Ford Fulkerson Killer</p></div>
+<div id="example5" class="execAction new-menu-option coloured-menu-option" onclick="example(DINIC_SHOWCASE)"><p>Dinic Showcase</p></div>
+</div>
+<div class="countmaxflow action-menu-pullout">
+<div class="new-menu-option">s = <input type="number" id="sourcevertex" title="Enter the source vertex" autocomplete="off" min=0 max=99 value=0>, t = <input type="number" id="sinkvertex" title="Enter the sink vertex" autocomplete="off" min=0 max=0 value=3></div>
+<div id="countmaxflow-go" class="execAction coloured-menu-option" onclick="countmaxflow('GO')" title="Run Maximum Flow"><p>执行</p></div>
+<div id="countmaxflow-algorithm">
+<div id="countmaxflow-fordfulkerson" class="execAction coloured-menu-option" onclick=countmaxflow('fordfulkerson') title="Use Ford Fulkerson algorithm"><p>Ford Fulkerson</p></div>
+<div id="countmaxflow-edmondskarp" class="execAction coloured-menu-option" onclick=countmaxflow('edmondskarp') title="Use Edmonds Karp algorithm"><p>Edmonds Karp</p></div>
+ <div id="countmaxflow-dinic" class="execAction coloured-menu-option" onclick=countmaxflow('dinic') title="Use Dinic algorithm"><p>Dinic</p></div>
+</div>
+<div id="countmaxflow-err" class="err"></div>
+</div>
+</div>
+<div id="drawgraph" class="overlays"></div>
+<div id="rookattack-board" class="overlays"></div>
+<div id="baseball-board" class="overlays"></div>
+<div id="bottom-bar">
+<a id="trigger-about">关于</a>
+</div>
+<div id="about" class="overlays">
+<h4>关于</h4><span class='close-overlay'>&#x2715;</span>
+<div class='content'>
+VisuAlgo在2011年由Steven Halim博士概念化，作为一个工具，帮助他的学生更好地理解数据结构和算法，让他们自己和自己的步伐学习基础。<br>VisuAlgo包含许多高级算法，这些算法在Steven Halim博士的书（“竞争规划”，与他的兄弟Felix Halim博士合作）和其他书中讨论。今天，一些高级算法的可视化/动画只能在VisuAlgo中找到。<br>虽然专门为新加坡国立大学（NUS）学生采取各种数据结构和算法类（例如CS1010，CS1020，CS2010，CS2020，CS3230和CS3230），作为在线学习的倡导者，我们希望世界各地的好奇心发现这些可视化也很有用。<br>VisuAlgo不是从一开始就设计为在小触摸屏（例如智能手机）上工作良好，因为需要满足许多复杂的算法可视化，需要大量的像素和点击并拖动手势进行交互。一个令人尊敬的用户体验的最低屏幕分辨率为1024x768，并且只有着陆页相对适合移动设备。<br>VisuAlgo是一个正在进行的项目，更复杂的可视化仍在开发中。<br>最令人兴奋的发展是自动问题生成器和验证器（在线测验系统），允许学生测试他们的基本数据结构和算法的知识。这些问题是通过一些规则随机生成的，学生的答案会在提交给我们的评分服务器后立即自动分级。这个在线测验系统，当它被更多的世界各地的CS教师采用，应该技术上消除许多大学的典型计算机科学考试手动基本数据结构和算法问题。通过在通过在线测验时设置小（但非零）的重量，CS教练可以（显着地）增加他/她的学生掌握这些基本问题，因为学生具有几乎无限数量的可以立即被验证的训练问题他们参加在线测验。培训模式目前包含12个可视化模块的问题。我们将很快添加剩余的8个可视化模块，以便VisuAlgo中的每个可视化模块都有在线测验组件。<br>另一个积极的发展分支是VisuAlgo的国际化子项目。我们要为VisuAlgo系统中出现的所有英语文本准备一个CS术语的数据库。这是一个很大的任务，需要众包。一旦系统准备就绪，我们将邀请VisuAlgo游客贡献，特别是如果你不是英语母语者。目前，我们还以各种语言写了有关VisuAlgo的公共注释：<br>
+<a href="https://weibo.com/p/230418436e9ee80102v4rk" target='_blank'><u>zh</u></a>, <a href='https://www.facebook.com/notes/steven-halim/httpidvisualgonet-visualisasi-struktur-data-dan-algoritma-dengan-animasi/10153236934439689' target='_blank'><u>id</u></a>, <a href="https://blog.naver.com/visualgo_nus" target='_blank'><u>kr</u></a>, <a href='https://www.facebook.com/groups/163215593699283/permalink/824003417620494/' target='_blank'><u>vn</u></a>, <a href='http://pantip.com/topic/32736343' target='_blank'><u>th</u></a>.</p>
+</div>
+</div>
+
+<script src="../js/jquery-3.3.1.min.js"></script>
+<script>
+      var PHP_DOMAIN = "";
+
+      // surprise colour!
+      // Referenced to in  home.js and viz.js also
+      var colourArray = ["#52bc69", "#d65775"/*"#ed5a7d"*/, "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"]; // green, pink, blue, red, yellow, indigo, orange, lime
+
+      function disableScroll() { $('html').css('overflow', 'hidden'); }
+
+      function enableScroll() { $('html').css('overflow', 'visible'); }
+
+      function replaceAll(find, replace, str) { return str.replace(new RegExp(find, 'g'), replace); }
+
+      function getColours() {
+        var generatedColours = new Array();
+        while (generatedColours.length < 4) {
+          var n = (Math.floor(Math.random() * colourArray.length));
+          if ($.inArray(n, generatedColours) == -1)
+            generatedColours.push(n);
+        }
+        return generatedColours;
+      }
+
+      function isOn(value, position) {
+        return (value>>position) & 1 === 1;
+      }
+
+      function customAlert(msg) {
+        $('#custom-alert p').html(msg);
+        var m = -1 * ($('#custom-alert').outerHeight()/2);
+        $('#custom-alert').css('margin-top', m+'px');
+        $('#dark-overlay').fadeIn(function() {
+          $('#custom-alert').fadeIn(function() {
+            setTimeout(function() {
+              $('#custom-alert').fadeOut(function() {
+                $('#dark-overlay').fadeOut();
+              });
+            }, 1000);
+          });
+        });
+      }
+
+      function showLoadingScreen() {
+        $('#loading-overlay').show();
+        $('#loading-message').show();
+      }
+
+      function hideLoadingScreen() {
+        $('#loading-overlay').hide();
+      }
+
+      function commonAction(retval, msg) {
+        //setTimeout(function() {
+          if (retval) { // mode == "exploration" && // now not only for exploration mode, but check if this opens other problems
+            $('#current-action').show();
+            $('#current-action').html(mode == "exploration" ? msg : ("e-Lecture Example (auto play until done)<br>" + msg));
+            $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+            triggerRightPanels();
+            isPlaying = true;
+          }
+        //}, 500);
+      }
+
+      function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable)
+            return decodeURIComponent(pair[1]);
+        }
+        return "";
+      }
+
+      var generatedColours = getColours();
+      var surpriseColour = colourArray[generatedColours[0]];
+      var colourTheSecond = colourArray[generatedColours[1]];
+      var colourTheThird = colourArray[generatedColours[2]];
+      var colourTheFourth = colourArray[generatedColours[3]];
+
+      $(function() {
+        $('.links').css('background', surpriseColour);
+        $('.right-links').css('background', surpriseColour);
+        $('#login-go').css('background', surpriseColour);
+
+        $('.colour').css("color", surpriseColour); // name
+        $('h4').css("background-color", surpriseColour); // about, contact us etc. button background
+
+        // title
+        $('#title a').click(function() {
+          $('#title a').removeClass('selected-viz');
+          $(this).addClass('selected-viz');
+          // temporary quick fix for Google Chrome Aug 2016 issue...
+          setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 100); // force resize/redraw...
+          setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        });
+
+        // overlays stuffs
+        $('#trigger-about').click(function() {
+          if ($(window).width() > 600) {
+            $('#dark-overlay').fadeIn(function() {
+              $('#about').fadeIn();
+            });
+          }
+          else
+            alert('Sorry, this dialog is too big. Please load it on bigger screen');
+        });
+
+        $('.close-overlay').click(function() {
+          $('.overlays').fadeOut(function() {
+            $('#dark-overlay').fadeOut();
+          });
+        });
+
+        $('#dark-overlay').click(function() {
+          $('.overlays').fadeOut();
+          $('#dark-overlay').fadeOut();
+        });
+      });
+    </script>
+
+<script src="../js/jquery-ui.min.js"></script>
+
+<script src="../js/d3.min.js"></script>
+<script src="../js/viz-1.0.3.js"></script>
+<script src="../js/visualgo_print.js"></script>
+<script src="../js/graph_library.js"></script>
+<script>
+      function runSlide(slide) {
+        if (slide == '1') {
+          $("#e-lecture").html("slide " + slide + " (" + 9 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2') {
+          $("#e-lecture").html("slide " + slide + " (" + 18 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 27 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3') {
+          $("#e-lecture").html("slide " + slide + " (" + 36 + "%)");
+          $("#draw").addClass("menu-highlighted");
+$("#modeling").addClass("menu-highlighted");
+$("#random").addClass("menu-highlighted");
+$("#examples").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4') {
+          $("#e-lecture").html("slide " + slide + " (" + 45 + "%)");
+          $("#countmaxflow").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 54 + "%)");
+          $("#countmaxflow").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5') {
+          $("#e-lecture").html("slide " + slide + " (" + 63 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99') {
+          $("#e-lecture").html("slide " + slide + " (" + 72 + "%)");
+          
+          hideEntireActionsPanel();
+ 
+          showStatusPanel();
+          showCodetracePanel();
+      
+        }
+        if (slide == '99-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 81 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 90 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 100 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+      }
+
+      window.onpopstate = function(event) {
+        var slide = event.state['slide'];
+        openSlide(slide, function() {
+          runSlide(slide);
+        });
+      };
+
+      function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'), sParameterName, i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+          if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+      };
+
+      function pushState(slideValue) {
+        var url = '/zh/maxflow';
+        if (typeof slideValue != 'undefined' && slideValue != null) url += '?slide=' + slideValue;
+        window.history.pushState({slide: slideValue}, "slide " + slideValue, url);
+      }
+
+      function showPopup(callback) {
+        $('#popup').fadeIn(100, callback);
+      }
+
+      function hidePopup(callback) {
+        $('#popup').fadeOut(100, callback);
+      }
+
+      function showOverlay() {
+        $('#overlay').css('opacity', 0.5); 
+        $('#overlay').show();
+      }
+
+      function hideOverlay() {
+        $('#overlay').hide();
+        $("#e-lecture").html("");
+      }
+
+      function makeOverlayTransparent() {
+        $('#overlay').css('opacity', 0);
+      }
+
+      function hideSlide(callback) {
+        isPlaying = true;
+        closeSlide(cur_slide, function() {
+          makeOverlayTransparent();
+          setTimeout(callback, 700); // don't immediately run the animation, wait for 500ms+ first
+        });
+      }
+
+      function showSlide() {
+        isPlaying = false;
+        openSlide(cur_slide);
+        showOverlay();
+      }
+
+      $(function() {
+        var slide = getUrlParameter('slide');
+        
+        $.get('/hasvisited' + '/maxflow', function(data) {
+          var hasVisited = data['hasvisited'] == '1';
+          if (!hasVisited) {
+            var postData = {
+              '_token': '3vGP7gQSBk7YN9CNegUCqF6mu3QfSwjPmmcVUQ1S',
+              'page': '/maxflow'.substring(1),
+            };
+
+            $.post("/visitpage", postData, function(data) {
+              // non critical request...
+            });
+
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+            }
+
+            $("#mode-menu a").trigger("click");
+          }
+          else {
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+              $('#mode-menu a').click();
+            }    
+          }
+        }).fail(function() {
+          if (typeof slide != undefined && slide != null) {
+            cur_slide = slide;
+            $('#mode-menu a').click();
+          }
+        });
+
+        $('.mcq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#mcq-answer-' + questionId).val();
+          var userAnswer = $('input[type=radio][name=mcq-'+questionId+'-choice]:checked').val();
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green"><b>Correct!</b></font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red"><b>Wrong Answer! Try again...</b></font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('.msq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#msq-answer-' + questionId).val();
+
+          var answers = [];
+          $('input[type=checkbox][class=msq-choice]:checked').each(function() {
+            answers.push($(this).attr('id').split('-')[3]);
+          });
+          answers.sort();
+          var userAnswer = answers.join(',');
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green">Correct!</font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red">Wrong Answer! Try again...</font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('select.lecture-dropdown').change(function() {
+          var nextSlide = $(this).val();
+          openSlide(nextSlide, function() {
+            runSlide(nextSlide);
+            pushState(nextSlide);
+          });
+        });
+
+        $('#hide-popup').click(function() {
+          hidePopup();
+        });
+
+        $('#popup').hover(function() {
+          $('#hide-popup').show();
+        }, function() {
+          $('#hide-popup').hide();
+        });
+
+        $('#electure-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2-1');
+          pushState('2-1');
+        });
+        $('#electure-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('1');
+          pushState('1');
+        });
+      
+        $('#electure-2-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+        $('#electure-2-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+        $('#electure-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2-1');
+          pushState('2-1');
+        });
+      
+        $('#electure-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-1');
+          pushState('4-1');
+        });
+        $('#electure-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+      
+        $('#electure-4-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+        $('#electure-4-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+      
+        $('#electure-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+        $('#electure-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-1');
+          pushState('4-1');
+        });
+      
+        $('#electure-99 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+        $('#electure-99 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+      
+        $('#electure-99-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+        $('#electure-99-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+      
+        $('#electure-99-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-3');
+          pushState('99-3');
+        });
+        $('#electure-99-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+      
+        $('#electure-99-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+      
+ 
+
+        // temporary quick fix for Google Chrome Aug 2016 issue..., put at last part so that everything else has been loaded
+        // setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 500);
+        // setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        // I turn it off on 14 June 2018, seems 'ok'?
+      });
+
+
+      function adjustPopupToImageSize() {
+        var width = $('#popup-image').prop('width');
+        var height = $('#popup-image').prop('height');
+        $('#popup').width(width + 20);
+        $('#popup').height(height + 20);
+        if (width == 0 && height == 0) {
+          setTimeout(adjustPopupToImageSize, 200);
+        } else {
+          showPopup();  
+        }
+      }
+
+      function POPUP_IMAGE(url) {
+        $('#popup-content').html('<img id="popup-image" src="' + url + '">');
+        adjustPopupToImageSize();
+      }
+
+      function URL(url) {
+        window.open(url, '_blank');
+      }
+
+      // Implement these functions in each visualisation
+      // This function will be called before entering e-Lecture Mode
+      function ENTER_LECTURE_MODE() {}
+
+      // This function will be called before returning to Explore Mode
+      function ENTER_EXPLORE_MODE() {}
+
+      // Lecture action functions
+      function CUSTOM_ACTION(action, data, mode) {}
+    </script>
+<script type="text/javascript">
+// MaxFlow Widget
+// original author: Jonathan Irvin Gunawan, then maintained by Steven Halim
+
+// Maximum Flow Example Constants
+var noOfExamples = 6;
+var INF = 1000000000;
+
+var MaxFlow = function() {
+  var gw = new GraphWidget();
+
+  var iVL = {};
+  var iEL = {};
+  var amountVertex = 0;
+  var amountEdge = 0;
+  var stateList = [];
+
+  this.getGraphWidget = function() { return gw; }
+
+  fixJSON = function() {
+    amountVertex = 0;
+    amountEdge = 0;
+    for (var key in iVL) ++amountVertex;
+    for (var key in iEL) ++amountEdge;
+
+    for (var key in iEL) iEL[key]["w"] = +iEL[key]["w"]; // make it intege weight
+
+    // for (var key in iEL) {
+    //   iEL[key]["type"] = EDGE_TYPE_UDE;
+    //   iEL[key]["displayWeight"] = true;
+    // }
+    // for (var key in iVL)
+    //   iVL[key]["text"] = key;
+    // for (var key in iEL) {
+    //   iVL[iEL[key]["vertexA"]][iEL[key]["vertexB"]] = +key;
+    //   iVL[iEL[key]["vertexB"]][iEL[key]["vertexA"]] = +key;
+    //   iEL[key]["weight"] = +iEL[key]["weight"];
+    // }
+  }
+
+  takeJSON = function(graph) {
+    if (graph == null) return;
+    graph = JSON.parse(graph);
+    iVL = graph["vl"];
+    iEL = graph["el"];
+    fixJSON();
+  }
+
+  statusChecking = function() {
+    if (amountVertex == 0) $("#draw-status p").html("图是空的。<div>请画一个<b>带权网络流</b>图</div>");
+    else                   $("#draw-status p").html("请画一个连通源点#0和汇点#{lastVertex}（最后的点）的带权网络流图。注意：边的权重代表边的容量".replace("{lastVertex}", amountVertex-1));
+    $("#sinkvertex").val(amountVertex-1);
+  }
+
+  warnChecking = function() {
+    var warn = "";
+    if (amountVertex >= 10) warn += "屏幕上的点太多，考虑画小一点的图。";
+
+    if (warn == "") $("#draw-warn p").html("没有警告");
+    else $("#draw-warn p").html(warn);
+  }
+
+  errorChecking = function() {
+    var error = "";
+    if (amountVertex == 0) {
+      $("#draw-err p").html("图不能为空。");
+      return;
+    }
+    
+    var visited = [];
+    var stack = [];
+    stack.push(0);
+    visited[0] = true;
+    while (stack.length > 0) {
+      var now = stack.pop();
+      for (var key2 in iEL) if(iEL[key2]["u"] == now) {
+        if (!visited[iEL[key2]["v"]]) {
+          visited[iEL[key2]["v"]] = true;
+          stack.push(+iEL[key2]["v"]);
+        }
+      }
+    }
+    if (!visited[amountVertex-1]) 
+      error = error + "源点和汇点没有连通。"
+    var leftmost = INF, rightmost = -INF;
+    for (var key in iVL) {
+      leftmost = Math.min(leftmost,iVL[key]["x"]);
+      rightmost = Math.max(rightmost,iVL[key]["x"]);
+    }
+    if (leftmost < iVL[0]["x"])
+      error = error + "源点不在最左边。"
+    if (rightmost > iVL[amountVertex-1]["x"])
+      error = error + "汇点不在最右边。"
+
+    if (error == "") $("#draw-err p").html("没有错误");
+    else $("#draw-err p").html(error);
+  }
+
+  var intervalID;
+
+  this.startLoop = function() {
+    intervalID = setInterval(function() {
+      takeJSON(JSONresult);
+      warnChecking();
+      errorChecking();
+      statusChecking();
+    }, 100);
+  }
+
+  this.stopLoop = function() { clearInterval(intervalID); }
+  
+  this.draw = function() {
+    if ($("#draw-err p").html() != "没有错误") return false;
+    if ($("#submit").is(':checked'))
+      this.submit(JSONresult);
+    if ($("#copy").is(':checked'))
+      window.prompt("复制到剪贴板：",JSONresult);
+    graph = createState(iVL, iEL);
+    gw.updateGraph(graph, 500);
+    return true;
+  }
+
+  this.submit = function(graph) {
+    $.ajax({
+      url: PHP_DOMAIN + "/php/Graph.php?mode=" + MODE_SUBMIT_GRAPH + "&sessionID=" + $.cookie("sessionID"),
+      type: "POST",
+      data: {canvasWidth: 1000, canvasHeight: 500, graphTopics: 'Max Flow', graphState: graph},
+      error: function(xhr, errorType, exception) { //Triggered if an error communicating with server  
+          var errorMessage = exception || xhr.statusText; //If exception null, then default to xhr.statusText  
+
+          alert("提交你的图时有错误" + errorMessage);
+      }
+    }).done(function(data) {
+      console.log(data);
+    });
+  }
+
+  this.importjson = function(text) {
+    //var text = $("#samplejson-input").val();
+    takeJSON(text);
+    statusChecking();
+    graph = createState(iVL,iEL);
+    gw.updateGraph(graph, 500);
+  }
+    
+  this.initRandom = function(graph) {
+    iVL = graph.iVL;
+    iEL = graph.iEL;
+    amountVertex = iVL.length;
+    amountEdge = iEL.length;
+    fixJSON();
+    statusChecking();
+    var newState = createState(iVL, iEL);
+
+    gw.updateGraph(newState, 500);
+  }
+
+  //returns index of edge in iEL that connects vertexA to vertexB, eh this can be put in helper object...
+  var findEdgeIndex = function(vertexA, vertexB) {
+    for (i in iEL)
+      if (iEL[i]["u"] == vertexA && iEL[i]["v"] == vertexB)
+        return i;
+    return -1;
+  }
+
+  this.fordfulkerson = function(sourceVertex, sinkVertex) {
+    var existAugmentingPath = true;
+    var MaxFlow = 0;
+    var numberOfAugmentingPaths = 0;
+
+    while (existAugmentingPath) {
+      numberOfAugmentingPaths++;
+      existAugmentingPath = false;
+      var edgeYellow = {};
+      var edgeRed = {};
+      var edgeBlue = {};
+      var vertexTraversed = {};
+      var vertexHighlighted = {};
+      var parent = new Array(amountVertex);
+      var visited = new Array(amountVertex);
+      for (i in iVL) {
+        parent[i] = -1;
+        visited[i] = false;
+      }
+
+      var DFSStack = [];
+      DFSStack.push([sourceVertex,INF]);
+      while (DFSStack.length > 0) {
+        var now = DFSStack.pop(); // last most item
+        var nowVertex = now[0];
+        var nowCapacity = +now[1];
+        if (visited[nowVertex]) continue;
+        visited[nowVertex] = true;
+        if (nowVertex == sinkVertex) {
+          var path = [];
+          while (nowVertex != sourceVertex) {
+            path.push(nowVertex);
+            nowVertex = parent[nowVertex];
+          }
+          path.push(sourceVertex);
+          var bottleneck = [-1,-1]; //[forward edge,back edge]
+
+          for (var i = path.length-1; i >= 1; --i) {
+            var backEdge = findEdgeIndex(path[i-1],path[i]);
+            var forwardEdge = findEdgeIndex(path[i],path[i-1]);
+            if (bottleneck[0] == -1 || iEL[forwardEdge]["w"] < iEL[bottleneck[0]]["w"]) {
+              if (bottleneck[0] != -1) {
+                delete edgeRed[bottleneck[0]];
+                delete edgeRed[bottleneck[1]];
+                edgeYellow[bottleneck[0]] = true;
+                edgeYellow[bottleneck[1]] = true;
+              }
+              edgeRed[backEdge] = true;
+              edgeRed[forwardEdge] = true;
+              bottleneck = [forwardEdge, backEdge];
+            }
+            else {
+              edgeYellow[backEdge] = true;
+              edgeYellow[forwardEdge] = true;
+            }
+            cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow);
+            cs["status"] = "当前从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。"
+                              .replace("{sourceVertex}", sourceVertex)
+                              .replace("{sinkVertex}", sinkVertex)
+                              .replace("{MaxFlow}", MaxFlow);
+            cs["status"] += "找到一条增广路。瓶颈为{bottleneck}（红色的边）".replace("{bottleneck}", iEL[bottleneck[0]]["w"]);
+            cs["lineNo"] = [3];
+            stateList.push(cs);
+          }
+
+          cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow, edgeBlue);
+          cs["status"] = "当前从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。"
+                            .replace("{sourceVertex}", sourceVertex)
+                            .replace("{sinkVertex}", sinkVertex)
+                            .replace("{MaxFlow}", MaxFlow);
+          cs["status"] += "通过深度优先搜索找到一条增广路。瓶颈为{bottleneck}（红色的边）".replace("{bottleneck}", nowCapacity);
+          cs["lineNo"] = [3];
+          stateList.push(cs);
+
+          nowVertex = sinkVertex;
+          while (nowVertex != sourceVertex) {            
+            var backEdge = findEdgeIndex(nowVertex,parent[nowVertex]);
+            var forwardEdge = findEdgeIndex(parent[nowVertex],nowVertex);
+
+            iEL[forwardEdge]["w"] -= nowCapacity;
+            iEL[backEdge]["w"] += nowCapacity;
+
+            var bottleneck = false;
+
+            if (edgeRed.hasOwnProperty(backEdge)) bottleneck = true;
+
+            if (bottleneck) {
+              delete edgeRed[forwardEdge];
+              delete edgeRed[backEdge];
+            }
+            else {
+              delete edgeYellow[forwardEdge];
+              delete edgeYellow[backEdge];
+            }
+
+            edgeBlue[forwardEdge] = true;
+            edgeBlue[backEdge] = true;
+
+            cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow, edgeBlue);
+            cs["status"] = "当前从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。"
+                              .replace("{sourceVertex}", sourceVertex)
+                              .replace("{sinkVertex}", sinkVertex)
+                              .replace("{MaxFlow}", MaxFlow);
+            cs["status"] += "瓶颈为{bottleneck}（红色的边）。正在更新从{parent}到{nowVertex}的边（蓝色的边）"
+                              .replace("{bottleneck}", nowCapacity)
+                              .replace("{parent}", parent[nowVertex])
+                              .replace("{nowVertex}", nowVertex);
+            cs["lineNo"] = [4, 5, 6];
+
+            nowVertex = parent[nowVertex];
+            stateList.push(cs);
+
+            delete edgeBlue[forwardEdge];
+            delete edgeBlue[backEdge];
+
+            if (bottleneck) {
+              edgeRed[forwardEdge] = true;
+              edgeRed[backEdge] = true;
+            }
+            else {
+              edgeYellow[forwardEdge] = true;
+              edgeYellow[backEdge] = true;
+            }
+
+          }
+          existAugmentingPath = true;
+          MaxFlow += nowCapacity;
+          cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow, edgeBlue);
+          cs["status"] = "当前从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。"
+                            .replace("{sourceVertex}", sourceVertex)
+                            .replace("{sinkVertex}", sinkVertex)
+                            .replace("{MaxFlow}", MaxFlow);
+          cs["status"] += "最大流增长了{nowCapacity}".replace("{nowCapacity}", nowCapacity);
+          cs["lineNo"] = [7];
+          stateList.push(cs);
+          break;
+        }
+        var DFStempStack = [];
+        for (i in iEL) {
+          var vertexA = iEL[i]["u"];
+          var vertexB = iEL[i]["v"];
+          var capacity = iEL[i]["w"];
+          if (nowVertex == vertexA && !visited[vertexB] && capacity > 0) {
+            parent[vertexB] = vertexA;
+            if (numberOfAugmentingPaths % 2 == 0 && nowVertex == 0) {
+              if (capacity < nowCapacity)
+                DFStempStack.push([vertexB,capacity]);
+              else DFStempStack.push([vertexB,nowCapacity]);
+            }
+            else {
+              if (capacity < nowCapacity)
+                DFSStack.push([vertexB,capacity]);
+              else DFSStack.push([vertexB,nowCapacity]);
+            }
+          }
+        }
+        while (DFStempStack.length > 0)
+          DFSStack.push(DFStempStack.pop());
+      }
+    }
+
+    cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow, edgeBlue);
+    cs["status"] = "从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。<div>没有更多的增广路。</div>"
+                      .replace("{sourceVertex}", sourceVertex)
+                      .replace("{sinkVertex}", sinkVertex)
+                      .replace("{MaxFlow}", MaxFlow);
+    cs["lineNo"] = [];
+    stateList.push(cs);
+    populatePseudocode(1);
+
+    return MaxFlow;
+  }
+
+  this.edmondskarp = function(sourceVertex, sinkVertex) {
+    var existAugmentingPath = true;
+    var MaxFlow = 0;
+
+    while (existAugmentingPath) {
+      existAugmentingPath = false;
+      var edgeYellow = {};
+      var edgeRed = {};
+      var edgeBlue = {};
+      var vertexTraversed = {};
+      var vertexHighlighted = {};
+      var parent = new Array(amountVertex);
+      var visited = new Array(amountVertex);
+      for (i in iVL) {
+        parent[i] = -1;
+        visited[i] = false;
+      }
+
+      var BFSQueue = [];
+      BFSQueue.push([sourceVertex,INF]);
+      visited[sourceVertex] = true;
+      while (BFSQueue.length > 0)  {
+        var now = BFSQueue.shift(); // pop front item
+        var nowVertex = now[0];
+        var nowCapacity = +now[1];
+        if (nowVertex == sinkVertex) {
+          var path = [];
+          while (nowVertex != sourceVertex) {
+            path.push(nowVertex);
+            nowVertex = parent[nowVertex];
+          }
+          path.push(sourceVertex);
+          var bottleneck = [-1, -1]; //[forward edge,back edge]
+
+          for (var i = path.length-1; i >= 1; i--) {
+            var backEdge = findEdgeIndex(path[i-1],path[i]);
+            var forwardEdge = findEdgeIndex(path[i],path[i-1]);
+            //if capacity < bottleneck
+            if (bottleneck[0] == -1 || iEL[forwardEdge]["w"] < iEL[bottleneck[0]]["w"]) {
+              // update bottleneck
+              if (bottleneck[0] != -1) {
+                delete edgeRed[bottleneck[0]];
+                delete edgeRed[bottleneck[1]];
+                edgeYellow[bottleneck[0]] = true;
+                edgeYellow[bottleneck[1]] = true;
+              }
+              edgeRed[backEdge] = true;
+              edgeRed[forwardEdge] = true;
+              bottleneck = [forwardEdge,backEdge];
+            }
+            else {
+              edgeYellow[backEdge] = true;
+              edgeYellow[forwardEdge] = true;
+            }
+            cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow);
+             cs["status"] = "当前从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。"
+                              .replace("{sourceVertex}", sourceVertex)
+                              .replace("{sinkVertex}", sinkVertex)
+                              .replace("{MaxFlow}", MaxFlow);
+            cs["status"] += "找到一条增广路。瓶颈为{bottleneck}（红色的边）".replace("{bottleneck}", iEL[bottleneck[0]]["w"]);
+            cs["lineNo"] = [3];
+            //stateList.push(cs); // SH7: quick visual bug fix (EK's BFS looks like DFS) by not saving this state in the stateList
+          }
+
+          cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow);
+          cs["status"] = "当前从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。"
+                            .replace("{sourceVertex}", sourceVertex)
+                            .replace("{sinkVertex}", sinkVertex)
+                            .replace("{MaxFlow}", MaxFlow);
+          cs["status"] += "通过深度优先搜索找到一条增广路。瓶颈为{bottleneck}（红色的边）".replace("{bottleneck}", nowCapacity);
+          cs["lineNo"] = [3];
+          stateList.push(cs);
+
+          nowVertex = sinkVertex;
+
+          while (nowVertex != sourceVertex) {
+            var backEdge = findEdgeIndex(nowVertex,parent[nowVertex]);
+            var forwardEdge = findEdgeIndex(parent[nowVertex],nowVertex);
+
+            iEL[forwardEdge]["w"] -= nowCapacity;
+            iEL[backEdge]["w"] += nowCapacity;
+
+            var bottleneck = false;
+
+            if (edgeRed.hasOwnProperty(backEdge)) bottleneck = true;
+
+            if (bottleneck) {
+              delete edgeRed[forwardEdge];
+              delete edgeRed[backEdge];
+            }
+            else {
+              delete edgeYellow[forwardEdge];
+              delete edgeYellow[backEdge];
+            }
+
+            edgeBlue[forwardEdge] = true;
+            edgeBlue[backEdge] = true;
+
+            cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow, edgeBlue);
+            cs["status"] = "当前从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。"
+                              .replace("{sourceVertex}", sourceVertex)
+                              .replace("{sinkVertex}", sinkVertex)
+                              .replace("{MaxFlow}", MaxFlow);
+            cs["status"] += "瓶颈为{bottleneck}（红色的边）。正在更新从{parent}到{nowVertex}的边（蓝色的边）"
+                              .replace("{bottleneck}", nowCapacity)
+                              .replace("{parent}", parent[nowVertex])
+                              .replace("{nowVertex}", nowVertex);
+            cs["lineNo"] = [4, 5, 6];
+
+            nowVertex = parent[nowVertex];
+            stateList.push(cs);
+
+            delete edgeBlue[forwardEdge];
+            delete edgeBlue[backEdge];
+
+            if (bottleneck) {
+              edgeRed[forwardEdge] = true;
+              edgeRed[backEdge] = true;
+            }
+            else {
+              edgeYellow[forwardEdge] = true;
+              edgeYellow[backEdge] = true;
+            }
+          }
+
+          existAugmentingPath = true;
+          MaxFlow += nowCapacity;
+          cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow, edgeBlue);
+          cs["status"] = "当前从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。"
+                            .replace("{sourceVertex}", sourceVertex)
+                            .replace("{sinkVertex}", sinkVertex)
+                            .replace("{MaxFlow}", MaxFlow);
+          cs["status"] += "最大流增长了{nowCapacity}".replace("{nowCapacity}", nowCapacity);
+          cs["lineNo"] = [7];
+          stateList.push(cs);
+          break;
+        }
+        for (i in iEL) {
+          var vertexA = iEL[i]["u"];
+          var vertexB = iEL[i]["v"];
+          var capacity = iEL[i]["w"];
+          if (nowVertex == vertexA && !visited[vertexB] && capacity > 0) {
+            visited[vertexB] = true;
+            parent[vertexB] = vertexA;
+            if (capacity < nowCapacity)
+              BFSQueue.push([vertexB,capacity]);
+            else BFSQueue.push([vertexB,nowCapacity]);
+          }
+        }
+      }
+    }
+
+    cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow, edgeBlue);
+    cs["status"] = "从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。<div>没有更多的增广路。</div>"
+                      .replace("{sourceVertex}", sourceVertex)
+                      .replace("{sinkVertex}", sinkVertex)
+                      .replace("{MaxFlow}", MaxFlow);
+    cs["lineNo"] = [];
+    stateList.push(cs);
+    populatePseudocode(0);
+
+    return MaxFlow;
+  }
+
+  this.dinic = function(sourceVertex, sinkVertex) {
+    var existBlockingFlow = true;
+    var MaxFlow = 0;
+
+    while (existBlockingFlow) {
+      existBlockingFlow = false;
+      var edgeBlue = {};
+      var vertexTraversed = {};
+      var vertexHighlighted = {};
+      var visited = new Array(amountVertex);
+      var distance = new Array(amountVertex);
+      for (i in iVL) {
+        visited[i] = false;
+        distance[i] = INF;
+      }
+
+      var BFSQueue = [];
+      BFSQueue.push(sourceVertex);
+      distance[sourceVertex] = 0;
+      while (BFSQueue.length > 0) {
+        var nowVertex = BFSQueue.shift();
+        for (i in iEL) {
+          var vertexA = iEL[i]["u"];
+          var vertexB = iEL[i]["v"];
+          var capacity = iEL[i]["w"];
+          if (nowVertex == vertexA && distance[vertexB] == INF && capacity > 0) {
+            distance[vertexB] = distance[vertexA] + 1;
+            BFSQueue.push(vertexB);
+          }
+        }
+      }
+      for (i in iEL) {
+        var vertexA = iEL[i]["u"];
+        var vertexB = iEL[i]["v"];
+        var capacity = iEL[i]["w"];
+        if (capacity > 0 && distance[vertexB] == distance[vertexA]+1 && distance[vertexB] <= distance[sinkVertex]) {
+          edgeBlue[i] = true;
+          edgeBlue[findEdgeIndex(vertexB,vertexA)] = true;
+        }
+      }
+
+      if (distance[sinkVertex] == INF) break;
+      
+      cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow, edgeBlue);
+      cs["status"] = "从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。<div>找到了层级图（蓝色的边）。汇点在第{distance}层。</div>"
+                      .replace("{sourceVertex}", sourceVertex)
+                      .replace("{sinkVertex}", sinkVertex)
+                      .replace("{MaxFlow}", MaxFlow)
+                      .replace("{distance}", distance[sinkVertex]);
+      cs["lineNo"] = [3];
+      stateList.push(cs);
+
+      var edgeBlueTemp = edgeBlue;
+      var existAugmentingPath = true;
+      while (existAugmentingPath) {
+        existAugmentingPath = false;
+        edgeBlue = edgeBlueTemp;
+        var edgeYellow = {};
+        var edgeRed = {};
+        var parent = new Array(amountVertex);
+
+        var DFSStack = [];
+        DFSStack.push([sourceVertex,INF]);
+        while (DFSStack.length > 0) {
+          var now = DFSStack.pop(); //last most item
+          var nowVertex = now[0];
+          var nowCapacity = +now[1];
+          if (nowVertex == sinkVertex) {
+            while (nowVertex != sourceVertex) { 
+              var backEdge = findEdgeIndex(nowVertex,parent[nowVertex]);
+              var forwardEdge = findEdgeIndex(parent[nowVertex],nowVertex);
+
+              delete edgeBlue[backEdge]; 
+              delete edgeBlue[forwardEdge];
+
+              if (iEL[forwardEdge]["w"] != nowCapacity) {
+                edgeYellow[backEdge] = true;
+                edgeYellow[forwardEdge] = true;
+              }
+              else {
+                edgeRed[backEdge] = true;
+                edgeRed[forwardEdge] = true;
+              }
+
+              nowVertex = parent[nowVertex];
+            }
+            cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow, edgeBlue);
+            cs["status"] = "当前从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。"
+                            .replace("{sourceVertex}", sourceVertex)
+                            .replace("{sinkVertex}", sinkVertex)
+                            .replace("{MaxFlow}", MaxFlow);
+            cs["status"] += "找到一个阻塞流。瓶颈为{bottleneck}（红色的边）".replace("{bottleneck}", nowCapacity);
+            cs["lineNo"] = [4];
+            stateList.push(cs);
+
+            nowVertex = sinkVertex;
+            while (nowVertex != sourceVertex) {            
+              var backEdge = findEdgeIndex(nowVertex, parent[nowVertex]);
+              var forwardEdge = findEdgeIndex(parent[nowVertex], nowVertex);
+
+              iEL[forwardEdge]["w"] -= nowCapacity;
+              iEL[backEdge]["w"] += nowCapacity;
+
+              var bottleneck = false;
+
+              if (edgeRed.hasOwnProperty(backEdge)) bottleneck = true;
+
+              cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow, edgeBlue);
+              cs["status"] = "当前从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。"
+                            .replace("{sourceVertex}", sourceVertex)
+                            .replace("{sinkVertex}", sinkVertex)
+                            .replace("{MaxFlow}", MaxFlow);
+              cs["status"] += "瓶颈为{bottleneck}（红色的边）。正在更新从{parent}到{nowVertex}的边（蓝色的边）"
+                              .replace("{bottleneck}", nowCapacity)
+                              .replace("{parent}", parent[nowVertex])
+                              .replace("{nowVertex}", nowVertex);
+              cs["lineNo"] = [5];
+
+              nowVertex = parent[nowVertex];
+              stateList.push(cs);
+            }
+
+            existAugmentingPath = true;
+            existBlockingFlow = true;
+            MaxFlow += nowCapacity;
+            cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow, edgeBlue);
+            cs["status"] = "当前从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。"
+                            .replace("{sourceVertex}", sourceVertex)
+                            .replace("{sinkVertex}", sinkVertex)
+                            .replace("{MaxFlow}", MaxFlow);
+            cs["status"] += "最大流增长了{nowCapacity}".replace("{nowCapacity}", nowCapacity);
+            cs["lineNo"] = [6];
+            stateList.push(cs);
+            break;
+          }
+          for (i in iEL) {
+            var vertexA = iEL[i]["u"];
+            var vertexB = iEL[i]["v"];
+            var capacity = iEL[i]["w"];
+            if (nowVertex == vertexA && capacity > 0 && distance[vertexA]+1 == distance[vertexB]) {
+              parent[vertexB] = vertexA;
+              if (capacity < nowCapacity)
+                DFSStack.push([vertexB,capacity]);
+              else DFSStack.push([vertexB,nowCapacity]);
+            }
+          }
+        }
+      }
+    }
+
+    cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow, edgeBlue);
+    cs["status"] = "<div>从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。<br></div><div>没有更多从源点到汇点的流</div>"
+                    .replace("{sourceVertex}", sourceVertex)
+                    .replace("{sinkVertex}", sinkVertex)
+                    .replace("{MaxFlow}", MaxFlow);
+    cs["lineNo"] = [];
+    stateList.push(cs);
+    populatePseudocode(2);
+
+    return MaxFlow;
+  }
+
+  this.countmincut = function(sourceVertex, sinkVertex, originalCap, mf) {
+    var edgeRed = {};
+    var vertexTraversed = {};
+    var vertexHighlighted = {};
+    var visited = new Array(amountVertex);
+    var distance = new Array(amountVertex);
+    for (i in iVL) {
+      visited[i] = false;
+      distance[i] = INF;
+    }
+
+    var BFSQueue = [];
+    BFSQueue.push(sourceVertex);
+    distance[sourceVertex] = 0;
+    while (BFSQueue.length > 0) {
+      var nowVertex = BFSQueue.shift();
+      vertexTraversed[nowVertex] = true;
+      if (nowVertex != sourceVertex)
+        iVL[nowVertex]["extratext"] = "S";
+      for (i in iEL) {
+        var vertexA = iEL[i]["u"];
+        var vertexB = iEL[i]["v"];
+        var capacity = iEL[i]["w"];
+        if (nowVertex == vertexA && distance[vertexB] == INF && capacity > 0) {
+          distance[vertexB] = distance[vertexA] + 1;
+          BFSQueue.push(vertexB);
+        }
+      }
+    }
+
+    for (i in iVL)
+      if (!vertexTraversed[i]) { // in T-component
+        vertexHighlighted[i] = true;
+        if (i != sinkVertex)
+          iVL[i]["extratext"] = "T";
+      }
+
+    for (j in iEL) {
+      var vertexA = iEL[j]["u"];
+      var vertexB = iEL[j]["v"];
+      var capacity = iEL[j]["w"];
+      if (vertexTraversed[vertexA] && vertexHighlighted[vertexB]) { // highlight edges that crosses S-component to T-component
+        edgeRed[j] = true;
+        edgeRed[findEdgeIndex(vertexB,vertexA)] = true;
+      }
+      // this part still confusing, take more time to think... use the uni-directional flow strategy, if both f(u, v) > 0 and f(v, u) > 0, they will cancel out eah other
+      // if (originalCap[j] != 0) // not a new back flow
+      //   iEL[j]["w"] = (originalCap[j]-iEL[j]["w"]) + "/" + originalCap[j]; // show the actual flow on this edge w.r.t original capacity of this edge
+      // else
+      //   iEL[j]["w"] = "N/A";
+    }
+
+    cs = createState(iVL, iEL, vertexHighlighted, edgeRed, vertexTraversed, {}, {});
+    cs["status"] = "从{sourceVertex}到{sinkVertex}的最大流（最小割）是{mf}。<div>穿过S-T割的边被高亮显示。</div>"
+                    .replace("{sourceVertex}", sourceVertex)
+                    .replace("{sinkVertex}", sinkVertex)
+                    .replace("{mf}", mf);
+    cs["lineNo"] = [];
+    stateList.push(cs);
+  }
+
+  this.countmaxflow = function(algorithm, sourceVertex, sinkVertex) {
+    stateList = [];
+
+    // error checks
+    if (amountVertex == 0) { // no graph
+      $('#countmaxflow-err').html("没有图来运行此算法。请先选一个示例图。");
+      return false;
+    }
+
+    if (sourceVertex >= amountVertex || sourceVertex < 0) { // source vertex not in range
+      $('#countmaxflow-err').html("源点在图中不存在");
+      return false;
+    }
+
+    if (sinkVertex >= amountVertex || sinkVertex < 0) { // sink vertex not in range
+      $('#countmaxflow-err').html("汇点在图中不存在");
+      return false;
+    }
+
+    if (sourceVertex == sinkVertex) {
+      $('#countmaxflow-err').html("源点和汇点是同一点");
+      return false;
+    }
+
+    for (i in iVL) {
+      if (i >= amountVertex) delete iVL[i];
+      iVL[i]["extratext"] = "";
+    }
+
+    iVL[sourceVertex]["extratext"] = "source";
+    iVL[sinkVertex]["extratext"] = "sink";
+    var cs = createState(iVL, iEL);
+    cs["status"] = "当前从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。"
+                    .replace("{sourceVertex}", sourceVertex)
+                    .replace("{sinkVertex}", sinkVertex)
+                    .replace("{MaxFlow}", 0);
+    cs["status"] += "原始的网络流图。";
+    cs["lineNo"] = [1];
+    stateList.push(cs);
+
+    //creating residual graph (backedges for every edge)
+    for (i in iEL) {
+      var backEdge = new Object();
+      backEdge["u"] = iEL[i]["v"];
+      backEdge["v"] = iEL[i]["u"];
+      backEdge["w"] = 0;
+      // if backEdge is not on the iEL yet
+      if (findEdgeIndex(backEdge["u"], backEdge["v"]) == -1) { // insert backEdge to iEL
+        iEL[amountEdge] = (backEdge);
+        amountEdge++;
+      }
+    }
+
+    var originalCap = {};
+    for (i in iEL) {
+      if (i >= amountEdge) delete iEL[i];
+      originalCap[i] = +iEL[i]["w"];
+    }
+
+    var cs = createState(iVL, iEL);
+    cs["status"] = "当前从{sourceVertex}到{sinkVertex}的最大流为{MaxFlow}。"
+                    .replace("{sourceVertex}", sourceVertex)
+                    .replace("{sinkVertex}", sinkVertex)
+                    .replace("{MaxFlow}", 0);
+    cs["status"] += "准备残留网络中。";
+    cs["lineNo"] = [1];
+    stateList.push(cs);
+
+    // run the maxflow algorithm
+    var mf = 0;
+         if (algorithm == "fordfulkerson") mf = this.fordfulkerson(sourceVertex,sinkVertex);
+    else if (algorithm == "edmondskarp")   mf = this.edmondskarp(sourceVertex,sinkVertex);
+    else if (algorithm == "dinic")         mf = this.dinic(sourceVertex,sinkVertex);
+
+    this.countmincut(sourceVertex, sinkVertex, originalCap, mf);
+
+    gw.startAnimation(stateList);
+    return true;
+  }
+
+  this.rookattack = function() {
+    var numOfRows = parseInt($('#rows').val());
+    var numOfColumns = parseInt($('#columns').val());
+    var blocked = new Array(numOfRows);
+
+    for (var i = 0; i < numOfRows; i++) {
+      blocked[i] = new Array(numOfColumns);
+      for (var j = 0; j < numOfColumns; j++)
+        blocked[i][j] = false;
+    }
+
+    if (numOfRows < 1 || numOfColumns < 1 || numOfRows > 6 || numOfColumns > 6) { // no graph
+      $('#modeling-err').html("无效的大小。行和列的大小必须在1到6之间（包含）。");
+      return false;
+    }
+
+    this.changeState = function(rowIndex,columnIndex) {
+      var temp = '#cell' + rowIndex + columnIndex;
+      if (blocked[rowIndex][columnIndex]) {
+        $(temp).attr("bgcolor","white");
+        blocked[rowIndex][columnIndex] = false;
+      }
+      else {
+        $(temp).attr("bgcolor","black");
+        blocked[rowIndex][columnIndex] = true;
+      }
+    }
+
+    this.createBipartiteGraph = function() {
+      iVL = {};
+      iEL = {};
+      vertexHighlighted = {};
+      edgeRed = {};
+      stateList = [];
+      var cs;
+      amountEdge = 0;
+      amountVertex = 2 + numOfRows + numOfColumns;
+
+      iVL[0] = {
+        "x": 25,
+        "y": 175,
+      }
+
+      iVL[amountVertex-1] = {
+        "x": 625,
+        "y": 175,
+      }
+
+      vertexHighlighted[0] = vertexHighlighted[amountVertex-1] = true;
+      cs = createState(iVL, iEL,vertexHighlighted);
+      cs["status"] = "创建源点和汇点";
+      cs["lineNo"] = [1];
+      stateList.push(cs);
+      delete vertexHighlighted[0]; delete vertexHighlighted[amountVertex-1];
+
+      for (var i = 1; i <= numOfRows; i++) {
+        iVL[i] = {
+          "x": 225,
+          "y": (175 + (i - (numOfRows+1)/2) * (numOfRows == 1 ? 0 : 300/(numOfRows-1))),
+          "text": "R"+i
+        }
+        iEL[amountEdge] = {
+          "u": 0,
+          "v": i,
+          "w": 1
+        }
+        amountEdge++;
+        vertexHighlighted[i] = true;
+      }
+
+      cs = createState(iVL, iEL,vertexHighlighted);
+      cs["status"] = "Create a vertex for each rows<br>and connect the source vertex to each vertex with capacity 1</br>";
+      cs["lineNo"] = [2];
+      stateList.push(cs);
+      for (var i = 1; i <= numOfRows; ++i)
+        delete vertexHighlighted[i];
+
+      for (var i = 1; i <= numOfColumns; ++i) {
+        iVL[i+numOfRows] = {
+          "x": 425,
+          "y": (175 + (i-(numOfColumns+1)/2) * (numOfColumns == 1 ? 0 : 300/(numOfColumns-1))),
+          "text": "C"+i
+        }
+        iEL[amountEdge] = {
+          "u": i+numOfRows,
+          "v": amountVertex-1,
+          "w": 1
+        }
+        amountEdge++;
+        vertexHighlighted[i+numOfRows] = true;
+      }
+      cs = createState(iVL, iEL,vertexHighlighted);
+      cs["status"] = "Create a vertex for each columns<br>and connect each vertex to the sink vertex with capacity 1</br>";
+      cs["lineNo"] = [3];
+      stateList.push(cs);
+      for (var i = 1; i <= numOfColumns; i++)
+        delete vertexHighlighted[i+numOfRows];
+
+      for (var i = 0; i < numOfRows; i++) {
+        for (var j = 0; j < numOfColumns; j++) {
+          var existEdge = 1-blocked[i][j];
+          if (existEdge == 1) {
+            iEL[amountEdge] = {
+              "u": i+1,
+              "v": j+1+numOfRows,
+              "w": 9
+            }
+            amountEdge++;
+            edgeRed[amountEdge-1] = true;
+            cs = createState(iVL, iEL,vertexHighlighted, edgeRed);
+            cs["status"] = "Adding edge from R{row} to C{column}."
+                            .replace("{row}", i+1)
+                            .replace("{column}", j+1);
+            cs["lineNo"] = [4,5];
+            stateList.push(cs);
+            delete edgeRed[amountEdge-1];
+          }
+        }
+      }
+
+      amountVertex = 0;
+      amountEdge = 0;
+      for (var i in iVL) amountVertex++;
+      for (var i in iEL) amountEdge++;
+
+      $('#sourcevertex').val(0);
+      $('#sinkvertex').val(amountVertex-1);
+
+      cs = createState(iVL, iEL);
+      cs["status"] = "Run any maximum flow algorithm from 0 to {lastVertex}<br>to get the value of the maximum rooks that can be placed</br>".replace("{lastVertex}", amountVertex-1);
+      cs["lineNo"] = [6];
+      stateList.push(cs);
+      gw.startAnimation(stateList);
+      return true;
+    }
+
+    this.inputFinished = function() {
+      $('.overlays').hide("slow");
+      $('#dark-overlay').hide("slow");
+      $('#rookattack-board').hide("slow");
+      mfw.createBipartiteGraph();
+      $('#current-action').show();
+      $('#current-action p').html("Modeling()");
+      $('#progress-bar').slider( "option", "max", gw.getTotalIteration()-1);
+      triggerRightPanels();
+      populatePseudocode(3);
+      isPlaying = true;
+      return true;
+    }
+
+    this.cancel = function() {
+      $('.overlays').hide("slow");
+      $('#dark-overlay').hide("slow");
+      $('#rookattack-board').hide("slow");
+      $('#progress-bar').slider( "option", "max", gw.getTotalIteration()-1);
+      return true;
+    }
+
+    this.inputRandomized = function() {
+      for (var i = 0; i < numOfRows; i++)
+        for (var j = 0; j < numOfColumns; j++)
+          if (Math.random() < 0.5) this.changeState(i,j);
+    }
+
+    $('#dark-overlay').show("slow");
+    var toWrite = '<html>\n';
+    toWrite += "<p>Click on any cell to toggle between black/white cell</p>\n";
+    toWrite += "<p>Rooks can&#39;t be placed in black cells</p>\n";
+    toWrite += '<table border="1" id="board">'
+    for (var j = 0; j < numOfColumns; j++)
+      toWrite += '<col width="50">';
+    for (var i = 0; i < numOfRows; i++) {
+      toWrite += '<tr>';
+      for (var j = 0; j < numOfColumns; j++)
+        toWrite += '<td height="50" bgcolor="white" id="cell' + i + j + '" onclick=mfw.changeState('+i+','+j+')></td>';
+      toWrite += '</tr>';
+    }
+
+    toWrite += '</table>\n';
+    toWrite += '<div class="modeling-actions">';
+    toWrite += '<p onclick=mfw.inputRandomized()>Randomized</p>';
+    toWrite += '<p onclick=mfw.inputFinished()>Done</p>';
+    toWrite += '<p onclick=mfw.cancel()>Cancel</p>';
+    toWrite += '</div>\n'
+    toWrite += '</html>\n';
+    $('#rookattack-board').html(toWrite);
+    $('#rookattack-board').show("slow");
+  }
+
+  // this.baseball = function() {
+  //   var numOfTeams = parseInt($('#teams').val());
+  //   var numOfGames = new Array(numOfTeams);
+  //   var initialPoints = new Array(numOfTeams);
+  
+  //   for (var i = 0; i < numOfTeams; ++i)
+  //     numOfGames[i] = new Array(numOfTeams);
+
+  //   if (numOfTeams < 1 || numOfTeams > 6) { // no graph
+  //     $('#modeling-err').html("Invalid number of teams. Number of teams must be between 1 and 6 inclusive.");
+  //     return false;
+  //   }
+
+  //   setInterval(function()
+  //   {
+  //     for (var i = 0; i < numOfTeams; ++i)
+  //     {
+  //       numOfGames[i][i] = 0;
+  //       $("#game" + i + i).val(0);
+  //       for (var j = 0; j < i; ++j)
+  //       {
+  //         $("#game" + i + j).val($("#game" + j + i).val());
+  //       }
+  //     }
+  //   },100);
+
+  //   this.inputRandomized = function()
+  //   {
+  //     for (var i = 0; i < numOfTeams; ++i)
+  //     {
+  //       initialPoints[i] = Math.floor(Math.random() * 10); //0 - 9
+  //       $("#point" + i).val(initialPoints[i]);
+  //       for (var j = 0; j < numOfTeams; ++j)
+  //       {
+  //         numOfGames[i][j] = Math.floor(Math.random() * 10); //0 - 9
+  //         $("#game" + i + j).val(numOfGames[i][j]);
+  //       }
+  //     }
+  //   }
+
+  //   this.createGraph = function(checkTeamIndex)
+  //   {
+  //     iVL = {};
+  //     iEL = {};
+  //     vertexHighlighted = {};
+  //     edgeRed = {};
+  //     stateList = [];
+  //     var cs;
+  //     var numOfMatches = ((numOfTeams - 1) * (numOfTeams - 2)) / 2;
+  //     var totalMaxFlow = 0;
+  //     amountEdge = 0;
+  //     amountVertex = 2 + numOfMatches + (numOfTeams - 1);
+  //     var totalNumberOfGames = new Array(numOfTeams);
+  //     var vertexIndex = new Array(numOfTeams);
+  //     for (var i = 0; i < numOfTeams; ++i)
+  //     {
+  //       totalNumberOfGames[i] = 0;
+  //       vertexIndex[i] = new Array(numOfTeams);
+  //       initialPoints[i] = (+$("#point" + i).val());
+  //       for (var j = 0; j < numOfTeams; ++j)
+  //       {
+  //         numOfGames[i][j] = +($("#game" + i + j).val());
+  //         totalNumberOfGames[i] += (numOfGames[i][j]);
+  //         console.log(i + " " + j + " " + numOfGames[i][j]);
+  //       }
+  //     }
+
+  //     cs = createState(iVL, iEL,vertexHighlighted);
+  //     cs["status"] = 'Assume Team ' + checkTeamIndex + ' wins all remaining games';
+  //     cs["status"] += '<br>Team ' + checkTeamIndex + ' will win ' + initialPoints[checkTeamIndex] + ' + ' + totalNumberOfGames[checkTeamIndex];
+  //     cs["status"] += ' = ' + (initialPoints[checkTeamIndex] + totalNumberOfGames[checkTeamIndex]) + ' games</br>';
+  //     cs["lineNo"] = [1];
+  //     stateList.push(cs);
+
+  //     for (var i = 0; i < numOfTeams; ++i) if (i != checkTeamIndex)
+  //     {
+  //       cs = createState(iVL, iEL,vertexHighlighted);
+  //       cs["status"] = 'Assume T' + i + ' loses all remaining games. ';
+  //       cs["status"] += 'T' + i + ' will win ' + initialPoints[i] + ' games';
+  //       if (initialPoints[i] <= initialPoints[checkTeamIndex] + totalNumberOfGames[checkTeamIndex])
+  //       {
+  //         cs["status"] += '<br>Because ' + initialPoints[i] + '<=' + (initialPoints[checkTeamIndex] + totalNumberOfGames[checkTeamIndex]) + ', team ' + checkTeamIndex + ' can still win the league</br>';
+  //         cs["lineNo"] = [1];
+  //         stateList.push(cs);     
+  //       } else
+  //       {
+  //         cs["status"] += '<br>Because ' + initialPoints[i] + '>' + (initialPoints[checkTeamIndex] + totalNumberOfGames[checkTeamIndex]) + ', team ' + checkTeamIndex + ' is obviously eliminated</br>';
+  //         cs["lineNo"] = [1];
+  //         stateList.push(cs);
+  //         gw.startAnimation(stateList);
+  //         return true;
+  //       }   
+  //     }
+
+
+  //     iVL[0] = {"cx": 25, "cy": 175, "text": 0}
+
+  //     iVL[amountVertex - 1] = { "cx": 625, "cy": 175, "text": amountVertex - 1 }
+
+  //     vertexHighlighted[0] = vertexHighlighted[amountVertex-1] = true;
+  //     cs = createState(iVL, iEL,vertexHighlighted);
+  //     cs["status"] = 'Create source and sink vertex';
+  //     cs["lineNo"] = [];
+  //     stateList.push(cs);
+  //     delete vertexHighlighted[0]; delete vertexHighlighted[amountVertex-1];
+
+  //     amountVertex = 1;
+
+
+  //     //create left set of vertices
+  //     for (var i = 0; i < numOfTeams; ++i) if(i != checkTeamIndex)
+  //     {
+  //       for (var j = i + 1; j < numOfTeams; ++j) if(j != checkTeamIndex)
+  //       {
+  //         totalMaxFlow += numOfGames[i][j];
+  //         iVL[amountVertex] = 
+  //         {
+  //           "cx": 225,
+  //           "cy": (175 + (amountVertex - (numOfMatches + 1) / 2) * (numOfMatches == 1 ? 0 : 300 / (numOfMatches - 1))),
+  //           "text": i + "v" + j
+  //         }
+  //         iEL[amountEdge] = 
+  //         {
+  //           "vertexA": 0,
+  //           "vertexB": amountVertex,
+  //           "weight": numOfGames[i][j]
+  //         }
+  //         vertexHighlighted[amountVertex] = true;
+  //         edgeRed[amountEdge] = true;
+  //         cs = createState(iVL, iEL,vertexHighlighted, edgeRed);
+  //         cs["status"] = 'Create a node for a match between T' + i + ' and T' + j + '. There are ' + numOfGames[i][j] + ' matches remaining';
+  //         cs["status"] += '. Connect source vertex to that node with capacity ' + numOfGames[i][j];
+  //         cs["lineNo"] = [2,3];
+  //         stateList.push(cs);
+  //         delete vertexHighlighted[amountVertex];
+  //         delete edgeRed[amountEdge];
+
+  //         vertexIndex[i][j] = amountVertex;
+  //         ++amountVertex;
+  //         ++amountEdge;
+  //       }
+  //     }
+
+      
+
+  //     //create right set of vertices
+  //     for (var i = 0; i < numOfTeams; ++i) if (i != checkTeamIndex)
+  //     {
+  //       iVL[amountVertex] = 
+  //       {
+  //         "cx": 425,
+  //         "cy": (175 + ((i+(i<checkTeamIndex?1:0)) - (numOfTeams) / 2) * (numOfTeams == 2 ? 0 : 300 / (numOfTeams - 2))),
+  //         "text": "T" + i
+  //       }
+  //       var weight = (+initialPoints[checkTeamIndex]) + (+totalNumberOfGames[checkTeamIndex]) - (+initialPoints[i]);
+  //       iEL[amountEdge] = 
+  //       {
+  //         "vertexA": amountVertex,
+  //         "vertexB": 1 + numOfMatches + (numOfTeams - 1),
+  //         "weight": weight
+  //       }
+  //       vertexHighlighted[amountVertex] = true;
+  //       edgeRed[amountEdge] = true;
+  //       cs = createState(iVL, iEL,vertexHighlighted, edgeRed);
+  //       cs["status"] = 'Create a node for a Team ' + i + '. Team ' + i + ' may win ';
+  //       cs["status"] += (initialPoints[checkTeamIndex] + totalNumberOfGames[checkTeamIndex]) + '-' + initialPoints[i] + ' = ' + weight + ' matches more';
+  //       cs["status"] += '. Connect that node to sink vertex with capacity ' + weight;
+  //       cs["lineNo"] = [4,5];
+  //       stateList.push(cs);
+  //       delete vertexHighlighted[amountVertex];
+  //       delete edgeRed[amountEdge];
+
+  //       ++amountVertex;
+  //       ++amountEdge;
+  //     }
+
+
+
+  //     //create middle edges
+  //     for (var i = 0; i < numOfTeams; ++i) if (i != checkTeamIndex)
+  //     {
+  //       for (var j = i + 1; j < numOfTeams; ++j) if (j != checkTeamIndex)
+  //       {
+  //         iEL[amountEdge] = 
+  //         {
+  //           "vertexA": vertexIndex[i][j],
+  //           "vertexB": amountVertex - numOfTeams + i + (i < checkTeamIndex ? 1 : 0),
+  //           "weight": 9
+  //         }
+  //         edgeRed[amountEdge] = true;
+  //         ++amountEdge;
+
+  //         iEL[amountEdge] = 
+  //         {
+  //           "vertexA": vertexIndex[i][j],
+  //           "vertexB": amountVertex - numOfTeams + j + (j < checkTeamIndex ? 1 : 0),
+  //           "weight": 9
+  //         }
+  //         edgeRed[amountEdge] = true;
+  //         ++amountEdge;
+
+  //         cs = createState(iVL, iEL,vertexHighlighted, edgeRed);
+  //         cs["status"] = 'Adding edge from R' + i + ' to C' + j + ' with capacity INF';
+  //         cs["lineNo"] = [6];
+  //         //cs["status"] += '<br>Adding edge from R' + i + ' to C' + j + '</br>';
+  //         stateList.push(cs);
+  //         delete edgeRed[amountEdge-1];
+  //         delete edgeRed[amountEdge-2];
+  //       }
+  //     }
+
+  //     amountVertex = 0;
+  //     amountEdge = 0;
+  //     for (var i in iVL) ++amountVertex;
+  //     for (var i in iEL) ++amountEdge;
+
+  //     $('#sourcevertex').val(0);
+  //     $('#sinkvertex').val(amountVertex-1);
+
+  //     cs = createState(iVL, iEL);
+  //     cs["status"] = 'Run any maximum flow algorithm from 0 to ' + (amountVertex - 1);
+  //     cs["status"] += '. Iff all source edges are saturated (maxflow = ' + totalMaxFlow + '), '
+  //     cs["status"] += 'then Team ' + checkTeamIndex + ' is not eliminated';
+  //     cs["lineNo"] = [7];
+  //     stateList.push(cs);
+  //     gw.startAnimation(stateList);
+  //     return true;
+  //   }
+
+  //   this.inputFinished = function(checkTeamIndex)
+  //   {
+  //     $('.overlays').hide("slow");
+  //     $('#dark-overlay').hide("slow");
+  //     $('#baseball-board').hide("slow");
+  //     mfw.createGraph(checkTeamIndex);
+  //     $('#current-action').show();
+  //     $('#current-action p').html("Modeling()");
+  //     $('#progress-bar').slider( "option", "max", gw.getTotalIteration()-1);
+  //     triggerRightPanels();
+  //     populatePseudocode(4);
+  //     isPlaying = true;
+  //     return true;
+  //   }
+
+  //   this.cancel = function()
+  //   {
+  //     $('.overlays').hide("slow");
+  //     $('#dark-overlay').hide("slow");
+  //     $('#rookattack-board').hide("slow");
+  //     $('#progress-bar').slider( "option", "max", gw.getTotalIteration()-1);
+  //     return true;
+  //   }
+
+  //   $('#dark-overlay').show("slow");
+  //   var toWrite = '<html>\n';
+  //   toWrite += '<p>Fill in the table below.\n';
+  //   toWrite += ' Don\'t modify the black cells, they will be updated automatically</p>\n';
+  //   toWrite += '<p>Click on any team to check whether the team is eliminated or not</p>\n';
+  //   toWrite += '<table border="1" id="board">\n';
+  //   for (var j = 0; j < numOfTeams + 2; ++j)
+  //   {
+  //     toWrite += '<col width="50">';
+  //   }
+
+  //   toWrite += '<tr>';
+  //   toWrite += '<td rowspan="2">Team Index</td><td rowspan="2">Initial Points</td>';
+  //   toWrite += '<td colspan="5" align="center">Remaining Games</td>';
+  //   toWrite += '</tr>';
+  //   toWrite += '<tr>';
+  //   for (var i = 0; i < numOfTeams; ++i)
+  //   {
+  //     toWrite += '<td>Team ' + i + '</td>';
+  //   }
+  //   toWrite += '</tr>';
+
+  //   for (var i = 0; i < numOfTeams; ++i)
+  //   {
+  //     toWrite += '<tr>';
+  //     toWrite += '<td><div class="modeling-actions">';
+  //     toWrite += '<p onclick=mfw.inputFinished('+i+')>Team ' + i + '</p>';
+  //     toWrite += '</div></td>';
+  //     toWrite += '<td height="50" bgcolor="white"><input id="point' + i + '" value=0 /></td>';
+  //     for (var j = 0; j < numOfTeams; ++j) 
+  //     {
+  //       if (j > i)
+  //       {
+  //         toWrite += '<td height="50" bgcolor="white"><input id="game' + i + j + '" value=0 /></td>';
+  //       }
+  //       else 
+  //       {
+  //         toWrite += '<td height="50" bgcolor="black"><input style="background-color:black;color:white;" id="game' + i + j + '" value=0 /></td>';
+  //       }
+  //     }
+  //     toWrite += '</tr>';
+  //   }
+
+  //   toWrite += '</table>\n';
+  //   toWrite += '<div class="modeling-actions">';
+  //   toWrite += '<p onclick=mfw.inputRandomized()>Randomized</p>';
+  //   toWrite += '<p onclick=mfw.cancel()>Cancel</p>';
+  //   toWrite += '</div>';
+  //   toWrite += '</html>\n';
+  //   $('#baseball-board').html(toWrite);
+  //   $('#baseball-board').show("slow");
+  // }
+
+  this.modeling = function(modelingType) {
+    iVL = {};
+    iEL = {};
+    if (modelingType == "rookattack") this.rookattack();
+    if (modelingType == "baseball") this.baseball();
+    return true;
+  }
+
+  this.examples = function(id) {
+    iVL = getExampleGraph(id, VL);
+    iEL = getExampleGraph(id, EL);
+    amountVertex = 0;
+    amountEdge = 0;
+    for (var key in iVL) amountVertex++;
+    for (var key in iEL) amountEdge++;
+
+    var newState = createState(iVL, iEL);
+    gw.updateGraph(newState, 500);
+    $('#sourcevertex').val(0);
+    $('#sinkvertex').val(amountVertex-1);
+    return true;
+  }
+
+  this.completelyRandom = function() {
+    var templateNo = Math.floor(Math.random()*noOfExamples); //0-4
+    iVL = $.extend(true, {}, TEMPLATES[templateNo][0]);
+    iEL = $.extend(true, {}, TEMPLATES[templateNo][1]);
+    amountVertex = TEMPLATES[templateNo][2];
+    amountEdge = TEMPLATES[templateNo][3];
+
+    //change edge weights
+    var keys = Object.keys(iEL);
+    var nVertices = Object.keys(iVL).length/2;
+    var nEdges = keys.length/2;
+    for(var i=0; i<nEdges; i++) {
+      //var newWeight = Math.floor(Math.random()*100)-50; //-50-49
+      var newWeight = Math.floor(Math.random()*10); //0 - 9
+      iEL[keys[i]]["w"] = newWeight;
+    }
+
+    var newState = createState(iVL, iEL);
+    gw.updateGraph(newState, 500);
+    return true;
+  }
+
+  this.bipartiteRandom = function(randomType) { 
+    // 0: random
+    // 1: left 1
+    // 2: right 1
+    // 3: all 1
+    amountVertex = Math.floor(Math.random()*9) + 4; // 4 to 12
+    var numL = Math.floor(Math.random()*(amountVertex-3)) + 1; // 1 to N-3
+    if (numL > 6) numL = 6;
+    var numR = amountVertex-2-numL;
+    
+    iVL = {};
+    iEL = {};
+    amountEdge = 0;
+
+    iVL[0] = {
+      "x": 50,
+      "y": 175,
+    }
+
+    iVL[amountVertex-1] = {
+      "x": 650,
+      "y": 175,
+    }
+
+    for (var i = 1; i <= numL; i++) {
+      iVL[i] = {
+        "x": 250,
+        "y": (175 + (i - (numL+1)/2) * (numL == 1 ? 0 : 300/(numL-1))),
+      }
+      iEL[amountEdge] = {
+        "u": 0,
+        "v": i,
+        "w": 1
+      }
+      if (randomType == 0 || randomType == 2)
+        iEL[amountEdge]["w"] = 1+Math.floor(Math.random()*9);
+      amountEdge++;
+    }
+
+    for (var i = 1; i <= numR; i++) {
+      iVL[i+numL] = {
+        "x": 450,
+        "y": (175 + (i - (numR+1)/2) * (numR == 1 ? 0 : 300/(numR-1))),
+      }
+      iEL[amountEdge] = {
+        "u": i+numL,
+        "v": amountVertex-1,
+        "w": 1
+      }
+      if (randomType == 0 || randomType == 1)
+        iEL[amountEdge]["w"] = 1+Math.floor(Math.random()*9);
+      amountEdge++;
+    }
+
+    for (var i = 1; i <= numL; i++) {
+      for (var j = 1; j <= numR; j++) {
+        var existEdge = Math.floor(Math.random()*2);
+        if (existEdge == 1) {
+          iEL[amountEdge] = {
+            "u": i,
+            "v": j+numL,
+            "w": 9
+          }
+          amountEdge++;
+        }
+      }
+    }
+
+    amountVertex = 0;
+    amountEdge = 0;
+    for (var i in iVL) amountVertex++;
+    for (var i in iEL) amountEdge++;
+    var newState = createState(iVL, iEL);
+    gw.updateGraph(newState, 500);
+
+    $('#sourcevertex').val(0);
+    $('#sinkvertex').val(amountVertex-1);
+    return true;
+  }
+
+  function createState(iVLObject, iELObject, vertexHighlighted, edgeRed, vertexTraversed, edgeYellow, edgeBlue, edgeGrey) {
+    if (vertexHighlighted == null) vertexHighlighted = {};
+    if (edgeRed == null) edgeRed = {};
+    if (vertexTraversed == null) vertexTraversed = {};
+    if (edgeYellow == null) edgeYellow = {};
+    if (edgeBlue == null) edgeBlue = {};
+    if (edgeGrey == null) edgeGrey = {};
+
+    var key;
+    var state = {
+      "vl":{},
+      "el":{}
+    };
+
+    for (key in iVLObject) {
+      state["vl"][key] = {};
+      state["vl"][key]["cx"] = iVLObject[key]["x"];
+      state["vl"][key]["cy"] = iVLObject[key]["y"];
+      if (iVLObject[key]["text"] == null)
+        state["vl"][key]["text"] = +key;
+      else
+        state["vl"][key]["text"] = iVLObject[key]["text"];
+      if (iVLObject[key]["state"] == OBJ_HIDDEN)
+        state["vl"][key]["state"] = OBJ_HIDDEN;
+      else
+        state["vl"][key]["state"] = VERTEX_DEFAULT;
+      state["vl"][key]["extratext"] = iVLObject[key]["extratext"];
+    }
+
+    for (key in iELObject) {
+      state["el"][key] = {};
+      state["el"][key]["vertexA"] = iELObject[key]["u"];
+      state["el"][key]["vertexB"] = iELObject[key]["v"];
+      state["el"][key]["type"] = EDGE_TYPE_DE;
+      state["el"][key]["weight"] = iELObject[key]["w"];
+      if (iELObject[key]["state"] == OBJ_HIDDEN)
+        state["el"][key]["state"] = OBJ_HIDDEN;
+      else
+        state["el"][key]["state"] = EDGE_DEFAULT;
+      state["el"][key]["displayWeight"] = true;
+      state["el"][key]["animateHighlighted"] = false;
+    }
+
+    for (key in vertexHighlighted)
+      state["vl"][key]["state"] = VERTEX_HIGHLIGHTED;
+
+    for (key in edgeRed)
+      state["el"][key]["state"] = EDGE_RED;
+
+    for (key in vertexTraversed)
+      state["vl"][key]["state"] = VERTEX_TRAVERSED;
+
+    for (key in edgeYellow)
+      state["el"][key]["state"] = EDGE_TRAVERSED;
+
+    for (key in edgeBlue)
+      state["el"][key]["state"] = EDGE_BLUE;
+
+    for (key in edgeGrey)
+      state["el"][key]["state"] = EDGE_GREY;
+
+    return state;
+  }
+  
+  function populatePseudocode(act) {
+    switch (act) {
+      case 0: // Edmonds Karp
+        // $('#code1').html('initMaxFlow');
+        // $('#code2').html('while there is an augmenting path');
+        // $('#code3').html('&nbsp;&nbsp;find an augmenting path using BFS');
+        // $('#code4').html('&nbsp;&nbsp;for each edge u->v in the path');
+        // $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;decrease capacity u->v by bottleneck');
+        // $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;increase capacity v->u by bottleneck');
+        // $('#code7').html('&nbsp;&nbsp;increase maxflow by bottleneck');
+        $('#code1').html('initMaxFlow');
+        $('#code2').html('while there is an augmenting path');
+        $('#code3').html('&nbsp;&nbsp;find an augmenting path using BFS');
+        $('#code4').html('&nbsp;&nbsp;for each edge u-&gt;v in the path');
+        $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;decrease capacity u-&gt;v by bottleneck');
+        $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;increase capacity v-&gt;u by bottleneck');
+        $('#code7').html('&nbsp;&nbsp;increase maxflow by bottleneck');
+        break;
+      case 1: // Ford Fulkerson
+        // $('#code1').html('initMaxFlow');
+        // $('#code2').html('while there is an augmenting path');
+        // $('#code3').html('&nbsp;&nbsp;find an augmenting path using DFS');
+        // $('#code4').html('&nbsp;&nbsp;for each edge u->v in the path');
+        // $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;decrease capacity u->v by bottleneck');
+        // $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;increase capacity v->u by bottleneck');
+        // $('#code7').html('&nbsp;&nbsp;increase maxflow by bottleneck');
+        $('#code1').html('initMaxFlow');
+        $('#code2').html('while there is an augmenting path');
+        $('#code3').html('&nbsp;&nbsp;find an augmenting path using DFS');
+        $('#code4').html('&nbsp;&nbsp;for each edge u-&gt;v in the path');
+        $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;decrease capacity u-&gt;v by bottleneck');
+        $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;increase capacity v-&gt;u by bottleneck');
+        $('#code7').html('&nbsp;&nbsp;increase maxflow by bottleneck');
+        break;
+      case 2: // Dinic
+        // $('#code1').html('initMaxFlow');
+        // $('#code2').html('while t is reachable from s in the residual graph');
+        // $('#code3').html('&nbsp;&nbsp;find the level graph (BFS)');
+        // $('#code4').html('&nbsp;&nbsp;for each blocking flow in the level graph (DFS)');
+        // $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;update the capacity in the blocking flow');
+        // $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;increase maxflow by bottleneck');
+        // $('#code7').html('');
+        $('#code1').html('initMaxFlow');
+        $('#code2').html('while t is reachable from s in the residual graph');
+        $('#code3').html('&nbsp;&nbsp;find the level graph (BFS)');
+        $('#code4').html('&nbsp;&nbsp;for each blocking flow in the level graph (DFS)');
+        $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;update the capacity in the blocking flow');
+        $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;increase maxflow by bottleneck');
+        $('#code7').html('');
+        break;
+      case 3: // Rook Attack Modeling
+        // $('#code1').html('Create source and sink vertex');
+        // $('#code2').html('Create one vertex Ri for each row i');
+        // $('#code3').html('Create one vertex Cj for each column j');
+        // $('#code4').html('For each rook-placable cell (i,j)');
+        // $('#code5').html('&nbsp;&nbsp;Add an edge from Ri to Cj with capacity INF');
+        // $('#code6').html('Run any maxflow algorithm');
+        $('#code1').html('Create source and sink vertex');
+        $('#code2').html('Create one vertex Ri for each row i');
+        $('#code3').html('Create one vertex Cj for each column j');
+        $('#code4').html('For each rook-placable cell (i,j)');
+        $('#code5').html('&nbsp;&nbsp;Add an edge from Ri to Cj with capacity INF');
+        $('#code6').html('Run any maxflow algorithm');
+        $('#code7').html('');
+        break;
+      case 4: // Baseball Elimination Modeling
+        // $('#code1').html('Checking for obvious cases');
+        // $('#code2').html('For every team X,Y');
+        // $('#code3').html('&nbsp;&nbsp;Create XvY vertex. Connect source to the vertex');
+        // $('#code4').html('For every team X');
+        // $('#code5').html('&nbsp;&nbsp;Create TX vertex. Connect the vertex to sink');
+        // $('#code6').html('Connect XvY vertex to TX and TY with capacity INF');
+        // $('#code7').html('Run any maxflow algorithm');
+        $('#code1').html('Checking for obvious cases');
+        $('#code2').html('For every team X,Y');
+        $('#code3').html('&nbsp;&nbsp;Create XvY vertex. Connect source to the vertex');
+        $('#code4').html('For every team X');
+        $('#code5').html('&nbsp;&nbsp;Create TX vertex. Connect the vertex to sink');
+        $('#code6').html('Connect XvY vertex to TX and TY with capacity INF');
+        $('#code7').html('Run any maxflow algorithm');
+        break;
+    }
+  }
+}
+
+
+
+// MaxFlow_action.js
+var actionsWidth = 150;
+var statusCodetraceWidth = 410;
+
+var isModelingOpen = false, isExamplesOpen = false, isCountMaximumFlowOpen = false;
+
+function openModeling() {
+  //$(".modeling").css("bottom","150px");
+  $('#rookattack-input').hide();
+  $('#baseball-input').hide();
+  $('#bipartite-input').hide();
+  if (!isModelingOpen) {
+    $('.modeling').fadeIn('fast');
+    isModelingOpen = true;
+  }
+}
+
+function closeModeling() {
+  if (isModelingOpen) {
+    $('.modeling').fadeOut('fast');
+    $('#modeling-err').html("");
+    isModelingOpen = false;
+  }
+}
+
+function openExamples() {
+  if (!isExamplesOpen) {
+    $('.examples').fadeIn('fast');
+    isExamplesOpen = true;
+  }
+}
+
+function closeExamples() {
+  if (isExamplesOpen) {
+    $('.examples').fadeOut('fast');
+    isExamplesOpen = false;
+  }
+}
+
+function openCountMaximumFlow() {
+  if (!isCountMaximumFlowOpen) {
+    $('.countmaxflow').fadeIn('fast');
+    $('#countmaxflow-go').show();
+    $('#countmaxflow-algorithm').hide();
+    isCountMaximumFlowOpen = true;
+  }
+}
+
+function closeCountMaximumFlow() {
+  if (isCountMaximumFlowOpen) {
+    $('.countmaxflow').fadeOut('fast');
+    $('#countmaxflow-err').html("");
+    isCountMaximumFlowOpen = false;
+  }
+}
+
+function hideEntireActionsPanel() {
+  closeModeling();
+  closeExamples();
+  closeCountMaximumFlow();
+  hideActionsPanel();
+}
+
+
+
+// local
+var mfw, gw, randomGraphID = -1;
+
+$(function() {
+  write(false, false);
+  $('#play').hide();
+  mfw = new MaxFlow();
+  gw = mfw.getGraphWidget();
+  var options = [CP3_4_24, CP3_4_26_1, CP3_4_26_2, CP3_4_26_3, FORDFULKERSON_KILLER, DINIC_SHOWCASE];
+  mfw.examples(options[Math.floor(Math.random()*6)]);
+  randomGraphID = -1;
+
+  var graphJSON = getQueryVariable("create");
+  if (graphJSON.length > 0) {
+    importjson(graphJSON);
+    window.history.pushState("object or string", "Title", window.location.href.split('?')[0]);
+  }
+
+  $('#modeling').click(function() {
+    openModeling();
+    closeExamples();
+    closeCountMaximumFlow();
+  });
+
+  $('#examples').click(function() {
+    closeModeling();
+    openExamples();
+    closeCountMaximumFlow();
+  });
+
+  $('#countmaxflow').click(function() {
+    closeModeling();
+    closeExamples();
+    openCountMaximumFlow();
+  });
+});
+
+function importjson(text) {
+  if (isPlaying) stop();
+  if (mode == "exploration") {
+    mfw.importjson(text);
+    closeExamples();
+    isPlaying = false;
+  }
+}
+
+function drawGraph() {
+  if (isPlaying) stop();
+  if (mode == "exploration") {
+    $('#dark-overlay').fadeIn(function() {
+      $('#drawgraph').fadeIn();
+    });
+    mfw.startLoop();
+    isPlaying = false;
+  }
+}
+  
+function drawDone() {
+  if (!mfw.draw()) return false;
+  mfw.stopLoop();
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+function drawCancel() {
+  mfw.stopLoop();
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+function bipartiteRandom(randomType) {
+  mfw.bipartiteRandom(randomType);
+}
+
+function createRandom() {
+  if (isPlaying) stop();
+  if (mode == "exploration") {
+    var n = Math.floor(5 + Math.random()*6);
+    $.ajax({
+      url: PHP_DOMAIN + "/php/Graph.php?mode=" + MODE_GET_RANDOM_SUBMITTED_GRAPH + "&directed=" + 1 + "&connected=" + 1
+    }).done(function(data){
+      data = JSON.parse(data);
+      var graph = extractQnGraph(data.graph);
+      if (data.graphID == randomGraphID) // make sure it is different, make sure #graph > 1
+        createRandom();
+      randomGraphID = data.graphID;
+      mfw.initRandom(graph);
+      $('#rate-sample-graph').show();
+    })
+    $('#progress-bar').slider( "option", "max", 0);
+    closeExamples();
+    isPlaying = false;
+  }
+}
+
+function modelingOpen(modelingType) {
+  //$(".modeling").css("bottom","117px");
+  if (modelingType != "rookattack") $('#rookattack-input').fadeOut('fast');
+  if (modelingType != "baseball")   $('#baseball-input').fadeOut('fast');
+  if (modelingType != "bipartite")  $('#bipartite-input').fadeOut('fast');
+  $('#' + modelingType + '-input').fadeIn('fast');
+}
+
+function modeling(modelingType) {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if (mode != "exploration") return;
+    if (!mfw.modeling(modelingType)) return;
+  }, 500);
+}
+
+function example(id) {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if ((mode == "exploration") && mfw.examples(id)) {
+      $('#progress-bar').slider( "option", "max", 0);
+      closeExamples();
+      closeCountMaximumFlow();
+      isPlaying = false;
+    }
+  }, 500);
+}
+
+function countmaxflow(algorithm) {
+  if (algorithm == 'GO') {
+    $('#countmaxflow-go').hide();
+    $('#countmaxflow-algorithm').fadeIn('fast');
+    return;
+  }
+  if (isPlaying) stop();
+  var source = parseInt($('#sourcevertex').val());
+  var sink = parseInt($('#sinkvertex').val());
+  setTimeout( function()  {
+    if (mode != "exploration") return;
+    if (!mfw.countmaxflow(algorithm,source,sink)) return;
+    $('#current-action').show();
+    if (algorithm == "edmondskarp")
+      $('#current-action p').html("Edmonds Karp(" + source + "," + sink + ")");
+    if (algorithm == "fordfulkerson")
+      $('#current-action p').html("Ford Fulkerson(" + source + "," + sink + ")");
+    if (algorithm == "dinic")
+      $('#current-action p').html("Dinic(" + source + "," + sink + ")");
+    $('#progress-bar').slider( "option", "max", gw.getTotalIteration()-1);
+    triggerRightPanels();
+    isPlaying = true;
+  }, 500);
+}
+</script>
+</body>
+</html>

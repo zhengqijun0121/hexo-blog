@@ -1,0 +1,301 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Waline 使用配置 | 我的博客</title><meta name="keywords" content="hexo,waline,valine,comment,评论,博客"><meta name="author" content="Zhengqijun"><meta name="copyright" content="Zhengqijun"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Waline-使用配置">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Waline 使用配置">
+<meta property="og:url" content="https://zhengqijun0121.github.io/posts/6a113360.html">
+<meta property="og:site_name" content="我的博客">
+<meta property="og:description" content="Waline-使用配置">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/gallery/bg/bg12.webp">
+<meta property="article:published_time" content="2020-02-02T02:22:35.000Z">
+<meta property="article:modified_time" content="2021-04-26T08:07:48.125Z">
+<meta property="article:author" content="Zhengqijun">
+<meta property="article:tag" content="Hexo">
+<meta property="article:tag" content="Waline">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/gallery/bg/bg12.webp"><link rel="shortcut icon" href="/blog/img/favicon.png"><link rel="canonical" href="https://zhengqijun0121.github.io/posts/6a113360"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/blog/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-7XF2LE3X13"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-7XF2LE3X13');
+</script><script>const GLOBAL_CONFIG = { 
+  root: '/blog/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: true
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-04-26 16:07:48'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    })(window)</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/butterfly/mouse/mouse.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/butterfly/mouse/scrollbar.min.css"><meta name="generator" content="Hexo 5.3.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<link rel="alternate" href="/blog/atom.xml" title="我的博客" type="application/atom+xml">
+</head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" data-lazy-src="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/avatar.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/blog/archives/"><div class="headline">文章</div><div class="length-num">22</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/blog/tags/"><div class="headline">标签</div><div class="length-num">11</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/blog/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/blog/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/blog/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/blog/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/blog/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand hide"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/blog/gallery/"><i class="fa-fw fas fa-image"></i><span> 相册</span></a></li><li><a class="site-page" href="/blog/epidemic/"><i class="fa-fw fas fa-hospital"></i><span> 疫情</span></a></li><li><a class="site-page" href="/blog/html/emoji/"><i class="fa-fw fas fa-icons"></i><span> 表情</span></a></li><li><a class="site-page" href="/blog/html/editor.md/"><i class="fa-fw fab fa-markdown"></i><span> 编辑</span></a></li><li><a class="site-page" href="/blog/html/visualization/"><i class="fa-fw fas fa-laptop-code"></i><span> 算法</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><i class="fa-fw fas fa-heartbeat"></i><span> 娱乐</span><i class="fas fa-chevron-down expand hide"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/blog/html/2048/"><i class="fa-fw fab fa-draft2digital"></i><span> 2048</span></a></li><li><a class="site-page" href="/blog/html/bird/"><i class="fa-fw fab fa-earlybirds"></i><span> 小鸟</span></a></li><li><a class="site-page" href="/blog/html/dino/"><i class="fa-fw fas fa-dragon"></i><span> 恐龙</span></a></li><li><a class="site-page" href="/blog/html/fluid/"><i class="fa-fw fas fa-water"></i><span> 流体</span></a></li><li><a class="site-page" href="/blog/html/pacman/"><i class="fa-fw fas fa-utensils"></i><span> 吃豆</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/blog/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/blog/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="not-top-img" id="page-header"><nav id="nav"><span id="blog_name"><a id="site-name" href="/blog/">我的博客</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/blog/"><i class="fa-fw fas fa-home"></i><span> 主页</span></a></div><div class="menus_item"><a class="site-page" href="/blog/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/blog/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/blog/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand hide"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/blog/gallery/"><i class="fa-fw fas fa-image"></i><span> 相册</span></a></li><li><a class="site-page" href="/blog/epidemic/"><i class="fa-fw fas fa-hospital"></i><span> 疫情</span></a></li><li><a class="site-page" href="/blog/html/emoji/"><i class="fa-fw fas fa-icons"></i><span> 表情</span></a></li><li><a class="site-page" href="/blog/html/editor.md/"><i class="fa-fw fab fa-markdown"></i><span> 编辑</span></a></li><li><a class="site-page" href="/blog/html/visualization/"><i class="fa-fw fas fa-laptop-code"></i><span> 算法</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><i class="fa-fw fas fa-heartbeat"></i><span> 娱乐</span><i class="fas fa-chevron-down expand hide"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/blog/html/2048/"><i class="fa-fw fab fa-draft2digital"></i><span> 2048</span></a></li><li><a class="site-page" href="/blog/html/bird/"><i class="fa-fw fab fa-earlybirds"></i><span> 小鸟</span></a></li><li><a class="site-page" href="/blog/html/dino/"><i class="fa-fw fas fa-dragon"></i><span> 恐龙</span></a></li><li><a class="site-page" href="/blog/html/fluid/"><i class="fa-fw fas fa-water"></i><span> 流体</span></a></li><li><a class="site-page" href="/blog/html/pacman/"><i class="fa-fw fas fa-utensils"></i><span> 吃豆</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/blog/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/blog/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav></header><main class="layout" id="content-inner"><div id="post"><div id="post-info"><h1 class="post-title">Waline 使用配置</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-02-02T02:22:35.000Z" title="发表于 2020-02-02 10:22:35">2020-02-02</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-04-26T08:07:48.125Z" title="更新于 2021-04-26 16:07:48">2021-04-26</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/blog/categories/Hexo/">Hexo</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>3分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div><article class="post-content" id="article-container"><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p><img src= "https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading.gif" data-lazy-src="https://img.shields.io/npm/v/@waline/vercel?color=critical&amp;logo=npm&amp;style=flat-square" alt="img"> <img src= "https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading.gif" data-lazy-src="https://img.shields.io/bundlephobia/minzip/@waline/client?style=flat-square&amp;label=size" alt="npm bundle size (scoped)"> <img src= "https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading.gif" data-lazy-src="https://img.shields.io/npm/dm/@waline/vercel?style=flat-square" alt="npm"> <img src= "https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading.gif" data-lazy-src="https://img.shields.io/github/license/lizheming/waline?style=flat-square" alt="GitHub"> <a target="_blank" rel="noopener external nofollow noreferrer" href="https://qm.qq.com/cgi-bin/qm/qr?k=rPZvq_EBfwQa6QZX7sToVlhH49c6ed0R&amp;jump_from=webapi"><img src= "https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading.gif" data-lazy-src="https://img.shields.io/badge/QQ-673663898-25bdff?logo=tencent-qq&amp;style=flat-square" alt="img">(opens new window)</a></p>
+<p>Waline - 一款从 <a target="_blank" rel="noopener external nofollow noreferrer" href="https://valine.js.org/">Valine (opens new window)</a> 衍生的带后端评论系统。可以将 Waline 等价成 With backend Valine.</p>
+<h3 id="特性"><a href="#特性" class="headerlink" title="特性"></a>特性</h3><ul>
+<li>快速</li>
+<li>真·安全</li>
+<li>Markdown 语法支持</li>
+<li>轻量易用</li>
+<li>免费部署</li>
+<li>多种部署部署方式和存储服务支持，每列选择一项多达 48 种部署方式任君选择</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Waline</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>客户端脚本</strong></td>
+<td><strong>服务端部署</strong></td>
+<td><strong>数据存储</strong></td>
+</tr>
+<tr>
+<td>@waline/client</td>
+<td>Vercel</td>
+<td>LeanCloud</td>
+</tr>
+<tr>
+<td>MiniValine</td>
+<td>CloudBase</td>
+<td>CloudBase</td>
+</tr>
+<tr>
+<td></td>
+<td>Docker</td>
+<td>MongoDB</td>
+</tr>
+<tr>
+<td></td>
+<td>独立部署</td>
+<td>MySQL</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>SQLite</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>PostgreSQL</td>
+</tr>
+</tbody></table>
+<h3 id="Todo"><a href="#Todo" class="headerlink" title="Todo"></a>Todo</h3><ul>
+<li>✅ 邮件通知</li>
+<li>✅ 微信通知</li>
+<li>✅ QQ 通知</li>
+<li>✅ Telegram 通知</li>
+<li>✅ Akismet</li>
+<li>✅ 文章统计</li>
+<li>✅ 多语言同步</li>
+<li>✅ 自定义语言支持</li>
+<li>✅ 登录支持</li>
+<li>✅ 评论管理</li>
+<li>✅ 评论删除</li>
+<li>✅ 其它数据库支持（已支持 LeanCloud, MySQL, MongoDB, SQLite, PostgreSQL)</li>
+<li>✅ 基于 IP 的发布评论频率限制</li>
+<li>✅ 基于关键词的评论过滤限制</li>
+<li>✅ IP 黑名单</li>
+<li>✅ 重复内容检测</li>
+<li>✅ CloudBase 腾讯云开发部署支持</li>
+<li>✅ 社交登录</li>
+<li>AWS, GCP, Azure 部署支持</li>
+<li>置顶评论</li>
+<li>评论赞踩</li>
+<li>其它…</li>
+</ul>
+<h2 id="快速开始"><a href="#快速开始" class="headerlink" title="快速开始"></a>快速开始</h2><p>如果你想在某个网页或者文章页中使用 Waline，请参照以下步骤配置</p>
+<h3 id="获取-APP-ID-和-APP-Key"><a href="#获取-APP-ID-和-APP-Key" class="headerlink" title="获取 APP ID 和 APP Key"></a>获取 APP ID 和 APP Key</h3><p>请先<a target="_blank" rel="noopener external nofollow noreferrer" href="https://console.leancloud.app/login.html#/signin">登录 (opens new window)</a>或<a target="_blank" rel="noopener external nofollow noreferrer" href="https://console.leancloud.app/login.html#/signup">注册 (opens new window)</a><code>LeanCloud 国际版</code>, 进入<a target="_blank" rel="noopener external nofollow noreferrer" href="https://console.leancloud.app/applist.html#/apps">控制台 (opens new window)</a>后点击左下角<a target="_blank" rel="noopener external nofollow noreferrer" href="https://console.leancloud.app/applist.html#/newapp">创建应用 (opens new window)</a>：</p>
+<p><img src= "https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading.gif" data-lazy-src="https://i.loli.net/2019/06/21/5d0c995c86fac81746.jpg" alt="img"></p>
+<p>应用创建好以后，进入刚刚创建的应用，选择左下角的<code>设置</code>&gt;<code>应用Key</code>，然后就能看到你的<code>APP ID</code>,<code>APP Key</code>和<code>Master Key</code>了：</p>
+<p><img src= "https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading.gif" data-lazy-src="https://i.loli.net/2019/06/21/5d0c997a60baa24436.jpg" alt="img"></p>
+<blockquote>
+<p><strong>注：</strong><br>这里推荐使用 Leancloud 国际版。如果你确实想用 Leancloud 国内版的话（国际版是 <a target="_blank" rel="noopener external nofollow noreferrer" href="https://leancloud.app/">leancloud.app (opens new window)</a>，非国际版是 <a target="_blank" rel="noopener external nofollow noreferrer" href="https://leancloud.cn/">leancloud.cn (opens new window)</a>），除了 <code>APP_ID</code>, <code>APP_Key</code> 和 <code>Master Key</code> 之外，还需要对应用进行域名绑定。<br>进入应用后选择 设置 &gt; 域名绑定 &gt; API 访问域名 绑定新域名 &gt; 输入需要绑定的已备案域名点击 确定。之后按照页面上的提示去 DNS 上做正确的 CNAME 解析即可。</p>
+<p><img src= "https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading.gif" data-lazy-src="https://i.loli.net/2020/11/09/xfsX4JKt9zhuaiB.png" alt="img"></p>
+</blockquote>
+<h3 id="Vercel-部署"><a href="#Vercel-部署" class="headerlink" title="Vercel 部署"></a>Vercel 部署</h3><p><a target="_blank" rel="noopener external nofollow noreferrer" href="https://vercel.com/import/project?template=https://github.com/lizheming/waline/tree/master/example"><img src= "https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading.gif" data-lazy-src="https://vercel.com/button" alt="img"> (opens new window)</a></p>
+<p>点击上方按钮，跳转至 Vercel 进行快速部署。未登录的话需要登录，这里选 Github 登录即可。登录后会让你输入 Vercel 项目名称。</p>
+<p><img src= "https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading.gif" data-lazy-src="https://p2.ssl.qhimg.com/t018cd2a91a8896a555.png" alt="img"></p>
+<p>输入名称后点击 Continue 进入下一步，输入 Github 仓库名称。Vercel 会基于 waline 模板帮助你新建并初始化该仓库。</p>
+<p><img src= "https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading.gif" data-lazy-src="https://p4.ssl.qhimg.com/t01bb30e74f85ddf5b3.png" alt="img"></p>
+<p>仓库初始化完毕后开始准备部署到 Vercel。这里需要在 Environment Variables 初配置 <code>LEAN_ID</code>, <code>LEAN_KEY</code> 和 <code>LEAN_MASTER_KEY</code> 三个环境变量。它们的值分别对应上一步在 LeanCloud 中获得的 <code>APP ID</code>, <code>APP KEY</code>, <code>Master Key</code>。如果你是 LeanCloud 国内版用户的话，还需要输入 <code>LEAN_SERVER</code> 环境变量，对应的是你在上一步上绑定的已备案域名。</p>
+<p><img src= "https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading.gif" data-lazy-src="https://p5.ssl.qhimg.com/t019aec05e3e5fea5cc.png" alt="img"></p>
+<p>点击 Deploy 就会开始进行部署了。稍等片刻，就会看到满屏的烟花庆祝你部署成功了。点击 Visit 会跳转到部署好的网站地址上，该地址即为之后需要填入的 <code>serverURL</code> 地址。</p>
+<p><img src= "https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading.gif" data-lazy-src="https://p0.ssl.qhimg.com/t0142b58c2e8f886b28.png" alt="img"></p>
+<h3 id="HTML-片段"><a href="#HTML-片段" class="headerlink" title="HTML 片段"></a>HTML 片段</h3><p>修改初始化对象中的 <code>serverURL</code> 的值为上面刚刚获取到的二级域名即可(其他可以默认)。</p>
+<figure class="highlight html"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  ..</span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">'//cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js'</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line">  ...</span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  ...</span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"waline"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="javascript">    <span class="keyword">new</span> Waline({</span></span><br><span class="line"><span class="javascript">      el: <span class="string">'#waline'</span>,</span></span><br><span class="line">      path: location.pathname,</span><br><span class="line"><span class="javascript">      serverURL: <span class="string">'https://your-domain.vercel.app'</span></span></span><br><span class="line">    });</span><br><span class="line">  <span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br></pre></td></tr></tbody></table></figure>
+<h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><p>修改初始化对象中的 <code>serverURL</code> 的值为上面刚刚获取到的二级域名即可(其他可以默认)。</p>
+<figure class="highlight js"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> Waline({</span><br><span class="line">  el: <span class="string">'#waline'</span>,</span><br><span class="line">  path: location.pathname</span><br><span class="line">});</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="NPM"><a href="#NPM" class="headerlink" title="NPM"></a>NPM</h3><p>Waline 已发布到<a target="_blank" rel="noopener external nofollow noreferrer" href="https://www.npmjs.com/package/@waline/client">npm (opens new window)</a>，可以直接用命令安装：</p>
+<figure class="highlight bash"><table><tbody><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Install waline</span></span><br><span class="line">npm install @waline/client --save-dev</span><br><span class="line">// Use import</span><br><span class="line">import Waline from <span class="string">'@waline/client'</span>;</span><br><span class="line">// or Use require</span><br><span class="line">const Waline = require(<span class="string">'@waline/client'</span>);</span><br><span class="line"></span><br><span class="line">new Waline({</span><br><span class="line">  el:<span class="string">'#waline'</span>,</span><br><span class="line">  // other config</span><br><span class="line">})</span><br></pre></td></tr></tbody></table></figure>
+<h3 id="评论数据管理"><a href="#评论数据管理" class="headerlink" title="评论数据管理"></a>评论数据管理</h3><p>Waline 还带有简单的后台，可以实现对评论的管理。部署完成后访问 <code>&lt;serverURL&gt;/ui/register</code> 进行注册，第一个注册的你会被设定成管理员。登录成功后就可以看到评论管理的界面了，大家可以收藏该地址方便后续使用。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined" rel="external nofollow noreferrer">Zhengqijun</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://zhengqijun0121.github.io/posts/6a113360.html">https://zhengqijun0121.github.io/posts/6a113360.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow noreferrer" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://zhengqijun0121.github.io" target="_blank">我的博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/blog/tags/Hexo/">Hexo</a><a class="post-meta__tags" href="/blog/tags/Waline/">Waline</a></div><div class="post_share"><div class="social-share" data-image="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/gallery/bg/bg12.webp" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/blog/posts/f255ffad.html"><img class="prev-cover" data-lazy-src="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/gallery/bg/bg11.webp" onerror="onerror=null;src='/blog/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">docker</div></div></a></div><div class="next-post pull-right"><a href="/blog/posts/3174f991.html"><img class="next-cover" data-lazy-src="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/gallery/bg/bg03.webp" onerror="onerror=null;src='/blog/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">Butterfly 主题配置</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/blog/posts/9c175aca.html" title="Butterfly 安装文档(一) 快速开始"><img class="cover" data-lazy-src="https://cdn.jsdelivr.net/gh/jerryc127/CDN/img/butterfly-docs-01-cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-05-28</div><div class="title">Butterfly 安装文档(一) 快速开始</div></div></a></div><div><a href="/blog/posts/f3c07146.html" title="Butterfly 安装文档(二) 主题页面"><img class="cover" data-lazy-src="https://cdn.jsdelivr.net/gh/jerryc127/CDN/img/Butterfly-docs-02-cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-05-28</div><div class="title">Butterfly 安装文档(二) 主题页面</div></div></a></div><div><a href="/blog/posts/cb303156.html" title="Butterfly 安装文档(五) 主题问答"><img class="cover" data-lazy-src="https://cdn.jsdelivr.net/gh/jerryc127/CDN/img/butterfly-doc-05-cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-05-28</div><div class="title">Butterfly 安装文档(五) 主题问答</div></div></a></div><div><a href="/blog/posts/3174f991.html" title="Butterfly 主题配置"><img class="cover" data-lazy-src="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/gallery/bg/bg03.webp" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-01-22</div><div class="title">Butterfly 主题配置</div></div></a></div><div><a href="/blog/posts/7747e0c9.html" title="Butterfly 安装文档(六) 进阶教程"><img class="cover" data-lazy-src="https://cdn.jsdelivr.net/gh/jerryc127/CDN/img/butterfly-docs-06-cover.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-05-28</div><div class="title">Butterfly 安装文档(六) 进阶教程</div></div></a></div><div><a href="/blog/posts/dc0bbd22.html" title="Hexo 环境搭建"><img class="cover" data-lazy-src="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/gallery/bg/bg15.webp" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2020-01-10</div><div class="title">Hexo 环境搭建</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="waline-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-info-avatar is-center"><img class="avatar-img" data-lazy-src="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/avatar.png" onerror="this.onerror=null;this.src='/blog/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">Zhengqijun</div><div class="author-info__description">blog</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/blog/archives/"><div class="headline">文章</div><div class="length-num">22</div></a></div><div class="card-info-data-item is-center"><a href="/blog/tags/"><div class="headline">标签</div><div class="length-num">11</div></a></div><div class="card-info-data-item is-center"><a href="/blog/categories/"><div class="headline">分类</div><div class="length-num">9</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/zhengqijun0121"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/zhengqijun0121" rel="external nofollow noreferrer" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="https://gitee.com/zhengqijun" rel="external nofollow noreferrer" target="_blank" title="Gitee"><i class="fab fa-github-alt"></i></a><a class="social-icon" href="mailto:zhengqijun0121@qq.com" rel="external nofollow noreferrer" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="/blog/atom.xml" target="_blank" title="RSS"><i class="fas fa-rss"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的博客！<br><img src="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/images/loading0.gif"></div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8B%E7%BB%8D"><span class="toc-number">1.</span> <span class="toc-text">介绍</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E6%80%A7"><span class="toc-number">1.1.</span> <span class="toc-text">特性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Todo"><span class="toc-number">1.2.</span> <span class="toc-text">Todo</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B"><span class="toc-number">2.</span> <span class="toc-text">快速开始</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96-APP-ID-%E5%92%8C-APP-Key"><span class="toc-number">2.1.</span> <span class="toc-text">获取 APP ID 和 APP Key</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Vercel-%E9%83%A8%E7%BD%B2"><span class="toc-number">2.2.</span> <span class="toc-text">Vercel 部署</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HTML-%E7%89%87%E6%AE%B5"><span class="toc-number">2.3.</span> <span class="toc-text">HTML 片段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE"><span class="toc-number">2.4.</span> <span class="toc-text">配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NPM"><span class="toc-number">2.5.</span> <span class="toc-text">NPM</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%84%E8%AE%BA%E6%95%B0%E6%8D%AE%E7%AE%A1%E7%90%86"><span class="toc-number">2.6.</span> <span class="toc-text">评论数据管理</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/blog/posts/cec05966.html" title="Git 命令详解"><img data-lazy-src="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/gallery/bg/bg18.webp" onerror="this.onerror=null;this.src='/blog/img/404.jpg'" alt="Git 命令详解"/></a><div class="content"><a class="title" href="/blog/posts/cec05966.html" title="Git 命令详解">Git 命令详解</a><time datetime="2021-02-03T03:20:00.000Z" title="发表于 2021-02-03 11:20:00">2021-02-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/blog/posts/5dae0c8f.html" title="Emoji 预览"><img data-lazy-src="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/gallery/bg/bg12.webp" onerror="this.onerror=null;this.src='/blog/img/404.jpg'" alt="Emoji 预览"/></a><div class="content"><a class="title" href="/blog/posts/5dae0c8f.html" title="Emoji 预览">Emoji 预览</a><time datetime="2021-02-02T09:30:10.000Z" title="发表于 2021-02-02 17:30:10">2021-02-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/blog/posts/7821ac43.html" title="软件工程"><img data-lazy-src="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/gallery/bg/bg11.webp" onerror="this.onerror=null;this.src='/blog/img/404.jpg'" alt="软件工程"/></a><div class="content"><a class="title" href="/blog/posts/7821ac43.html" title="软件工程">软件工程</a><time datetime="2020-06-22T02:30:20.000Z" title="发表于 2020-06-22 10:30:20">2020-06-22</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/blog/posts/a153319c.html" title="计算机系统基础"><img data-lazy-src="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/gallery/bg/bg07.webp" onerror="this.onerror=null;this.src='/blog/img/404.jpg'" alt="计算机系统基础"/></a><div class="content"><a class="title" href="/blog/posts/a153319c.html" title="计算机系统基础">计算机系统基础</a><time datetime="2020-06-16T06:30:20.000Z" title="发表于 2020-06-16 14:30:20">2020-06-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/blog/posts/17d8142c.html" title="数据结构与算法分析"><img data-lazy-src="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/gallery/bg/bg04.webp" onerror="this.onerror=null;this.src='/blog/img/404.jpg'" alt="数据结构与算法分析"/></a><div class="content"><a class="title" href="/blog/posts/17d8142c.html" title="数据结构与算法分析">数据结构与算法分析</a><time datetime="2020-06-12T06:30:20.000Z" title="发表于 2020-06-12 14:30:20">2020-06-12</time></div></div></div></div></div></div></main><footer id="footer" style="background-color: transparent;"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 &nbsp;<i style="color:#FF6A6A;animation: announ_animation 0.8s linear infinite;"class="fas fa-heart"></i>&nbsp; By Zhengqijun</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/blog/js/utils.js"></script><script src="/blog/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script>function panguFn () {
+  if (typeof pangu === 'object') pangu.autoSpacingPage()
+  else {
+    getScript('https://cdn.jsdelivr.net/npm/pangu/dist/browser/pangu.min.js')
+      .then(() => {
+        pangu.autoSpacingPage()
+      })
+  }
+}
+
+function panguInit () {
+  if (false){
+    GLOBAL_CONFIG_SITE.isPost && panguFn()
+  } else {
+    panguFn()
+  }
+}
+
+document.addEventListener('DOMContentLoaded', panguInit)</script><script src="/blog/js/search/local-search.js"></script><div class="js-pjax"><script>function loadWaline () {
+  function initWaline () {
+    let initData = {
+      el: '#waline-wrap',
+      serverURL: 'https://waline-squirrel.vercel.app/',
+      avatar: 'monsterid',
+      path: location.pathname,
+      emojiCDN: '',
+      emojiMaps: "",
+    }
+    
+    if (false) {
+      const otherData = false
+      initData = Object.assign(initData, otherData)
+    }
+    
+    const waline = new Waline(initData)
+  }
+
+  if (typeof Waline === 'function') initWaline() 
+  else getScript('https://cdn.jsdelivr.net/npm/@waline/client/dist/Waline.min.js').then(initWaline)
+}
+
+if ('Waline' === 'Waline' || !true) {
+  if (true) btf.loadComment(document.getElementById('waline-wrap'),loadWaline)
+  else setTimeout(loadWaline, 0)
+} else {
+  function loadOtherComment () {
+    loadWaline()
+  }
+}</script></div><script id="click-show-text" src="https://cdn.jsdelivr.net/gh/zhengqijun0121/cdn@main/butterfly/effect/click-show-text.min.js" data-mobile="false" data-text="富强,民主,文明,和谐,自由,平等,公正,法治,爱国,敬业,诚信,友善" data-fontsize="15px" data-random="false" async="async"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div><script src="/blog/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/blog/live2dw/assets/assets/shizuku.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"react":{"opacity":1},"log":false});</script></body></html>

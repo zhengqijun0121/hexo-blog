@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="VisuAlgo 是一个不断更新的项目，很多更复杂的高计算法还在发展研究当中。以下的算法可视化使我们下一步即将要实现的：哈希表，Jack Edmonds‘ 图形匹配算法，Hash Table (using several hashing techniques), Jack Edmonds&#39; Graph Matching algorithm, 有向最小生成树算法， 等等。 但是，这个项目最激动人心的发展就是一个可以自动生成问题平切评分的在线测试系统。它允许学生在线对自己数据结构与算法的学习进行测验。问题是通过学生的回答和一些算法随机生成的是即刻自动打分的。 当这个在线测">
+<meta name="keywords" content="VisuAlgo 数据结构和算法动态可视化">
+
+<meta name="csrf-token" content="kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<meta property="og:image" content="img/favicon.png">
+<title>VisuAlgo - 数据结构和算法动态可视化 (Chinese)</title>
+<link rel="icon" href="img/favicon.png" type="image/x-icon">
+<link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="img/favicon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="img/favicon.png">
+<link rel="apple-touch-icon" sizes="114x114" href="img/favicon.png">
+<link rel="stylesheet" type="text/css" href="fonts/silkscreen/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="css/common.css">
+<style>
+@charset  "utf-8";
+
+h1 {
+  text-align: center;
+  font-family: 'SilkscreenNormal';
+  font-size: 36px;
+  margin-top: 50px;
+}
+
+h2 {
+  text-align: center;
+  font-style: italic;
+  margin-bottom: 30px;
+  font-size: 15px;
+}
+
+#searchbar { text-align: center; }
+#search {
+  width: 250px;
+  padding: 7px 10px;
+  box-shadow: 0px 0px 3px #929292 inset;
+  background: white;
+  color: #888888;
+  font-size: 14px;
+}
+
+#show-filters {
+  cursor: pointer;
+  color: white;
+  padding: 7px 11px 6px;
+  margin-left: -1px;
+  display: inline-block;
+}
+#show-filters img { display: inline-block; vertical-align: 2px; }
+
+#active-tags { text-align: center; margin-left: -10px; }
+.active-tag {
+  display: inline-block;
+  position: relative;
+  background: #aaaaaa;
+  color: white;
+  padding: 4px 34px 4px 8px;
+  margin-top: 20px;
+  margin-left: 10px;
+  font-size: 14px;
+}
+.active-tag span { /*the cross*/
+  background: #444444;
+  display: inline-block;
+  padding: 3px;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  cursor: pointer;
+}
+.rotateRight {
+  transform: rotate(180deg);
+  -ms-transform: rotate(180deg); /* IE 9 */
+  -webkit-transform: rotate(180deg); /* Safari and Chrome */
+  -o-transform: rotate(180deg); /* Opera */
+  -moz-transform: rotate(180deg); /* Firefox */
+
+  /* if you want to do this move with animate use transition */
+  transition: .5s;
+  -moz-transition: .5s; /* Firefox 4 */
+  -webkit-transition: .5s; /* Safari and Chrome */
+  -o-transition: .5s; /* Opera */
+}
+
+.line { height: 1px; background: #cccccc; margin: 0px 30px;}
+#emptySearchMsg { text-align: center; font-size: 15px; margin-top: 20px; }
+#filters { padding: 20px 60px 12px 22px; overflow: auto; }
+  .filter {
+    color: white;
+    padding: 3px 8px;
+    margin: 0px 0px 8px 8px;
+    cursor: pointer;
+    border-radius: 2px;
+    float: left;
+  }
+
+.list { width: 100%; clear: both;}
+.list li {
+  display: block;
+  float: left;
+  width: 100%;
+}
+.list li .li-wrapper {
+  background: white;
+  padding-top: 10px;
+  padding-right: 10px;
+  padding-bottom: 10px;
+  margin-left: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0px 0px 3px #dddddd;
+}
+.list li .li-wrapper:hover {
+  box-shadow: 0px 0px 3px #aaaaaa;
+}
+.list li a.thumbnail {
+  display: block;
+  position: relative;
+  margin: 0px 0px 10px 10px;
+  cursor: pointer;
+}
+.list li a.thumbnail .overlay {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  text-align: center;
+}
+.list li a.thumbnail img { width: 100%; }
+.list li a.thumbnail img.static { width: 100%; position: absolute; top: 0px; }
+.list li a.thumbnail div { width: 100%; }
+.list li a.thumbnail div.static { width: 100%; position: absolute; top: 0px; }
+
+.list li .info { margin: 0px 0px 0px 10px; }
+.list li .info h3 {
+  font-size: 13px;
+  font-weight: bold;
+  color: #000000;
+  margin-bottom: 8px;
+}
+.list li .info h3:hover { color: #999999; }
+.list li .info .indv-viz-filters { margin-left: -8px; height: 23px; float: none; overflow: hidden; }
+
+#noexist {
+  display: block;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 20px;
+}
+
+#topleft {
+  border: 1px solid grey;
+  border-radius: 5px;
+  margin: 10px;
+  padding: 2px;
+  max-height: 200px;
+}
+
+#topright {
+  position: absolute;
+  top: 60px;
+  left: 1000px;
+  width: 90px;
+  height: 175px;
+  display: none;
+}
+
+@media (min-width: 320px) { /* 320-480px */
+  #topleft {
+    top: 20px;
+    width: 100%-; /* the - is to take into account the potential vertical scroll bar? */
+    position: relative;
+  }
+}
+
+@media (min-width: 480px) { /* 480-768px */
+  h1 { font-size: 50px; }
+  .line { margin: 0px 50px; }
+  #filters { padding: 20px 60px 12px 42px; }
+  .list li { width: 50%; }
+}
+
+@media (min-width: 768px) { /* 768-1024px */
+  .line { margin: 0px 60px; }
+  #filters { padding: 20px 60px 12px 52px; }
+  .list li { width: 33.33%; }
+}
+
+@media (min-width: 1024px) { /* more than 1024px */
+  .list li { width: 25%; }
+  #topleft {
+    top: 40px;
+    width: 25%;
+    position: absolute;
+  }
+}
+
+@media (min-width: 1400px) { /* more than 1400px */
+  .list li { width: 20%; }
+}
+
+.static {
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  display: inline-block;
+  height: 100%;
+  width: 300px;
+  opacity: 1;
+  backface-visibility: hidden;
+}
+
+/*.container {
+  position: relative;
+  width: 50%;
+}
+*/
+/*.image {
+  opacity: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: .5s ease;
+  backface-visibility: hidden;
+}
+*/
+.middle {
+  transition: .5s ease;
+  opacity: 0;
+  position: absolute;
+  top: 7%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%)
+}
+
+.li-wrapper:hover .static {
+  opacity: 0.3;
+}
+
+.li-wrapper:hover .middle {
+  opacity: 1;
+}
+
+.message {
+  font-size: 150%;
+  text-align: center;
+}
+
+
+
+#notloggedin {
+  background-color: black;
+  color: white;
+  border: 1px solid;
+  border-radius: 5px;
+  position: absolute;
+  width: 280px;
+  top: 50px;
+  right: 10px;
+  padding: 7px;
+  z-index: 1;
+}
+
+#notloggedin::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: 110px;
+  border-width: 10px;
+  border-style: solid;
+  border-color: transparent transparent black transparent;
+}
+</style>
+<link rel='alternate' hreflang='zh' href='zh'>
+<script>
+      function changeURL() {
+        var URL = window.location.href.split('/');
+        var val = document.getElementById("Language").value;
+        URL[3] = val;
+        window.location.assign(URL.join('/'));
+      }
+    </script>
+</head>
+<body>
+<div id="top-bar">
+<a id="home" href="/">Visu<span class="colour">Algo</span><span style="font-size: 40%">.net</span></a>
+/
+<select id="Language" onchange="changeURL()">
+<option value="zh" selected>zh</option>
+</select>
+</div>
+<div id="dark-overlay"></div>
+
+<h1>Visu<span class="colour">Algo</span><span style="font-size:25%">.net/zh</span></h1>
+<h2 id="subtitle">数据结构和算法动态可视化 (Chinese)
+</h2>
+<form id="searchbar">
+<input id="search" type="text" autocomplete="off" placeholder="搜索..."><div id="show-filters" title="show/hide filters">&#9663;</div>
+</form>
+<center><p><br><u>Featured story: Visualizing Algorithms with a Click</u>
+</p>
+</center>
+<div id="active-tags"></div>
+<div id="emptySearchMsg" style="display: none;">未找到任何结果.></div>
+<div id="filters-and-lines" style="display: none;">
+<div class="line" style="margin-top: 20px;"></div>
+<div id="filters"></div>
+<div class="line"></div>
+</div>
+<div id="topleft">
+<p style="margin-bottom: 8px;"><b>你知道吗？</b> <a class="links" onclick="nextTip()">下一个随机提示</a></p>
+<p id="msg" style="text-align: justify;"></p>
+</div>
+<div id="topright">
+
+</div>
+<p hidden id='msg_list0'>这是VisuAlgo的汉语默认界面。</p>
+<p hidden id='msg_list1'>在VisuAlgo中，您可以使用自己的输入进行任何算法，而不是样本输入。 在这6个图形相关的可视化中尝试图形绘制功能：图形DS，DFS / BFS，MST，SSSP，最大流量和匹配。 您也可以在这6个图表相关的可视化对象框中点击标签&#39;graph&#39;，或在搜索框中输入&#39;graph&#39;<br></p>
+<p hidden id='msg_list2'>为了比较2个相关算法， Kruskal的和Prim的在同一个图表上，打开2 VisuAlgo页面在2个窗口，并列他们。 点击这里查看截图。<br></p>
+<p hidden id='msg_list3'>您可以可视化可以用JavaScript编写的任何有效递归函数的递归树（或DAG，如果存在重叠的子问题和动态规划（DP））。 点击这里查看截图。</p>
+<p hidden id='msg_list4'>VisuAlgo loads fast for first time visitors, but it loads &#39;almost instantly&#39; for returning visitors as we cache lots of static content of VisuAlgo :) (please do not use incognito or private browsing mode to keep the cache). Moreover, if you have registered a VisuAlgo account, we will load VisuAlgo according to your preferences after you <a href="/login"><u>login</u></a>.</p>
+<p hidden id='msg_list5'>Each visualization page has an &#39;e-Lecture Mode&#39; that is accessible from that page&#39;s top right corner that explains the data structure and/or algorithm being visualized. This e-Lecture mode is automatically shown to first time (or non logged-in) visitors to showcase the data structure and/or the algorithm being visualized. The quality of e-Lecture Mode will gradually be made to reach the lecture standard of algorithm classes in National University of Singapore :).</p>
+<p hidden id='msg_list6'>Please check four newest features of VisuAlgo: 1). Multi-lingual capability (you don&#39;t have to rely on /en language at all times if you are not native English speaker), 2). User accounts (there are interesting perks and customizations available for loyal users, please <a href="/register"><u>register a free account now</u></a>), 3). Much more powerful e-Lecture mode to reach "NUS standard", and 4). Visualizations of NP-hard problems (currently MVC, TSP, and Steiner Tree).</p>
+<p hidden id='msg_list7'>VisuAlgo has two main components: The visualization pages (currently 23) and the Online Quiz component (currently 12 and will be 23 too in the near future). We do not script any of the questions in Online Quiz :O and all answers will be graded almost instantly :). You can try the online quiz at <a href="./training"><u>our training page</u></a> or by clicking the &#39;Training&#39; button on the visualization module.</p>
+<p hidden id='msg_list8'>搜索您最喜欢的搜索引擎中的术语“算法可视化”，您看到VisuAlgo在搜索结果的第一页:)？ 下一级：再次搜索该术语，但使用您的母语（如果不是英语）。 VisuAlgo是否仍然列在第一页？ :)。 并准备好惊讶：搜索您最喜欢的数据结构或算法的名称，而不提到关键字“动画”或“可视化”。 VisuAlgo是否仍然列在第一页？ :) :)。<br></p>
+<p hidden id='msg_list9'>VisuAlgo currently receives about ~3000 hits/day from various Computer Science students and teachers worldwide. Although this is a good number, we will keep improving VisuAlgo so that it can be even more useful for much more (new) CS students worldwide annually. Please spread the word if you are our returning visitors (<a href="/register"><u>register a free VisuAlgo account</u></a> so that we can know who you are) and like this tool :).</p>
+<div id="main">
+<ul class="list">
+<li class='viz' id='sorting'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/sorting.html' data-anim='sorting'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/sorting.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='sortingtext' href='zh/sorting.html'>排序<br></a><a class='links' href='training?diff=Medium&n=7&tl=0&module=sorting'>训练</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>数组</span>
+<span class='filter'>算法</span>
+<span class='filter'>冒泡<br></span>
+<span class='filter'>选择<br></span>
+<span class='filter'>插入<br></span>
+<span class='filter'>选择</span>
+<span class='filter'>插入</span>
+<span class='filter'>归并<br></span>
+<span class='filter'>快速<br></span>
+<span class='filter'>随机快速<br></span>
+<span class='filter'>计数<br></span>
+<span class='filter'>基</span>
+<span class='filter'>排序<br></span>
+<span class='filter'>cs1010</span>
+<span class='filter'>cs1020</span>
+<span class='filter'>cs2020</span>
+<span class='filter'>cs2040</span>
+<span class='filter'>cs3230</span>
+<span class='filter'>列表<br></span>
+<span class='filter'>数据结构</span>
+<span class='filter'>排序<br></span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='bitmask'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/bitmask.html' data-anim='bitmask'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/bitmask.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='bitmasktext' href='zh/bitmask.html'>位掩码</a><a class='links' href='training?diff=Medium&n=7&tl=0&module=bitmask'>训练</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>位操作<br></span>
+<span class='filter'>设置</span>
+<span class='filter'>cs3233</span>
+<span class='filter'>数组</span>
+<span class='filter'>列表<br></span>
+<span class='filter'>动态规划</span>
+<span class='filter'>数据结构</span>
+<span class='filter'>位掩码</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='list'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/list.html' data-anim='list'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/list.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='listtext' href='zh/list.html'>链表</a><a class='links' href='training?diff=Medium&n=7&tl=0&module=list'>训练</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>都列</span>
+<span class='filter'>队列<br></span>
+<span class='filter'>双向<br></span>
+<span class='filter'>双端队列</span>
+<span class='filter'>cs1020</span>
+<span class='filter'>cs2020</span>
+<span class='filter'>cs2040</span>
+<span class='filter'>数组</span>
+<span class='filter'>动态规划</span>
+<span class='filter'>数据结构</span>
+<span class='filter'>链接</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='hashtable'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/hashtable.html' data-anim='hashtable'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/hashtable.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='hashtabletext' href='zh/hashtable.html'>哈希表</a><a class='links' href='training?diff=Medium&n=7&tl=0&module=hashtable'>训练</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>开放地址</span>
+<span class='filter'>线性的</span>
+<span class='filter'>二次<br></span>
+<span class='filter'>探测<br></span>
+<span class='filter'>cs1020</span>
+<span class='filter'>cs2020</span>
+<span class='filter'>cs2040</span>
+<span class='filter'>动态规划</span>
+<span class='filter'>数据结构</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='heap'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/heap.html' data-anim='heap'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/heap.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='heaptext' href='zh/heap.html'>二叉堆</a><a class='links' href='training?diff=Medium&n=7&tl=0&module=heap'>训练</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>优先队列</span>
+<span class='filter'>递归<br></span>
+<span class='filter'>cs2010</span>
+<span class='filter'>cs2020</span>
+<span class='filter'>cs2040</span>
+<span class='filter'>递归</span>
+<span class='filter'>动态规划</span>
+<span class='filter'>数据结构</span>
+<span class='filter'>二进制<br></span>
+<span class='filter'>堆<br></span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='bst'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/bst.html' data-anim='bst'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/bst.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='bsttext' href='zh/bst.html'>二叉搜索树<br></a><a class='links' href='training?diff=Medium&n=7&tl=0&module=bst'>训练</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>adelson velskii landis</span>
+<span class='filter'>设置</span>
+<span class='filter'>表</span>
+<span class='filter'>avl树</span>
+<span class='filter'>cs2010</span>
+<span class='filter'>cs2020</span>
+<span class='filter'>cs2040</span>
+<span class='filter'>递归</span>
+<span class='filter'>递归<br></span>
+<span class='filter'>动态规划</span>
+<span class='filter'>数据结构</span>
+<span class='filter'>设置</span>
+<span class='filter'>二叉排序树</span>
+<span class='filter'>二进制<br></span>
+<span class='filter'>找</span>
+<span class='filter'>树</span>
+<span class='filter'>优先<br></span>
+<span class='filter'>队列<br></span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='graphds'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/graphds.html' data-anim='graphds'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/graphds.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='graphdstext' href='zh/graphds.html'>图结构<br></a><a class='links' href='training?diff=Medium&n=7&tl=0&module=graphds'>训练</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>树</span>
+<span class='filter'>完成</span>
+<span class='filter'>二分图<br></span>
+<span class='filter'>有向无环图</span>
+<span class='filter'>cs2010</span>
+<span class='filter'>cs2020</span>
+<span class='filter'>cs2040</span>
+<span class='filter'>图</span>
+<span class='filter'>动态规划</span>
+<span class='filter'>数据结构</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='ufds'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/ufds.html' data-anim='ufds'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/ufds.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='ufdstext' href='zh/ufds.html'>并查集</a><a class='links' href='training?diff=Medium&n=7&tl=0&module=ufds'>训练</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>路径压缩<br></span>
+<span class='filter'>不相交<br></span>
+<span class='filter'>设置</span>
+<span class='filter'>数据结构</span>
+<span class='filter'>按秩合并<br></span>
+<span class='filter'>cs2010</span>
+<span class='filter'>cs2020</span>
+<span class='filter'>cs2040</span>
+<span class='filter'>cs3233</span>
+<span class='filter'>数组</span>
+<span class='filter'>树</span>
+<span class='filter'>找</span>
+<span class='filter'>动态规划</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='segmenttree'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/segmenttree.html' data-anim='segmenttree'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/segmenttree.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='segmenttreetext' href='zh/segmenttree.html'>线段树</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>动态的</span>
+<span class='filter'>范围，域</span>
+<span class='filter'>求和</span>
+<span class='filter'>最小</span>
+<span class='filter'>最大</span>
+<span class='filter'>cs3233</span>
+<span class='filter'>段<br></span>
+<span class='filter'>树</span>
+<span class='filter'>动态规划</span>
+<span class='filter'>数据结构</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='fenwicktree'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/fenwicktree.html' data-anim='fenwicktree'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/fenwicktree.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='fenwicktreetext' href='zh/fenwicktree.html'>树状数组<br></a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>二叉索树</span>
+<span class='filter'>字节</span>
+<span class='filter'>动态的</span>
+<span class='filter'>芬威克<br></span>
+<span class='filter'>范围，域</span>
+<span class='filter'>求和</span>
+<span class='filter'>点</span>
+<span class='filter'>更新</span>
+<span class='filter'>cs3233</span>
+<span class='filter'>二进制<br></span>
+<span class='filter'>动态规划</span>
+<span class='filter'>数据结构</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='recursion'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/recursion.html' data-anim='recursion'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/recursion.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='recursiontext' href='zh/recursion.html'>递归树/有向无环图<...</a><a class='links' href='training?diff=Medium&n=7&tl=0&module=recursion'>训练</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>动态规划</span>
+<span class='filter'>动态规划</span>
+<span class='filter'>范型</span>
+<span class='filter'>cs1010</span>
+<span class='filter'>cs1020</span>
+<span class='filter'>cs2010</span>
+<span class='filter'>cs2020</span>
+<span class='filter'>cs2040</span>
+<span class='filter'>cs3233</span>
+<span class='filter'>cs4234</span>
+<span class='filter'>递归<br></span>
+<span class='filter'>算法</span>
+<span class='filter'>递归</span>
+<span class='filter'>树</span>
+<span class='filter'>有向无环图</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='dfsbfs'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/dfsbfs.html' data-anim='dfsbfs'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/dfsbfs.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='dfsbfstext' href='zh/dfsbfs.html'>图遍历</a><a class='links' href='training?diff=Medium&n=7&tl=0&module=dfsbfs'>训练</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>广度优先搜索<br></span>
+<span class='filter'>深度优先搜索<br></span>
+<span class='filter'>cs2010</span>
+<span class='filter'>cs2020</span>
+<span class='filter'>cs2040</span>
+<span class='filter'>二分图<br></span>
+<span class='filter'>强连通分量</span>
+<span class='filter'>切割顶点<br></span>
+<span class='filter'>节点</span>
+<span class='filter'>立交桥</span>
+<span class='filter'>cs2020</span>
+<span class='filter'>图</span>
+<span class='filter'>算法</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='mst'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/mst.html' data-anim='mst'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/mst.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+ <h3><a id='msttext' href='zh/mst.html'>最小生成树</a><a class='links' href='training?diff=Medium&n=7&tl=0&module=mst'>训练</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>多生成树</span>
+<span class='filter'><span style="color: rgb(51, 51, 51); font-family: arial; white-space: normal; background-color: rgb(255, 255, 255);">普里姆算法（</span><span style="color: rgb(204, 0, 0); font-family: arial; white-space: normal; background-color: rgb(255, 255, 255);">prim</span><span style="color: rgb(51, 51, 51); font-family: arial; white-space: normal; background-color: rgb(255, 255, 255);">算法，</span><span style="color: rgb(51, 51, 51); font-family: arial; white-space: normal; background-color: rgb(255, 255, 255);">图论中的一种算法）</span><br></span>
+<span class='filter'>(kruskal算法)<br></span>
+<span class='filter'>图</span>
+<span class='filter'>最小</span>
+<span class='filter'>生成的</span>
+<span class='filter'>cs2010</span>
+<span class='filter'>cs2020</span>
+<span class='filter'>cs2040</span>
+<span class='filter'>树</span>
+<span class='filter'>算法</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='sssp'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/sssp.html' data-anim='sssp'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/sssp.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='sssptext' href='zh/sssp.html'>单源最短路径</a><a class='links' href='training?diff=Medium&n=7&tl=0&module=sssp'>训练</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>sssp</span>
+<span class='filter'>单源<br></span>
+<span class='filter'>广度优先搜索<br></span>
+<span class='filter'>dijkstra</span>
+<span class='filter'>bellman ford</span>
+<span class='filter'>cs2010</span>
+<span class='filter'>cs2020</span>
+<span class='filter'>cs2040</span>
+<span class='filter'>单源<br></span>
+<span class='filter'>最短路径<br></span>
+<span class='filter'>图</span>
+<span class='filter'>算法</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='maxflow'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/maxflow.html' data-anim='maxflow'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/maxflow.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='maxflowtext' href='zh/maxflow.html'>网络流<br></a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>最大流<br></span>
+<span class='filter'>edmonds karp</span>
+<span class='filter'>最小割</span>
+<span class='filter'>dinic</span>
+<span class='filter'>ford fulkerson</span>
+<span class='filter'>图</span>
+<span class='filter'>cs3233</span>
+<span class='filter'>cs4234</span>
+<span class='filter'>算法</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='matching'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/matching.html' data-anim='matching'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/matching.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='matchingtext' href='zh/matching.html'>二分匹配<br></a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>增强路径</span>
+<span class='filter'>二分图<br></span>
+<span class='filter'>图</span>
+<span class='filter'>cs3233</span>
+<span class='filter'>cs4234</span>
+<span class='filter'>匹配<br></span>
+<span class='filter'>算法</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='cyclefinding'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/cyclefinding.html' data-anim='cyclefinding'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/cyclefinding.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='cyclefindingtext' href='zh/cyclefinding.html'>循环查找<br></a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>弗洛伊德<br></span>
+<span class='filter'>龟兔赛跑</span>
+<span class='filter'>数学<br></span>
+<span class='filter'>cs3233</span>
+<span class='filter'>算法</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='suffixtree'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/suffixtree.html' data-anim='suffixtree'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/suffixtree.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='suffixtreetext' href='zh/suffixtree.html'>后缀树<br></a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>字符串<br></span>
+<span class='filter'>匹配<br></span>
+<span class='filter'>似然比选择</span>
+<span class='filter'>最长公共子序列</span>
+<span class='filter'>cs3233</span>
+<span class='filter'>后缀<br></span>
+<span class='filter'>树</span>
+<span class='filter'>动态规划</span>
+<span class='filter'>数据结构</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='suffixarray'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/suffixarray.html' data-anim='suffixarray'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/suffixarray.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='suffixarraytext' href='zh/suffixarray.html'>后缀数组<br></a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>最长公共前缀</span>
+<span class='filter'>cs3233</span>
+<span class='filter'>匹配<br></span>
+<span class='filter'>似然比选择</span>
+<span class='filter'>最长公共子序列</span>
+<span class='filter'>后缀<br></span>
+<span class='filter'>数组</span>
+<span class='filter'>字符串<br></span>
+<span class='filter'>动态规划</span>
+<span class='filter'>数据结构</span>
+ </div>
+</div>
+</div>
+</li>
+<li class='viz' id='polygon'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/polygon.html' data-anim='polygon'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/polygon.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='polygontext' href='zh/polygon.html'>计算几何<br></a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>转换</span>
+<span class='filter'>切除</span>
+<span class='filter'>弯曲</span>
+<span class='filter'>凹</span>
+<span class='filter'>cs3233</span>
+<span class='filter'>计算<br></span>
+<span class='filter'>几何<br></span>
+<span class='filter'>算法</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='convexhull'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/convexhull.html' data-anim='convexhull'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/convexhull.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='convexhulltext' href='zh/convexhull.html'>凸体船体</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>andrew算法</span>
+<span class='filter'>单调链<br></span>
+<span class='filter'><p class="p1"><font size="2">葛立恒</font></p></span>
+<span class='filter'>查阅</span>
+<span class='filter'>jarvis步进算法<style type="text/css"><br>p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 16.0px &#39;helvetica neue&#39;; color: #2f2f2f; -webkit-text-stroke: #2f2f2f}<br>span.s1 {font-kerning: none}<br></style></span>
+<span class='filter'>游行，遍历</span>
+<span class='filter'>cs3233</span>
+<span class='filter'>计算<br></span>
+<span class='filter'>几何<br></span>
+<span class='filter'>算法</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='mvc'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/mvc.html' data-anim='mvc'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/mvc.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='mvctext' href='zh/mvc.html'>最小顶点覆盖</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>np-hard</span>
+<span class='filter'>图</span>
+<span class='filter'>二分图<br></span>
+<span class='filter'>树</span>
+<span class='filter'>树</span>
+<span class='filter'>动态规划</span>
+<span class='filter'>二分图<br></span>
+<span class='filter'>匹配<br></span>
+<span class='filter'>最大流<br></span>
+<span class='filter'>cs3233</span>
+<span class='filter'>cs4234</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='tsp'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/tsp.html' data-anim='tsp'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/tsp.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='tsptext' href='zh/tsp.html'>Traveling Salesman</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>np-hard</span>
+<span class='filter'>图</span>
+<span class='filter'>动态规划</span>
+<span class='filter'>多生成树</span>
+<span class='filter'>cs3233</span>
+<span class='filter'>cs4234</span>
+</div>
+</div>
+</div>
+</li>
+<li class='viz' id='steinertree'>
+<div class='li-wrapper' style="background-color: lightblue;">
+<a class='thumbnail' href='zh/steinertree.html' data-anim='steinertree'>
+<img src='img/dummy.gif' alt="please wait">
+<div class='static' style="background-image: url('img/png/steinertree.png');"></div>
+<div class="middle">
+<div class="message">Try This New Module</div>
+</div>
+</a>
+<div class='info'>
+<h3><a id='steinertreetext' href='zh/steinertree.html'>Steiner Tree</a></h3>
+<div class='indv-viz-filters'>
+<span class='filter'>np-hard</span>
+<span class='filter'>图</span>
+<span class='filter'>多生成树</span>
+<span class='filter'>cs4234</span>
+</div>
+</div>
+</div>
+</li>
+</ul>
+</div>
+<div id="bottom-bar">
+<a id="trigger-about">关于</a>
+</div>
+<div id="about" class="overlays">
+<h4>关于</h4><span class='close-overlay'>&#x2715;</span>
+<div class='content'>
+VisuAlgo在2011年由Steven Halim博士概念化，作为一个工具，帮助他的学生更好地理解数据结构和算法，让他们自己和自己的步伐学习基础。<br>VisuAlgo包含许多高级算法，这些算法在Steven Halim博士的书（“竞争规划”，与他的兄弟Felix Halim博士合作）和其他书中讨论。今天，一些高级算法的可视化/动画只能在VisuAlgo中找到。<br>虽然专门为新加坡国立大学（NUS）学生采取各种数据结构和算法类（例如CS1010，CS1020，CS2010，CS2020，CS3230和CS3230），作为在线学习的倡导者，我们希望世界各地的好奇心发现这些可视化也很有用。<br>VisuAlgo不是从一开始就设计为在小触摸屏（例如智能手机）上工作良好，因为需要满足许多复杂的算法可视化，需要大量的像素和点击并拖动手势进行交互。一个令人尊敬的用户体验的最低屏幕分辨率为1024x768，并且只有着陆页相对适合移动设备。<br>VisuAlgo是一个正在进行的项目，更复杂的可视化仍在开发中。<br>最令人兴奋的发展是自动问题生成器和验证器（在线测验系统），允许学生测试他们的基本数据结构和算法的知识。这些问题是通过一些规则随机生成的，学生的答案会在提交给我们的评分服务器后立即自动分级。这个在线测验系统，当它被更多的世界各地的CS教师采用，应该技术上消除许多大学的典型计算机科学考试手动基本数据结构和算法问题。通过在通过在线测验时设置小（但非零）的重量，CS教练可以（显着地）增加他/她的学生掌握这些基本问题，因为学生具有几乎无限数量的可以立即被验证的训练问题他们参加在线测验。培训模式目前包含12个可视化模块的问题。我们将很快添加剩余的8个可视化模块，以便VisuAlgo中的每个可视化模块都有在线测验组件。<br>另一个积极的发展分支是VisuAlgo的国际化子项目。我们要为VisuAlgo系统中出现的所有英语文本准备一个CS术语的数据库。这是一个很大的任务，需要众包。一旦系统准备就绪，我们将邀请VisuAlgo游客贡献，特别是如果你不是英语母语者。目前，我们还以各种语言写了有关VisuAlgo的公共注释：<br>
+<u>zh</u>, <u>id</u>, <u>kr</u>, <u>vn</u>, <u>th</u>.</p>
+</div>
+</div>
+
+<script src="js/jquery-3.3.1.min.js"></script>
+<script>
+      var PHP_DOMAIN = "";
+
+      // surprise colour!
+      // Referenced to in  home.js and viz.js also
+      var colourArray = ["#52bc69", "#d65775"/*"#ed5a7d"*/, "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"]; // green, pink, blue, red, yellow, indigo, orange, lime
+
+      function disableScroll() { $('html').css('overflow', 'hidden'); }
+
+      function enableScroll() { $('html').css('overflow', 'visible'); }
+
+      function replaceAll(find, replace, str) { return str.replace(new RegExp(find, 'g'), replace); }
+
+      function getColours() {
+        var generatedColours = new Array();
+        while (generatedColours.length < 4) {
+          var n = (Math.floor(Math.random() * colourArray.length));
+          if ($.inArray(n, generatedColours) == -1)
+            generatedColours.push(n);
+        }
+        return generatedColours;
+      }
+
+      function isOn(value, position) {
+        return (value>>position) & 1 === 1;
+      }
+
+      function customAlert(msg) {
+        $('#custom-alert p').html(msg);
+        var m = -1 * ($('#custom-alert').outerHeight()/2);
+        $('#custom-alert').css('margin-top', m+'px');
+        $('#dark-overlay').fadeIn(function() {
+          $('#custom-alert').fadeIn(function() {
+            setTimeout(function() {
+              $('#custom-alert').fadeOut(function() {
+                $('#dark-overlay').fadeOut();
+              });
+            }, 1000);
+          });
+        });
+      }
+
+      function showLoadingScreen() {
+        $('#loading-overlay').show();
+        $('#loading-message').show();
+      }
+
+      function hideLoadingScreen() {
+        $('#loading-overlay').hide();
+      }
+
+      function commonAction(retval, msg) {
+        //setTimeout(function() {
+          if (retval) { // mode == "exploration" && // now not only for exploration mode, but check if this opens other problems
+            $('#current-action').show();
+            $('#current-action').html(mode == "exploration" ? msg : ("e-Lecture Example (auto play until done)<br>" + msg));
+            $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+            triggerRightPanels();
+            isPlaying = true;
+          }
+        //}, 500);
+      }
+
+      function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable)
+            return decodeURIComponent(pair[1]);
+        }
+        return "";
+      }
+
+      var generatedColours = getColours();
+      var surpriseColour = colourArray[generatedColours[0]];
+      var colourTheSecond = colourArray[generatedColours[1]];
+      var colourTheThird = colourArray[generatedColours[2]];
+      var colourTheFourth = colourArray[generatedColours[3]];
+
+      $(function() {
+        $('.links').css('background', surpriseColour);
+        $('.right-links').css('background', surpriseColour);
+        $('#login-go').css('background', surpriseColour);
+
+        $('.colour').css("color", surpriseColour); // name
+        $('h4').css("background-color", surpriseColour); // about, contact us etc. button background
+
+        // title
+        $('#title a').click(function() {
+          $('#title a').removeClass('selected-viz');
+          $(this).addClass('selected-viz');
+          // temporary quick fix for Google Chrome Aug 2016 issue...
+          setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 100); // force resize/redraw...
+          setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        });
+
+        // overlays stuffs
+        $('#trigger-about').click(function() {
+          if ($(window).width() > 600) {
+            $('#dark-overlay').fadeIn(function() {
+              $('#about').fadeIn();
+            });
+          }
+          else
+            alert('Sorry, this dialog is too big. Please load it on bigger screen');
+        });
+
+        $('.close-overlay').click(function() {
+          $('.overlays').fadeOut(function() {
+            $('#dark-overlay').fadeOut();
+          });
+        });
+
+        $('#dark-overlay').click(function() {
+          $('.overlays').fadeOut();
+          $('#dark-overlay').fadeOut();
+        });
+      });
+    </script>
+<script>
+var seen = 0; // all have not been seen
+var timer;
+
+function nextTip() { // note to self: now I think I can increase the number of tips...
+  if (seen == (1<<10)-1) seen = 0;
+
+  var cur;
+  do {
+    cur = Math.floor(Math.random()*10);
+  }
+  while ((seen & (1<<cur)) != 0);
+
+  seen |= (1<<cur);
+  $("#msg").html($("#msg_list"+cur).html()).fadeIn();
+  clearTimeout(timer); // reset timer
+  timer = setTimeout(function() {
+    $("#msg").fadeOut(200, nextTip); // auto-rotate tip per 15s (current average 2h:25m, 10 tips so far)
+  }, 15000);
+}
+
+$(function() {
+  nextTip();
+
+  function showhide() {
+    if ($(window).width() < 700) {
+      $("#subtitle").html("这个工具在大屏幕上看起来更好:)");
+      $("#topright").hide();
+
+    }
+    else {
+      $("#subtitle").html("数据结构和算法动态可视化 (Chinese)");
+      $("#topright").css("left", $(window).width()-190); // always on the right
+      $("#topright").show();
+
+    }
+  }
+
+  $("#notloggedin").delay(15000).fadeOut();
+
+  $(window).resize(function() {
+    showhide();
+  });
+  showhide();
+
+  // thumbnail image animation on hover
+  $('a.thumbnail').hover(function() {
+    $(this).children('img').attr('src', 'img/gif/' + $(this).attr('data-anim') + '.gif');
+    $(this).children('img').attr('width', $(this).children('div.static').css('width'));
+    $(this).children('img').attr('height', $(this).children('div.static').css('height'));
+    $(this).children('div.static').hide();
+  }, function() {
+    $(this).children('div.static').show();
+  });
+
+  // tags
+  var allViz = new Array(
+    new Array(
+    'sorting',
+    '排序<br>',
+    '数组',
+    '算法',
+    '冒泡<br>',
+    '选择<br>',
+    '插入<br>',
+    '选择',
+    '插入',
+    '归并<br>',
+    '快速<br>',
+    '随机快速<br>',
+    '计数<br>',
+    '基',
+    '排序<br>',
+    'cs1010',
+    'cs1020',
+    'cs2020',
+    'cs2040',
+    'cs3230',
+    '列表<br>',
+    '数据结构',
+    '排序<br>'
+    ),
+    new Array(
+    'bitmask',
+    '位掩码',
+    '位操作<br>',
+    '设置',
+    'cs3233',
+    '数组',
+    '列表<br>',
+    '动态规划',
+    '数据结构',
+    '位掩码'
+    ),
+    new Array(
+    'list',
+    '链表',
+    '都列',
+    '队列<br>',
+    '双向<br>',
+    '双端队列',
+    'cs1020',
+    'cs2020',
+    'cs2040',
+    '数组',
+    '动态规划',
+    '数据结构',
+    '链接'
+    ),
+    new Array(
+    'hashtable',
+    '哈希表',
+    '开放地址',
+    '线性的',
+    '二次<br>',
+    '探测<br>',
+    'cs1020',
+    'cs2020',
+    'cs2040',
+    '动态规划',
+    '数据结构'
+    ),
+    new Array(
+    'heap',
+    '二叉堆',
+    '优先队列',
+    '递归<br>',
+    'cs2010',
+    'cs2020',
+    'cs2040',
+    '递归',
+    '动态规划',
+    '数据结构',
+    '二进制<br>',
+    '堆<br>'
+    ),
+    new Array(
+    'bst',
+    '二叉搜索树<br>',
+    'adelson velskii landis',
+    '设置',
+    '表',
+    'avl树',
+    'cs2010',
+    'cs2020',
+    'cs2040',
+    '递归',
+    '递归<br>',
+    '动态规划',
+    '数据结构',
+    '设置',
+    '二叉排序树',
+    '二进制<br>',
+    '找',
+    '树',
+    '优先<br>',
+    '队列<br>'
+    ),
+    new Array(
+    'graphds',
+    '图结构<br>',
+    '树',
+    '完成',
+    '二分图<br>',
+    '有向无环图',
+    'cs2010',
+    'cs2020',
+    'cs2040',
+    '图',
+    '动态规划',
+    '数据结构'
+    ),
+    new Array(
+    'ufds',
+    '并查集',
+    '路径压缩<br>',
+    '不相交<br>',
+    '设置',
+    '数据结构',
+    '按秩合并<br>',
+    'cs2010',
+    'cs2020',
+    'cs2040',
+    'cs3233',
+    '数组',
+    '树',
+    '找',
+    '动态规划'
+    ),
+    new Array(
+    'segmenttree',
+    '线段树',
+    '动态的',
+    '范围，域',
+    '求和',
+    '最小',
+    '最大',
+    'cs3233',
+    '段<br>',
+    '树',
+    '动态规划',
+    '数据结构'
+    ),
+    new Array(
+    'fenwicktree',
+    '树状数组<br>',
+    '二叉索树',
+    '字节',
+    '动态的',
+    '芬威克<br>',
+    '范围，域',
+    '求和',
+    '点',
+    '更新',
+    'cs3233',
+    '二进制<br>',
+    '动态规划',
+    '数据结构'
+    ),
+    new Array(
+    'recursion',
+    '递归树/有向无环图<br>',
+    '动态规划',
+    '动态规划',
+    '范型',
+    'cs1010',
+    'cs1020',
+    'cs2010',
+    'cs2020',
+    'cs2040',
+    'cs3233',
+    'cs4234',
+    '递归<br>',
+    '算法',
+    '递归',
+    '树',
+    '有向无环图'
+    ),
+    new Array(
+    'dfsbfs',
+    '图遍历',
+    '广度优先搜索<br>',
+    '深度优先搜索<br>',
+    'cs2010',
+    'cs2020',
+    'cs2040',
+    '二分图<br>',
+    '强连通分量',
+    '切割顶点<br>',
+    '节点',
+    '立交桥',
+    'cs2020',
+    '图',
+    '算法'
+    ),
+    new Array(
+    'mst',
+    '最小生成树',
+    '多生成树',
+    '<span style="color: rgb(51, 51, 51); font-family: arial; white-space: normal; background-color: rgb(255, 255, 255);">普里姆算法（</span><span style="color: rgb(204, 0, 0); font-family: arial; white-space: normal; background-color: rgb(255, 255, 255);">prim</span><span style="color: rgb(51, 51, 51); font-family: arial; white-space: normal; background-color: rgb(255, 255, 255);">算法，</span><span style="color: rgb(51, 51, 51); font-family: arial; white-space: normal; background-color: rgb(255, 255, 255);">图论中的一种算法）</span><br>',
+    '(kruskal算法)<br>',
+    '图',
+    '最小',
+    '生成的',
+    'cs2010',
+    'cs2020',
+    'cs2040',
+    '树',
+    '算法'
+    ),
+    new Array(
+    'sssp',
+    '单源最短路径',
+    'sssp',
+    '单源<br>',
+    '广度优先搜索<br>',
+    'dijkstra',
+    'bellman ford',
+    'cs2010',
+    'cs2020',
+    'cs2040',
+    '单源<br>',
+    '最短路径<br>',
+    '图',
+    '算法'
+    ),
+    new Array(
+    'maxflow',
+    '网络流<br>',
+    '最大流<br>',
+    'edmonds karp',
+    '最小割',
+    'dinic',
+    'ford fulkerson',
+    '图',
+    'cs3233',
+    'cs4234',
+    '算法'
+    ),
+    new Array(
+    'matching',
+    '二分匹配<br>',
+    '增强路径',
+    '二分图<br>',
+    '图',
+    'cs3233',
+    'cs4234',
+    '匹配<br>',
+    '算法'
+    ),
+    new Array(
+    'cyclefinding',
+    '循环查找<br>',
+    '弗洛伊德<br>',
+    '龟兔赛跑',
+    '数学<br>',
+    'cs3233',
+    '算法'
+    ),
+    new Array(
+    'suffixtree',
+    '后缀树<br>',
+    '字符串<br>',
+    '匹配<br>',
+    '似然比选择',
+    '最长公共子序列',
+    'cs3233',
+    '后缀<br>',
+    '树',
+    '动态规划',
+    '数据结构'
+    ),
+    new Array(
+    'suffixarray',
+    '后缀数组<br>',
+    '最长公共前缀',
+    'cs3233',
+    '匹配<br>',
+    '似然比选择',
+    '最长公共子序列',
+    '后缀<br>',
+    '数组',
+    '字符串<br>',
+    '动态规划',
+    '数据结构'
+    ),
+    new Array(
+    'polygon',
+    '计算几何<br>',
+    '转换',
+    '切除',
+    '弯曲',
+    '凹',
+    'cs3233',
+    '计算<br>',
+    '几何<br>',
+    '算法'
+    ),
+    new Array(
+    'convexhull',
+    '凸体船体',
+    'andrew算法',
+    '单调链<br>',
+    '<p class="p1"><font size="2">葛立恒</font></p>',
+    '查阅',
+    'jarvis步进算法<style type="text/css"><br>p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 16.0px &#39;helvetica neue&#39;; color: #2f2f2f; -webkit-text-stroke: #2f2f2f}<br>span.s1 {font-kerning: none}<br></style>',
+    '游行，遍历',
+    'cs3233',
+    '计算<br>',
+    '几何<br>',
+    '算法'
+    ),
+    new Array(
+    'mvc',
+    '最小顶点覆盖',
+    'np-hard',
+    '图',
+    '二分图<br>',
+    '树',
+    '树',
+    '动态规划',
+    '二分图<br>',
+    '匹配<br>',
+    '最大流<br>',
+    'cs3233',
+    'cs4234'
+    ),
+    new Array(
+    'tsp',
+    'traveling salesman',
+    'np-hard',
+    '图',
+    '动态规划',
+    '多生成树',
+    'cs3233',
+    'cs4234'
+    ),
+    new Array(
+    'steinertree',
+    'steiner tree',
+    'np-hard',
+    '图',
+    '多生成树',
+    'cs4234'
+    )
+  );
+
+  // generate tags
+  function createFilters() {
+    var filterList = new Array();
+    for (var i = 0; i < allViz.length; i++) {
+      var thisVizTags = allViz[i];
+      for (var j = 1; j < thisVizTags.length; j++)
+        if ($.inArray(thisVizTags[j], filterList) == -1)
+          filterList.push(thisVizTags[j]);
+    }
+    filterList.sort();
+    for (var i = 0; i < filterList.length; i++)
+      // if (i>0 && filterList[i]!=filterList[i-1]) // avoid duplicates
+      $('#filters').append("<span class='filter'>" + filterList[i] + "</span>");
+  }
+  createFilters();
+
+  // tag and search mechanism
+  $('#filters-and-lines').hide();
+  $('#emptySearchMsg').hide();
+  var isEmptySearch = true;
+  var searchTerm = new Array(""); // index 0 is the value from the search bar. Indices 1+ are values from tags.
+
+  // search/unsearch from tag filters
+  $('.filter').click(function() {
+    // add value to search
+    searchTerm[searchTerm.length] = $(this).html();
+    showResults();
+    $('#active-tags').append('<div class="active-tag">' + $(this).html() + '<span>&#x2715;</span></div>');
+    $('.active-tag span').unbind('click').bind('click', function() {
+      // remove value from search
+      var indexToRemove = searchTerm.indexOf($(this).parent().text());
+      searchTerm.splice(indexToRemove, 1);
+      showResults();
+      $(this).parent().remove(); // visual
+    });
+  });
+
+  // instant search from search bar
+  $('#search').each(function() {
+    // Save current value of element
+    $(this).data('oldVal', $(this));
+
+    // Look for changes in the value
+    $(this).bind("propertychange keyup input paste", function(event) {
+      // If value has changed...
+      if ($(this).data('oldVal') != $(this).val()) {
+        // Updated stored value
+        $(this).data('oldVal', $(this).val());
+        searchTerm[0] = $(this).val();
+        showResults();
+      }
+    });
+  });
+  $('#searchbar').submit(function() {
+    return false;
+  });
+
+  // find vizs with tag searchTerm
+  function showResults() {
+    isEmptySearch = true;
+    $('#emptySearchMsg').hide();
+    $('.viz').hide();
+    for (var i = 0; i < allViz.length; i++) { // for each visualisation
+      var thisVizTags = allViz[i]; // array of the tags this visualisation has
+      var foundAll = true;
+      for (var j = 0; j < searchTerm.length; j++) // for each search term
+        foundAll = foundAll && findOneTag(searchTerm[j], thisVizTags);
+        if (foundAll) {
+          $('#'+thisVizTags[0]).show();
+          isEmptySearch = false;
+        }
+    }
+    if (isEmptySearch)
+      $('#emptySearchMsg').show();
+  }
+
+  function findOneTag(tag, vizArr) {
+    var found = false;
+    for (var i = 0; i < vizArr.length; i++) {
+      var patt = new RegExp(tag, "i");
+      if (patt.test(vizArr[i]))
+        found = true;
+    }
+    return found;
+  }
+
+  // styling - arrow rotation, show filters-and-lines
+  $("#show-filters").click(function() {
+    if ($("#filters-and-lines").is(":hidden"))
+      showFilters();
+    else
+      hideFilters();
+  });
+  function showFilters() {
+    $("#filters-and-lines").slideDown("slow");
+    $("#show-filters").html('&#9653;'); // ^
+  }
+  function hideFilters() {
+    $("#filters-and-lines").slideUp("slow");
+    $("#show-filters").html('&#9663;'); // v
+  }
+
+  // styling - surprise colour stuff
+  $('#search').focus(function() { // search inset box-shadow
+    $(this).css("box-shadow", "0px 0px 3px " + surpriseColour + " inset");
+    $(this).css("color", "black");
+  });
+  $('#search').focusout(function() {
+    if ($(this).val().trim() == "") {
+      $(this).css("box-shadow", "0px 0px 3px #929292 inset");
+      $(this).css("color", "#888888");
+    }
+  });
+  $('#show-filters').css("background-color", surpriseColour); // search filter button background
+  $('#temp a').css("background-color", surpriseColour); // link to old site button
+  $('.filter').css("background-color", "#aaaaaa"); // filter tags on hover
+  $('.filter').hover(function() {
+    $(this).css("background-color", surpriseColour);
+  }, function() {
+    $(this).css("background-color", "#aaaaaa");
+  });
+});
+</script>
+</body>
+</html>

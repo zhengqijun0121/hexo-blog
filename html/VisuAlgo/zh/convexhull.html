@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="The Convex Hull of a set of points P is the smallest convex polygon CH(P) for which each point in P is either on the boundary of CH(P) or in its interior. Imagine that the points are nails on a flat 2D plane and we have a long enough rubber band that can enclose all the nails. If this rubber band is released, it will try to enclose as small an area as possible. That area is the area of the convex hull of these set of points/nails. Finding convex hull of a set of points has natural applications in packing problems.">
+<meta name="keywords" content="凸边形关键字&lt;br&gt;">
+
+<meta name="csrf-token" content="kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<meta property="og:image" content="../img/png/convexhull.png">
+<title>VisuAlgo - 凸边字幕</title>
+<link rel="icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="114x114" href="../img/favicon.png">
+<link rel="stylesheet" type="text/css" href="../fonts/silkscreen/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="../css/common.css">
+<link rel="stylesheet" href="../css/viz-1.0.1.css">
+<link rel="stylesheet" href="../css/visual.css">
+<link rel="stylesheet" href="../css/drawgraph.css">
+<style>
+      #e-lecture {
+        top: 45px;
+        right: 130px;
+        width: 400px;
+        display: block;
+        background: none;
+        /*overflow: normal;*/
+        white-space: normal;
+        text-align: right;
+        color: black; font-weight: bold; font-size: 20px;
+      }
+      .electure-prev, .electure-next { /* force update, copied from viz.css */
+        position: absolute;
+        /* bottom: -12px; */
+        top: -20px;
+        /*bottom: '';*/
+        padding: 3px 8px;
+        background: #999;
+        color: white;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .electure-prev {
+        left: -10px;
+        /* right: 30px; */
+      }
+      .electure-next {
+        right: -10px;
+        color: white;
+      }
+    </style>
+<style>
+.graham { bottom: 60px; }
+  #graham-err { padding: 8px 0px 7px; } /* currently unused*/
+</style>
+<script>
+      function changeURL() {
+        var URL = window.location.href.split('/');
+        var val = document.getElementById("Language").value;
+        URL[3] = val;
+        window.location.assign(URL.join('/'));
+      }
+    </script>
+</head>
+<body>
+<div id="top-bar">
+<a id="home" href="/">Visu<span class="colour">Algo</span><span style="font-size: 40%">.net</span></a>
+/
+<select id="Language" onchange="changeURL()">
+<option value="en">en</option>
+<option value="zh" selected>zh</option>
+<option value="es">es</option>
+<option value="pt">pt</option>
+<option value="ru">ru</option>
+<option value="id">id</option>
+<option value="de">de</option>
+<option value="bn">bn</option>
+<option value="ja">ja</option>
+<option value="ko">ko</option>
+<option value="vi">vi</option>
+</select>
+/convexhull
+<span id="title">
+<a id='title-convexhull' class='selected-viz'>凸边形</a>
+</span>
+<div id="mode-menu">
+<div id='mode-button' title='exploration'>示例模式 &#9663;</div>
+<div id='other-modes'>
+<a title='e-Lecture'>电子讲座模式</a>
+</div>
+</div>
+</div>
+<div id="dark-overlay"></div>
+<div id="status" class="panel"><p></p></div>
+<div id="status-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide status panel" /></div>
+<div id="codetrace" class="panel">
+<p id="code1" style="padding-top: 10px;"></p>
+<p id="code2"></p>
+<p id="code3"></p>
+<p id="code4"></p>
+<p id="code5"></p>
+<p id="code6"></p>
+<p id="code7" style="padding-bottom: 10px;"></p>
+</div>
+<div id="codetrace-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide codetrace panel" /></div>
+<div id="left-bar"></div>
+<div id="right-bar"></div>
+<div id="media-controls">
+<div id='speed-control'>减速<div id='speed-input'></div>加速</div>
+<span id="go-to-beginning" class="media-control-button" title="go to beginning" onclick=goToBeginning()><img src="../img/goToBeginning.png" alt="go to beginning"></span>
+<span id="previous" class="media-control-button" title="step backward" onclick=stepBackward()><img src="../img/prevFrame.png" alt="previous frame"></span>
+<span id="pause" class="media-control-button" title="pause" onclick=pause()><img src="../img/pause.png" alt="pause"></span>
+<span id="play" class="media-control-button" title="play" onclick=play()><img src="../img/play.png" alt="play"></span>
+<span id="next" class="media-control-button" title="step forward" onclick=stepForward()><img src="../img/nextFrame.png" alt="next frame"></span>
+<span id="go-to-end" class="media-control-button" title="go to end" onclick=goToEnd()><img src="../img/goToEnd.png" alt="go to end"></span>
+<div id="progress-bar" class="media-control-button"></div>
+</div>
+<div id='viz'></div>
+<div id='current-action' class='panel'></div>
+<div id='e-lecture' class='panel'></div>
+<div id="overlay" hidden></div>
+<div id="dropdown-temp-holder" hidden></div>
+<div id="electure-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+The Convex Hull of a set of points P is the smallest convex polygon CH(P) for which each point in P is either on the boundary of CH(P) or in its interior. Imagine that the points are nails on a flat 2D plane and we have a long enough rubber band that can enclose all the nails. If this rubber band is released, it will try to enclose as small an area as possible. That area is the area of the convex hull of these set of points/nails. Finding convex hull of a set of points has natural applications in packing problems.
+<hr>
+<p><b>Remarks</b>: By default, we show e-Lecture Mode for first time (or non logged-in) visitor.<br>
+Please <a href="login"><u>login</u></a> if you are a repeated visitor or <a href="login"><u>register</u></a> for an (optional) free account first.</p>
+<div id='electure-dropdown'>
+<select class="lecture-dropdown" style="width:100%">
+<option value="1">1. Convex Hull</option>
+<option value="99">99. 状态面板</option>
+<option value="99-1">&nbsp;&nbsp;&nbsp;99-1. 代码追踪面板</option>
+<option value="99-2">&nbsp;&nbsp;&nbsp;99-2. 媒体控制</option>
+<option value="99-3">&nbsp;&nbsp;&nbsp;99-3. 返回 ”探索模式“</option>
+</select>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-next' data-nextid="99">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99" class="electure-dialog" style="right:150px;bottom:335px;width:500px;">
+当操作进行时，状态面板将会有每个步骤的描述。
+<hr>
+<p>Pro-tip: Since you are not <a href="login"><u>logged-in</u></a>, you may be a first time visitor who are not aware of the following keyboard shortcuts to navigate this e-Lecture mode: <b>[PageDown]</b> to advance to the next slide, <b>[PageUp]</b> to go back to the previous slide, <b>[Esc]</b> to toggle between this e-Lecture mode and exploration mode.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-1" class="electure-dialog" style="right:170px;bottom:275px;width:180px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<hr>
+<p>Another pro-tip: We designed this visualization and this e-Lecture mode to look good on 1366x768 resolution <b>or larger</b> (typical modern laptop resolution in 2017). We recommend using Google Chrome to access VisuAlgo. Go to full screen mode (<b>F11</b>) to enjoy this setup. However, you can use zoom-in (<b>Ctrl +</b>) or zoom-out (<b>Ctrl -</b>) to calibrate this.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-2" class="electure-dialog" style="bottom:70px;left:50%;margin-left:-120px;width:260px;">
+使用用户控件控制动画！可用的快捷键有：<div>空格键：绘制／停止／重绘</div><div>左／右箭头：上一步／下一步</div><div>-／+：减缓／增加速度</div><div><br></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-3" class="electure-dialog" style="top:70px;right:60px;width:300px;">
+<p>Return to &#39;Exploration Mode&#39; to start exploring!</p><br><p>Note that if you notice any bug in this visualization or if you want to request for a new visualization feature, do not hesitate to drop an email to the project leader: Dr Steven Halim via his email address: stevenhalim at gmail dot com.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-2">上一个 <u>PgUp</u></div>
+</div>
+<div id="popup" hidden>
+<div id="popup-content"></div>
+<span id="hide-popup" hidden>X <u>关闭</u></span>
+</div>
+<div id="actions" class="panel" style="height:164px">
+<p id="draw" class="execAction" onclick=drawGraph()>绘制点</p>
+<p id="graham" class="execAction" onclick=grahamScan()>图遍历</p>
+</div>
+<div id="actions-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide actions panel" /></div>
+<div id="actions-extras">
+<div class="graham action-menu-pullout">
+<div id="graham-err" class="err"></div>
+</div>
+</div>
+<div id="drawgraph" class="overlays"></div>
+<div id="bottom-bar">
+<a id="trigger-about">关于</a>
+</div>
+<div id="about" class="overlays">
+<h4>关于</h4><span class='close-overlay'>&#x2715;</span>
+<div class='content'>
+VisuAlgo在2011年由Steven Halim博士概念化，作为一个工具，帮助他的学生更好地理解数据结构和算法，让他们自己和自己的步伐学习基础。<br>VisuAlgo包含许多高级算法，这些算法在Steven Halim博士的书（“竞争规划”，与他的兄弟Felix Halim博士合作）和其他书中讨论。今天，一些高级算法的可视化/动画只能在VisuAlgo中找到。<br>虽然专门为新加坡国立大学（NUS）学生采取各种数据结构和算法类（例如CS1010，CS1020，CS2010，CS2020，CS3230和CS3230），作为在线学习的倡导者，我们希望世界各地的好奇心发现这些可视化也很有用。<br>VisuAlgo不是从一开始就设计为在小触摸屏（例如智能手机）上工作良好，因为需要满足许多复杂的算法可视化，需要大量的像素和点击并拖动手势进行交互。一个令人尊敬的用户体验的最低屏幕分辨率为1024x768，并且只有着陆页相对适合移动设备。<br>VisuAlgo是一个正在进行的项目，更复杂的可视化仍在开发中。<br>最令人兴奋的发展是自动问题生成器和验证器（在线测验系统），允许学生测试他们的基本数据结构和算法的知识。这些问题是通过一些规则随机生成的，学生的答案会在提交给我们的评分服务器后立即自动分级。这个在线测验系统，当它被更多的世界各地的CS教师采用，应该技术上消除许多大学的典型计算机科学考试手动基本数据结构和算法问题。通过在通过在线测验时设置小（但非零）的重量，CS教练可以（显着地）增加他/她的学生掌握这些基本问题，因为学生具有几乎无限数量的可以立即被验证的训练问题他们参加在线测验。培训模式目前包含12个可视化模块的问题。我们将很快添加剩余的8个可视化模块，以便VisuAlgo中的每个可视化模块都有在线测验组件。<br>另一个积极的发展分支是VisuAlgo的国际化子项目。我们要为VisuAlgo系统中出现的所有英语文本准备一个CS术语的数据库。这是一个很大的任务，需要众包。一旦系统准备就绪，我们将邀请VisuAlgo游客贡献，特别是如果你不是英语母语者。目前，我们还以各种语言写了有关VisuAlgo的公共注释：<br>
+<a href="https://weibo.com/p/230418436e9ee80102v4rk" target='_blank'><u>zh</u></a>, <a href='https://www.facebook.com/notes/steven-halim/httpidvisualgonet-visualisasi-struktur-data-dan-algoritma-dengan-animasi/10153236934439689' target='_blank'><u>id</u></a>, <a href="https://blog.naver.com/visualgo_nus" target='_blank'><u>kr</u></a>, <a href='https://www.facebook.com/groups/163215593699283/permalink/824003417620494/' target='_blank'><u>vn</u></a>, <a href='http://pantip.com/topic/32736343' target='_blank'><u>th</u></a>.</p>
+</div>
+</div>
+
+<script src="../js/jquery-3.3.1.min.js"></script>
+<script>
+      var PHP_DOMAIN = "";
+
+      // surprise colour!
+      // Referenced to in  home.js and viz.js also
+      var colourArray = ["#52bc69", "#d65775"/*"#ed5a7d"*/, "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"]; // green, pink, blue, red, yellow, indigo, orange, lime
+
+      function disableScroll() { $('html').css('overflow', 'hidden'); }
+
+      function enableScroll() { $('html').css('overflow', 'visible'); }
+
+      function replaceAll(find, replace, str) { return str.replace(new RegExp(find, 'g'), replace); }
+
+      function getColours() {
+        var generatedColours = new Array();
+        while (generatedColours.length < 4) {
+          var n = (Math.floor(Math.random() * colourArray.length));
+          if ($.inArray(n, generatedColours) == -1)
+            generatedColours.push(n);
+        }
+        return generatedColours;
+      }
+
+      function isOn(value, position) {
+        return (value>>position) & 1 === 1;
+      }
+
+      function customAlert(msg) {
+        $('#custom-alert p').html(msg);
+        var m = -1 * ($('#custom-alert').outerHeight()/2);
+        $('#custom-alert').css('margin-top', m+'px');
+        $('#dark-overlay').fadeIn(function() {
+          $('#custom-alert').fadeIn(function() {
+            setTimeout(function() {
+              $('#custom-alert').fadeOut(function() {
+                $('#dark-overlay').fadeOut();
+              });
+            }, 1000);
+          });
+        });
+      }
+
+      function showLoadingScreen() {
+        $('#loading-overlay').show();
+        $('#loading-message').show();
+      }
+
+      function hideLoadingScreen() {
+        $('#loading-overlay').hide();
+      }
+
+      function commonAction(retval, msg) {
+        //setTimeout(function() {
+          if (retval) { // mode == "exploration" && // now not only for exploration mode, but check if this opens other problems
+            $('#current-action').show();
+            $('#current-action').html(mode == "exploration" ? msg : ("e-Lecture Example (auto play until done)<br>" + msg));
+            $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+            triggerRightPanels();
+            isPlaying = true;
+          }
+        //}, 500);
+      }
+
+      function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable)
+            return decodeURIComponent(pair[1]);
+        }
+        return "";
+      }
+
+      var generatedColours = getColours();
+      var surpriseColour = colourArray[generatedColours[0]];
+      var colourTheSecond = colourArray[generatedColours[1]];
+      var colourTheThird = colourArray[generatedColours[2]];
+      var colourTheFourth = colourArray[generatedColours[3]];
+
+      $(function() {
+        $('.links').css('background', surpriseColour);
+        $('.right-links').css('background', surpriseColour);
+        $('#login-go').css('background', surpriseColour);
+
+        $('.colour').css("color", surpriseColour); // name
+        $('h4').css("background-color", surpriseColour); // about, contact us etc. button background
+
+        // title
+        $('#title a').click(function() {
+          $('#title a').removeClass('selected-viz');
+          $(this).addClass('selected-viz');
+          // temporary quick fix for Google Chrome Aug 2016 issue...
+          setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 100); // force resize/redraw...
+          setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        });
+
+        // overlays stuffs
+        $('#trigger-about').click(function() {
+          if ($(window).width() > 600) {
+            $('#dark-overlay').fadeIn(function() {
+              $('#about').fadeIn();
+            });
+          }
+          else
+            alert('Sorry, this dialog is too big. Please load it on bigger screen');
+        });
+
+        $('.close-overlay').click(function() {
+          $('.overlays').fadeOut(function() {
+            $('#dark-overlay').fadeOut();
+          });
+        });
+
+        $('#dark-overlay').click(function() {
+          $('.overlays').fadeOut();
+          $('#dark-overlay').fadeOut();
+        });
+      });
+    </script>
+
+<script src="../js/jquery-ui.min.js"></script>
+<script src="../js/d3.min.js"></script>
+<script src="../js/viz-1.0.3.js"></script>
+<script src="../js/visualgo_print.js"></script>
+<script src="../js/graph_library.js"></script>
+<script>
+      function runSlide(slide) {
+        if (slide == '1') {
+          $("#e-lecture").html("slide " + slide + " (" + 20 + "%)");
+
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+
+        }
+        if (slide == '99') {
+          $("#e-lecture").html("slide " + slide + " (" + 40 + "%)");
+
+          hideEntireActionsPanel();
+
+          showStatusPanel();
+          showCodetracePanel();
+
+        }
+        if (slide == '99-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 60 + "%)");
+
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+
+        }
+        if (slide == '99-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 80 + "%)");
+
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+
+        }
+        if (slide == '99-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 100 + "%)");
+
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+
+        }
+      }
+
+      window.onpopstate = function(event) {
+        var slide = event.state['slide'];
+        openSlide(slide, function() {
+          runSlide(slide);
+        });
+      };
+
+      function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'), sParameterName, i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+          if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+      };
+
+      function pushState(slideValue) {
+        var url = '/zh/convexhull';
+        if (typeof slideValue != 'undefined' && slideValue != null) url += '?slide=' + slideValue;
+        window.history.pushState({slide: slideValue}, "slide " + slideValue, url);
+      }
+
+      function showPopup(callback) {
+        $('#popup').fadeIn(100, callback);
+      }
+
+      function hidePopup(callback) {
+        $('#popup').fadeOut(100, callback);
+      }
+
+      function showOverlay() {
+        $('#overlay').css('opacity', 0.5);
+        $('#overlay').show();
+      }
+
+      function hideOverlay() {
+        $('#overlay').hide();
+        $("#e-lecture").html("");
+      }
+
+      function makeOverlayTransparent() {
+        $('#overlay').css('opacity', 0);
+      }
+
+      function hideSlide(callback) {
+        isPlaying = true;
+        closeSlide(cur_slide, function() {
+          makeOverlayTransparent();
+          setTimeout(callback, 700); // don't immediately run the animation, wait for 500ms+ first
+        });
+      }
+
+      function showSlide() {
+        isPlaying = false;
+        openSlide(cur_slide);
+        showOverlay();
+      }
+
+      $(function() {
+        var slide = getUrlParameter('slide');
+
+        $.get('/hasvisited' + '/convexhull', function(data) {
+          var hasVisited = data['hasvisited'] == '1';
+          if (!hasVisited) {
+            var postData = {
+              '_token': 'kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh',
+              'page': '/convexhull'.substring(1),
+            };
+
+            $.post("/visitpage", postData, function(data) {
+              // non critical request...
+            });
+
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+            }
+
+            $("#mode-menu a").trigger("click");
+          }
+          else {
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+              $('#mode-menu a').click();
+            }
+          }
+        }).fail(function() {
+          if (typeof slide != undefined && slide != null) {
+            cur_slide = slide;
+            $('#mode-menu a').click();
+          }
+        });
+
+        $('.mcq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#mcq-answer-' + questionId).val();
+          var userAnswer = $('input[type=radio][name=mcq-'+questionId+'-choice]:checked').val();
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green"><b>Correct!</b></font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red"><b>Wrong Answer! Try again...</b></font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('.msq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#msq-answer-' + questionId).val();
+
+          var answers = [];
+          $('input[type=checkbox][class=msq-choice]:checked').each(function() {
+            answers.push($(this).attr('id').split('-')[3]);
+          });
+          answers.sort();
+          var userAnswer = answers.join(',');
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green">Correct!</font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red">Wrong Answer! Try again...</font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('select.lecture-dropdown').change(function() {
+          var nextSlide = $(this).val();
+          openSlide(nextSlide, function() {
+            runSlide(nextSlide);
+            pushState(nextSlide);
+          });
+        });
+
+        $('#hide-popup').click(function() {
+          hidePopup();
+        });
+
+        $('#popup').hover(function() {
+          $('#hide-popup').show();
+        }, function() {
+          $('#hide-popup').hide();
+        });
+
+        $('#electure-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+
+        $('#electure-99 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+        $('#electure-99 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('1');
+          pushState('1');
+        });
+
+        $('#electure-99-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+        $('#electure-99-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+
+        $('#electure-99-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-3');
+          pushState('99-3');
+        });
+        $('#electure-99-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+
+        $('#electure-99-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+
+
+
+        // temporary quick fix for Google Chrome Aug 2016 issue..., put at last part so that everything else has been loaded
+        // setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 500);
+        // setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        // I turn it off on 14 June 2018, seems 'ok'?
+      });
+
+
+      function adjustPopupToImageSize() {
+        var width = $('#popup-image').prop('width');
+        var height = $('#popup-image').prop('height');
+        $('#popup').width(width + 20);
+        $('#popup').height(height + 20);
+        if (width == 0 && height == 0) {
+          setTimeout(adjustPopupToImageSize, 200);
+        } else {
+          showPopup();
+        }
+      }
+
+      function POPUP_IMAGE(url) {
+        $('#popup-content').html('<img id="popup-image" src="' + url + '">');
+        adjustPopupToImageSize();
+      }
+
+      function URL(url) {
+        window.open(url, '_blank');
+      }
+
+      // Implement these functions in each visualisation
+      // This function will be called before entering e-Lecture Mode
+      function ENTER_LECTURE_MODE() {}
+
+      // This function will be called before returning to Explore Mode
+      function ENTER_EXPLORE_MODE() {}
+
+      // Lecture action functions
+      function CUSTOM_ACTION(action, data, mode) {}
+    </script>
+<script src="../js/geometry_library/geometryHelper.js"></script>
+<script src="../js/geometry_library/drawGeometry.js"></script>
+<script type="text/javascript">
+// Geometry widget
+// original author (old version): Victor Loh Bo Huai, then upgraded by Nguyen Hoang Duy, and then further enhanced by Truong Ngoc Khanh
+
+var Geometry = function() {
+  var self = this;
+  var graphWidget = new GraphWidget();
+
+  var pointList = [];
+  var pointStack = [];
+  var highlightedVertexIdList = [];
+
+  var stateList = [];
+  var edgeGenerator = d3.svg.line()
+                        .x(function(d){return d.x;})
+                        .y(function(d){return d.y;})
+                        .interpolate("linear");
+  var screenHeight = window.innerHeight - 100;
+  var screenWidth = window.innerWidth - 80;
+
+  mainSvg.style("class", "unselectable");
+  mainSvg.append('svg:defs').append('svg:marker')
+         .attr('id', 'end-arrow')
+         .attr('viewBox', '0 -5 10 10')
+         .attr('refX', 9)
+         .attr('markerWidth', 4)
+         .attr('markerHeight', 3)
+         .attr('orient', 'auto')
+         .append('svg:path')
+         .attr('d', 'M0,-5L10,0L0,5')
+         .attr('fill', '#000');
+  mainSvg.style("cursor", "crosshair");
+
+  mainSvg.attr("height", screenHeight);
+  mainSvg.attr("width", screenWidth);
+
+  this.getPointList = function() {
+    return pointList;
+  }
+
+  takeJSON = function(pointListJson) {
+    if (pointListJson == null) return;
+    pointList = JSON.parse(pointListJson);
+    sortPointsByAngle();
+  }
+
+  statusChecking = function() {
+    $("#draw-status p").html('绘制至少三点，互不共线');
+  }
+
+  warnChecking = function() {
+    // var warn = "";
+    // if (amountVertex >= 17) warn += "Too much vertex on screen, consider drawing smaller graph. ";
+    // if (warn == "") $("#draw-warn p").html("No Warning");
+    // else            $("#draw-warn p").html(warn);
+  }
+
+  errorChecking = function() {
+    if (Object.size(pointList) < 3) {
+      $("#draw-err p").html('至少需要绘制3个点');
+      return;
+    }
+
+    if (hasAnyCollinearPoints(pointList)) {
+      $("#draw-err p").html('不要绘制3个共线的点');
+      return;
+    }
+
+    $("#draw-err p").html('没有错误');
+  }
+
+  var intervalID;
+
+  this.startLoop = function() {
+    intervalID = setInterval(function() {
+      takeJSON(JSONresult);
+      warnChecking();
+      errorChecking();
+      statusChecking();
+    }, 100);
+  }
+
+  this.stopLoop = function() {
+    clearInterval(intervalID);
+  }
+
+  this.draw = function() {
+    if ($("#draw-err p").html() != '没有错误')
+      return false;
+    if ($("#submit").is(':checked'))
+      this.submit(JSONresult);
+    if ($("#copy").is(':checked'))
+      window.prompt("Copy to clipboard:", JSONresult);
+
+    graph = createState();
+    for (var i = 0; i < Object.size(pointList); i++) {
+      graph["vl"][i]["text"] = "";
+    }
+    graphWidget.updateGraph(graph, 500);
+    return true;
+  }
+
+  function createPointForState(point, text, state) {
+    if (typeof(state) == "undefined") {
+      state = VERTEX_DEFAULT
+    }
+    return {
+      cx: point.x,
+      cy: point.y,
+      text: text,
+      state: state
+    };
+  }
+
+  function createEdgeForState(vertexA, vertexB, type, weight, state, animateHighlighted) {
+    if (typeof(type) == undefined) type = EDGE_TYPE_UDE;
+    if (typeof(weight) == undefined) weight = 1;
+    if (typeof(state) == undefined) state = EDGE_DEFAULT
+    if (typeof(animateHighlighted) == undefined) animateHighlighted = false;
+
+    return {
+      vertexA: vertexA,
+      vertexB: vertexB,
+      type: type,
+      weight: weight,
+      state: state,
+      animateHighlighted: animateHighlighted
+    };
+  }
+
+  function createState() {
+    var state = {
+      "vl":{},
+      "el":{},
+      "status":{}
+    };
+
+    for (var i = 0; i < Object.size(pointList); i++) {
+      state["vl"][i] = createPointForState(pointList[i], i);
+    }
+
+    for (var i = 0; i + 1 < Object.size(pointStack); i++) {
+      state["el"]["stack" + pointStack[i] + "-" + (pointStack[i+1])] = createEdgeForState(pointStack[i], pointStack[i+1]);
+    }
+
+    return state;
+  }
+
+  this.getGraphWidget = function() { return graphWidget; }
+
+  // Javascript addon: get size of an object
+  Object.size = function(obj) {
+    var size = 0, key;
+    for (key in obj) {
+      if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+  };
+
+  this.redrawPoints = function() {
+    highlightedVertexIdList = [];
+    pointStack = [];
+    return self.draw();
+  }
+
+  function collinear(x1, y1, x2, y2, x3, y3) {
+    var x = Math.abs(cross(x1, y1, x2, y2, x3, y3));
+    return (Math.abs(cross(x1, y1, x2, y2, x3, y3)) < 0.00000001);
+  }
+
+  var pivot_x = 0, pivot_y = 0;
+  function angleCmp(ax, ay, bx, by) {
+    if (collinear(pivot_x, pivot_y, ax, ay, bx, by))
+      return dist2P(pivot_x, pivot_y, ax, ay) < dist2P(pivot_x, pivot_y, bx, by);
+    var d1x = ax - pivot_x, d1y = ay - pivot_y;
+    var d2x = bx - pivot_x, d2y = by - pivot_y;
+    return Math.atan2(d1y, d1x) < Math.atan2(d2y, d2x);
+  }
+
+  function sortPointsByAngle() {
+    var N = Object.size(pointList);
+    if (N < 2) {
+      return;
+    }
+    // find P0 with biggest Y and biggest X
+    var P0 = 0;
+    for (var i=1; i < N; i++) {
+      if ((pointList[i].y > pointList[P0].y) || (pointList[i].y == pointList[P0].y && pointList[i].x < pointList[P0].x)) {
+        P0 = i;
+      }
+    }
+    var tmp = pointList[0];
+    pointList[0] = pointList[P0];
+    pointList[P0] = tmp;
+    pivot_x = pointList[0].x;
+    pivot_y = pointList[0].y;
+    // sort
+    for (var i=1; i < N; i++) {
+      for (var j=i+1; j < N; j++) {
+        if (angleCmp(pointList[i].x, pointList[i].y, pointList[j].x, pointList[j].y)) {
+          tmp = pointList[i];
+          pointList[i] = pointList[j];
+          pointList[j] = tmp;
+        }
+      }
+    }
+  }
+
+  this.grahamScan = function() {
+    previous_option = "grahamScan";
+    popuatePseudocode();
+    //graphWidget.transition().duration(0);
+    graphWidget.clearAll();
+    graphWidget.setAnimationDuration(500);
+
+    var N = Object.size(pointList);
+    if (N < 3) {
+      return true;
+    }
+    pointStack = [];
+
+    var stateList = new Array();
+    var currentState;
+    // TODO: highlight indexing process here.
+    for (var i = 0; i < N; i++) {
+      currentState = createState();
+      currentState["vl"][i]["state"] = VERTEX_TRAVERSED;
+      for (var j = i+1; j < N; j++) {
+        currentState["vl"][j]["text"] = "";
+      }
+
+      if (i > 0) {
+        currentState["el"][i] = createEdgeForState(0, i);
+        currentState["el"][i]["state"] = EDGE_HIGHLIGHTED;
+      }
+      currentState["status"] = '开始顶点索引'
+      currentState["lineNo"] = 1;
+
+      stateList.push(currentState);
+    }
+
+    currentState = createState();
+    currentState["status"] = '结束顶点索引'
+    stateList.push(currentState);
+
+    var prev_x = 0, prev_y = 0, now_x = 0, now_y = 0;
+    pointStack.push(N-1);
+    pointStack.push(0);
+    pointStack.push(1);
+
+    currentState = createState();
+    currentState["vl"][N-1]["state"] = VERTEX_HIGHLIGHTED;
+    currentState["vl"][0]["state"] = VERTEX_HIGHLIGHTED;
+    currentState["vl"][1]["state"] = VERTEX_HIGHLIGHTED;
+    currentState["status"] = '推入这三个点到栈'
+    currentState["lineNo"] = 2;
+
+    var edge01 = "stack" + pointStack[0] + "-" + pointStack[1];
+    var edge12 = "stack" + pointStack[1] + "-" + pointStack[2];
+    currentState["el"][edge01]["state"] = EDGE_HIGHLIGHTED;
+    currentState["el"][edge01]["animateHighlighted"] = true;
+    currentState["el"][edge12]["state"] = EDGE_HIGHLIGHTED;
+    currentState["el"][edge12]["animateHighlighted"] = true;
+    stateList.push(currentState);
+
+    var i = 2;
+    while (i < N) {
+      var stackSize = Object.size(pointStack);
+      var j = stackSize - 1;
+      currentState = createState();
+      currentState["status"] = '检查这3个点的ccw';
+      currentState["lineNo"] = 4;
+      for (var k=0; k < stackSize; k++) {
+        currentState["vl"][pointStack[k]]["state"] = VERTEX_TRAVERSED;
+      }
+      stateList.push(currentState);
+
+      var stackPoint0 = pointList[pointStack[stackSize-2]];
+      var stackPoint1 = pointList[pointStack[stackSize-1]];
+
+      if (!ccw(stackPoint0.x, stackPoint0.y, stackPoint1.x, stackPoint1.y, pointList[i].x, pointList[i].y)) {
+        pointStack.push(i);
+        currentState = createState();
+        for (var k=0; k < Object.size(pointStack)-1; k++) {
+          currentState["vl"][pointStack[k]]["state"] = VERTEX_TRAVERSED;
+        }
+
+        currentState["vl"][pointStack[Object.size(pointStack)-1]]["state"] = VERTEX_HIGHLIGHTED;
+        currentState["status"] = '推入当前顶点到栈';
+        currentState["lineNo"] = 5;
+        var edgeId = "stack" + pointStack[(Object.size(pointStack)-2)] + "-" + pointStack[(Object.size(pointStack)-1)];
+        currentState["el"][edgeId]["state"] = EDGE_HIGHLIGHTED;
+        stateList.push(currentState);
+        i++;
+      } else {
+        var lastPointId = pointStack[Object.size(pointStack)-1];
+        pointStack.pop();
+        currentState = createState();
+        currentState["status"] = '将其推出栈';
+        currentState["lineNo"] = 6;
+        for (var k=0; k < Object.size(pointStack); k++) {
+          currentState["vl"][pointStack[k]]["state"] = VERTEX_TRAVERSED;
+        }
+        currentState["vl"][lastPointId]["state"] = VERTEX_HIGHLIGHTED;
+        stateList.push(currentState);
+
+        currentState = createState();
+        currentState["status"] = '将其推出栈';
+        currentState["lineNo"] = 6;
+        for (var k=0; k < Object.size(pointStack)-1; k++) {
+          currentState["vl"][pointStack[k]]["state"] = VERTEX_TRAVERSED;
+        }
+        currentState["vl"][pointStack[Object.size(pointStack)-1]]["state"] = VERTEX_HIGHLIGHTED;
+        stateList.push(currentState);
+      }
+    }
+    currentState = createState();
+    for (var k=0; k < Object.size(pointStack); k++) {
+      currentState["vl"][pointStack[k]]["state"] = VERTEX_TRAVERSED;
+    }
+    currentState["status"] = '结束';
+    currentState["lineNo"] = 7;
+    stateList.push(currentState);
+    graphWidget.startAnimation(stateList);
+    // result is in S
+    return true;
+  }
+
+  function popuatePseudocode() {
+    // graham scan
+    $('code1').html('索引根节点');
+    $('code2').html('push P[N-1], P[0], P[1] into stack S');
+    $('code3').html('while (i < N) // i = 2, N = size of P');
+    $('code4').html('&nbsp;&nbsp;if (ccw(S[S.size() - 1-1], S[S.size() - 1], P[i])');
+    $('code5').html('&nbsp;&nbsp;&nbsp;&nbsp;将P[i]人栈，然后增加i');
+    $('code6').html('&nbsp;&nbsp;否则从S弹出');
+    $('code7').html('S是结果');
+  }
+}
+
+// Geometry action
+var actionsWidth = 150;
+var statusCodetraceWidth = 370;
+
+var isGrahamOpen = false;
+
+function openGraham() {
+  if (!isGrahamOpen) {
+    $('.graham').fadeIn('fast');
+    isGrahamOpen = true;
+  }
+}
+
+function closeGraham() {
+  if (isGrahamOpen) {
+    $('.graham').fadeOut('fast');
+    $('#graham-err').html("");
+    isGrahamOpen = false;
+  }
+}
+
+function hideEntireActionsPanel() {
+  closeGraham();
+  hideActionsPanel();
+}
+
+// local
+// start by showing actions panel
+// enableActionsOnly();
+$('#play').hide();
+var GeometryWidget = new Geometry();
+var gw = GeometryWidget.getGraphWidget(); //usage of gw is inconsistent with other widgets >:(
+
+initGeometryVisu(false);
+
+$(function() {
+  $("#graham").click(function() {
+    openGraham();
+  });
+});
+
+function drawGraph() {
+  if (isPlaying) stop();
+  if (mode == "exploration") {
+    $('#dark-overlay').fadeIn(function() {
+      $('#drawgraph').fadeIn();
+    });
+    GeometryWidget.startLoop();
+    isPlaying = false;
+  }
+}
+
+function drawDone() {
+  if (!GeometryWidget.redrawPoints()) return false;
+  GeometryWidget.stopLoop();
+  gw = GeometryWidget.getGraphWidget();
+  gw.clearAll();
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+function drawCancel() {
+  GeometryWidget.stopLoop();
+  gw = GeometryWidget.getGraphWidget();
+  gw.clearAll();
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+function grahamScan() {
+  if (isPlaying) stop();
+  if (Object.size(GeometryWidget.getPointList()) < 3) {
+    $('#graham-err').html('至少需要绘制3个点');
+  } else {
+    gw = GeometryWidget.getGraphWidget();
+    setTimeout(function() {
+      if ((mode == "exploration") && GeometryWidget.grahamScan()) {
+        $('#current-action').show();
+        $('#current-action p').html('图遍历');
+        $('#progress-bar').slider( "option", "max", gw.getTotalIteration()-1);
+        triggerRightPanels();
+        isPlaying = true;
+      }
+    }, 500);
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+
+<link rel="stylesheet" href="../css/book.css" />
+<script src="../js/book.js"></script>
+
+<style>
+pre.reveal { }  /* mark pre that should get this setup */
+span.phide { display:none; }
+span.pshow { color:darkgreen;} /* display:inline; */
+</style>
+
+</head>
+<body>
+
+<nav><div id="toc"></div></nav>
+
+<main>
+
+<h1>input()</h1>
+
+<p>The <code>print()</code> function makes it easy to send your data as text to standard out (see also: <a href="python-print.html">print()</a>). The Python function <code>input()</code> goes the other direction, letting the user type something that goes in a Python variable.</p>
+
+<p>Here is an example of <code>input()</code> in the interpreter to see how it works:</p>
+
+<pre>
+>>><b> name = input('what is your name? ')</b>
+what is your name? <b>Guido</b>
+>>><b> name</b>
+'Guido'
+>>><b></b>
+</pre>
+
+<p>The parameter to <code>input()</code> is a prompt string that prints out, prompting the user what they are supposed to type. It looks best to add a space at the end of the prompt string.</p>
+
+<h2>String Conversion</h2>
+
+<p>The result from <code>input()</code> is always a string, so it may need a conversion like <code>int()</code> to convert it to a number</p>
+
+<pre>
+>>><b> age = input('what is your age? ')</b>
+what is your age? <b>25</b>
+>>><b> age</b>
+'25'
+>>><b> int(age)</b>
+25
+</pre>
+
+<h2>Input In A Function</h2>
+
+<p>Inside a function, this looks like:</p>
+
+<pre>
+def get_age():
+    """
+    Prompt the user for their int age and
+    return it as an int.
+    """
+    age_str = input('What is your age in years? ')
+    return int(age_str)
+</pre>
+
+<p>For a black-box function, the inputs are in the parameters, so this function is some other, informal form.</p>
+
+<h2>input() For Demos</h2>
+
+<p>Regular Python programs typically do not use <code>input()</code> to get their data, instead using command line arguments. The <code>input()</code> function is handy for making little demos where you want a quick way to let the user type something in with one line of code compared to the many lines needed to support command line arguments.</p>
+
+<p>&nbsp;</p>
+
+<p class="small">Copyright 2020 Nick Parlante</p>
+
+</main>
+
+</body></html>
+

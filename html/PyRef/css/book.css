@@ -1,0 +1,238 @@
+/* the old win.css .. clean up for book use */
+
+
+/*
+ nav is table of conents on left
+ main is content to the right of that
+*/
+nav {
+  height: 100%; /* Full-height: remove this if you want "auto" height */
+  width: 180px; /* Set the width of the sidebar */
+  position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+  z-index: 1; /* Stay on top */
+  top: 0; /* Stay at the top */
+  left: 0;
+
+  background-color:  #ececFF;  /* light green */
+  overflow-x: hidden; /* Disable horizontal scroll */
+  padding-top: 5px;
+  /* bug: last item is cut off, fixed with hack in .js */
+}
+
+main {
+  margin-left: 180px; /* Same as the width of the sidebar */
+  padding: 0px 10px;
+}
+
+
+p.entry {
+  min-width:140px;
+  margin-left: 0.5em;
+  padding-top:0.5em;
+  padding-bottom:0.5em;
+  margin-top:0em;
+  margin-bottom:0em;
+
+  line-height: 1;  /* so line-breaks clump together */
+
+  font-size: 17px;  /* was 18, make smaller to fit vertical */
+  font-family:  Arial, Sans-Serif, "times new roman",serif;
+  color: #242729;  /* #242729; perhaps darker would be better? */
+  text-rendering: optimizeLegibility;
+}
+
+@media (max-width: 600px) {
+  nav { width: 80px; }
+  main { margin-left: 80px; }
+  p.entry { min-width:70px;
+            font-size:13px;
+          }
+  p { font-size: medium; }  /* 18px; */
+  /* pre is "medium" below" */
+}
+
+p.yellow {
+  background-color:lightyellow;
+}
+
+/* these are for older ul/span system */
+span.entry {
+  min-width:8em;
+  display:inline-block;  /* without this, min-width nop */
+}
+
+span.yellow {
+  background-color:lightyellow;
+}
+
+/*
+#tocparent { max-width:900px; }
+#toc { float:right; margin:1em; margin-right:2em; max-width:800px; }
+*/
+
+
+
+
+/* apparently body and td are separate! */
+html, body {  /*td, th */
+
+  font-size: medium; /* 18px; */  /* exp */
+  font-family:  Arial, Sans-Serif, "times new roman",serif;
+  color: #242729;
+  text-rendering: optimizeLegibility;
+
+/*line-height: 120%;*/
+/* font-family: verdana, arial,  helvetica, sans-serif; */
+/* bloomberg: font-family: Georgia,Cambria,"Times New Roman",Times,serif; */
+/* color: #3c3c3c;
+    font-size: 18px;
+    line-height: 29px;
+*/
+}
+
+p {
+ font-family: Georgia, "times new roman", serif;
+ margin-top:0px;
+ font-size: 18px;   /* maybe does nothing vs. above */
+ line-height: 1.5;  /* 1.5 is min recommended, this one is significant, moved here vs. body */
+ /* margin-top:0px; *
+ /* margin-bottom:0.75em;*/ /* double spacing means we need more here */
+ max-width: 600px; /* needed for the hint case */
+}
+
+p.small {
+  font-size:12px;
+}
+
+p.big {
+  font-weight: bold;
+}
+
+/* remove underline from achor */
+a {
+  text-decoration: none;
+}
+
+/* lock link at standard blue color */
+a, a:visited  { /* a:hover, a:active */
+  color: #0000DD;  /* EE is standard */
+  /* :visited { color: #551A8B; }; */
+}
+
+/* same as p */
+li {
+ font-family: Georgia, "times new roman", serif;
+}
+
+/* nickism: always want it to go with the thing after it */
+
+/* not crazy to put h1 near its content, native is 0.67em I think */
+h1 { margin-bottom: 0.2em; font-size: 32px;}
+h2 { margin-bottom: 0.0em;}
+h3 { margin-bottom: 0.0em;}  /* showHint */
+
+
+/*
+h1, h3 { font-family:Verdana,sans-serif; margin-bottom: 0.3em; }
+h2 {
+ margin-bottom:0.1em;
+ font-family:Verdana,sans-serif;
+}
+*/
+ /* used to have margin top 200% but that did not work.
+   goal here is to have the h2 closer to its content and farther from
+   the thing before. Apparently regular margin is line 0.67em
+
+ margin-top:0.9em;
+*/
+
+
+/*
+ If max-width is put in body, cannot make table wide. Therefore
+ limit p/li individually + have p.run for the table
+*/
+p, li { max-width:650px; }
+
+
+/* add spacing, tried 30 first TRBL was 25px left */
+img { margin: 10px 4px 10px 4px; }
+
+/* courier all around, spec "medium" size just for pre/tacode */
+code, pre {
+  font-family: "courier new", monospace;
+}
+
+
+/* pre settings, at one time its own font-size
+ trying a little indent .. more low-key than a box around it
+ todo:think about max-width here .. not working for me
+*/
+pre  {
+  font-size: medium;
+  margin-left: 1em;
+  max-width: 800px;
+  white-space: pre-wrap; /* word break on over-width */
+}
+
+pre.small  {
+  font-size: small;
+}
+
+pre.wide  {
+  max-width: 1200px;
+}
+
+/* used, say, to talk about == operator */
+code.big {
+  font-size: x-large;
+}
+
+code.b { font-weight:bold; }
+
+/*
+pre.wide {
+  max-width:reset;
+}
+*/
+
+p.inset {
+  margin-left:1em;
+}
+
+/* pre/code inside li .. use inherited size */
+/* took this out - was too big within li
+li pre, li code {
+  font-size:inherit;
+}
+*/
+
+
+/* green slide */
+ul.slide { 
+  max-width:650px;
+  font-size:18px ;
+  border:5px solid darkgreen;
+}
+ul.slide li {
+  margin: 0.75em 0em;
+  /*margin-top:"150%"; */
+}
+
+
+/* table class=tab to actually tabulate data */
+table.tab, table.tab tr, table.tab td, table.tab th {
+ border: 2px solid black;
+ border-collapse:collapse;
+ min-width: 100px;
+ font-size: medium;
+}
+
+/* applies to buttons, or who knows what */
+button.large {
+  font-size: large;
+  /*border: 2px solid black;*/
+}
+
+
+
+

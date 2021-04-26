@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+
+<link rel="stylesheet" href="../css/book.css" />
+<script src="../js/book.js"></script>
+
+<style>
+pre.reveal { }  /* mark pre that should get this setup */
+span.phide { display:none; }
+span.pshow { color:darkgreen;} /* display:inline; */
+</style>
+
+</head>
+<body>
+
+<nav><div id="toc"></div></nav>
+
+<main>
+
+<h1>Python Interpreter</h1>
+
+<p>You write your Python code in a text file with a name like <code>hello.py</code>. How does that code Run? There is program installed on your computer named "python3" or "python", and its job is looking at and running your Python code. This type of program is called an "interpreter".</p>
+
+<!-- njp could have art here .. eh maybe not -->
+
+<h2>Talk To The Interpreter</h2>
+
+<p>One benefit of the interpreter is that you can start an interactive session with the interpreter and type Python code right into it to see what it does. This is a great way to try out code ideas.</p>
+
+<p>For example, what happens if you use <code>+</code> with strings or with lists? Here is an interpreter session trying <code>+</code> that way. The <code>>>></code> is the prompt, the bold text is what you type, followed by the interpreter's response on the next line.</p>
+
+<pre>
+>>><b> 'hello' + '!'</b>
+'hello!'
+>>><b> [1, 2] + [3, 4]</b>
+[1, 2, 3, 4]
+>>><b> </b>
+</pre>
+
+<p>You could look up the formal description of <code>+</code>, but just typing an experiment in the interpreter to see what it does is quick and satisfying.</p>
+
+<p>Incidentally, <code>>>></code> examples like the above are used throughout these pages to show phrases of Python code with their output. You can always start your own interpreter session to replicate and play with these experiments yourself.</p>
+
+<h2>How To Get An Interpreter</h2>
+
+<p>There are 2 easy ways to get the interpreter:</p>
+
+<p>1. Open a command-line terminal. Mac: run the "Terminal" app in the Utilities folder. Windows: type "powershell" in the lower left, this opens the Windows command line terminal. In the terminal type the command "python3" ("python" on Windows, or sometimes "py"). This runs the interpreter program directly. On the Mac type ctrl-d to exit  (on Windows ctrl-z).</p>
+
+<p>2. If you have <a href="https://www.jetbrains.com/pycharm/">PyCharm</a> installed, at the lower-left of any window, click the Python Console tab. Or use the Tools &gt; Python Console menu item to open an interpreter window within PyCharm.</p>
+
+<!--
+1. On parlante.org, use the <a href='https://parlante.org/console'>hack mode interpreter</a> page (there's a button at bottom of each problem page).
+This is kind of a nick science-project experiment, but it has the virtue that it works in the browser and doesn't depend on having Python installed on your computer.
+-->
+
+<h2>Working With The Interpreter</h2>
+
+<p>The interpreter prints a <code>>>></code> prompt and waits for you to type some Python code. It reads what you type, evaluates it, and prints the result &mdash; the so called read-eval-print loop (here what the user types is shown in bold)</p>
+
+<pre>
+>>><b> 1 + 2 * 3</b>
+7
+>>><b> 'hello' + 'there'</b>
+'hellothere'
+>>><b> max(1, 5, -2)</b>
+5
+>>><b> 'hello' + 2</b>
+TypeError: can only concatenate str (not "int") to str
+>>><b> 'hello' + str(2)</b>
+'hello2'
+>>><b></b>
+</pre>
+
+<p>This is an excellent way to experiment with Python features to see how they work. If you have some code you are thinking about, it can be quick and informative to fire up the interpreter, and type the code in to see what it does. When you have an expression that works in the interpreter, you can copy/paste it into your program as a first draft of that line.</p>
+
+<p>When you write a Python program, you store your code in a file like <code>hello.py</code>, where you can write and revise a series of functions and comments and whatnot over many lines, like writing a paper. You would not want to write a whole program at the <code>>>></code> prompt, which works best for little throw-away phrases.</p>
+
+<h2>Indent In Interpreter</h2>
+
+<p>It's possible to write multi-line indented code in the interpreter. If a line is not finished, such as ending with ":", typing the return key does not run the code right away. You can write further indented lines. When you enter a blank line, the interpreter runs the whole thing. (For throw-away code like this, I am willing to indent just 2 spaces).</p>
+
+<pre>
+>>><b> for i in range(10):</b>
+...   mult = i * 100
+...   print(i, mult)
+...
+0 0
+1 100
+2 200
+3 300
+4 400
+5 500
+6 600
+7 700
+8 800
+9 900
+</pre>
+
+<h2>Interpreter Hacks: dir help</h2>
+
+<p>What are all the functions that the <code>str</code> type has? You could look it up, but it's also possible in the interpreter to pull the list of function names directly out of Python this (<code>str</code> is the name of the built-int string type):</p>
+
+<pre>
+>>> <b>dir(str)</b>
+['__add__', '__class__', '__contains__', '__delattr__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getnewargs__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__iter__', '__le__', '__len__', '__lt__', '__mod__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__rmod__', '__rmul__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', 'capitalize', 'casefold', 'center', 'count', 'encode', 'endswith', 'expandtabs', 'find', 'format', 'format_map', 'index', 'isalnum', 'isalpha', 'isascii', 'isdecimal', 'isdigit', 'isidentifier', 'islower', 'isnumeric', 'isprintable', 'isspace', 'istitle', 'isupper', 'join', 'ljust', 'lower', 'lstrip', 'maketrans', 'partition', 'replace', 'rfind', 'rindex', 'rjust', 'rpartition', 'rsplit', 'rstrip', 'split', 'splitlines', 'startswith', 'strip', 'swapcase', 'title', 'translate', 'upper', 'zfill']
+</pre>
+
+<p>The above is not the most pretty form of the data, as we're just dumping the names of Python's internal structure.  Names that begin with 2 underbars like <code>__add__</code> are special internal functions that code does not normally need to know about. You can see regular functions like <code>lower()</code> and 'find()` in the list.</p>
+
+<p>With the special <b>help</b> function, you can pull up the PyDoc for each function (the triple-quote comments for a function). To refer to a function within the <code>str</code> type use the form <code>str.find</code>. Note that the function name is <b>not</b> followed by parenthesis - this is the unusual case of referring to a function but not calling it.</p>
+
+<pre>
+>>><b> help(str.find)</b>
+find(...)
+    S.find(sub[, start[, end]]) -> int
+
+    Return the lowest index in S where substring sub is found,
+    such that sub is contained within S[start:end].  Optional
+    arguments start and end are interpreted as in slice notation.
+
+    Return -1 on failure.
+</pre>
+
+<p>&nbsp;</p>
+
+<p class="small">Copyright 2020 Nick Parlante</p>
+
+</main>
+
+</body>
+</html>

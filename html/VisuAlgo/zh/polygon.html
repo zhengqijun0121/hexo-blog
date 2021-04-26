@@ -1,0 +1,2109 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="A polygon is a plane figure that is bounded by a closed circuit composed of a finite sequence of straight line segments.This visualization features a few computational geometry algorithms that can be carried out on simple (non-crossing) polygons with 3 or more non-collinear points, such as determining their perimeters and areas, determining concavity or convexity, determining whether a point is inside or outside, and to cut them with a simple line.">
+<meta name="keywords" content="计算几何面积周长凸壳体凹形绕组数量Graham扫描VisuAlgo数据结构算法可视化动画在线学习教程讲座&lt;br&gt;">
+ 
+<meta name="csrf-token" content="kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<meta property="og:image" content="../img/png/polygon.png">
+<title>VisuAlgo - 计算几何（多边形）&lt;br&gt;</title>
+<link rel="icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="114x114" href="../img/favicon.png">
+<link rel="stylesheet" type="text/css" href="../fonts/silkscreen/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="../css/common.css">
+<link rel="stylesheet" href="../css/viz-1.0.1.css">
+<link rel="stylesheet" href="../css/visual.css">
+<link rel="stylesheet" href="../css/drawgraph.css">
+<style>
+      #e-lecture {
+        top: 45px;
+        right: 130px;
+        width: 400px;
+        display: block;
+        background: none;
+        /*overflow: normal;*/
+        white-space: normal;
+        text-align: right;
+        color: black; font-weight: bold; font-size: 20px;
+      }
+      .electure-prev, .electure-next { /* force update, copied from viz.css */
+        position: absolute;
+        /* bottom: -12px; */
+        top: -20px;
+        /*bottom: '';*/
+        padding: 3px 8px;
+        background: #999;
+        color: white;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .electure-prev {
+        left: -10px;
+        /* right: 30px; */
+      }
+      .electure-next {
+        right: -10px;
+        color: white;
+      }
+    </style>
+<style>
+.execAction { padding: 5px 8px; }
+.err { padding: 5px 0px; }
+#actions-extras input {
+  width: 35px;
+  padding: 5px 8px 7px;
+}
+
+.examples { bottom: 200px; }
+.perimeter { bottom: 173px; }
+.area { bottom: 146px; }
+.is_convex { bottom: 119px; }
+.point_inside { bottom: 92px; }
+.cut_polygon { bottom: 65px; }
+</style>
+<script>
+      function changeURL() {
+        var URL = window.location.href.split('/');
+        var val = document.getElementById("Language").value;
+        URL[3] = val;
+        window.location.assign(URL.join('/'));
+      }
+    </script>
+</head>
+<body>
+<div id="top-bar">
+<a id="home" href="/">Visu<span class="colour">Algo</span><span style="font-size: 40%">.net</span></a>
+/
+<select id="Language" onchange="changeURL()">
+<option value="zh" selected>zh</option>
+</select>
+/polygon
+<span id="title">
+<a id='title-polygon' class='selected-viz'>计算几何（多边形）<br></a>
+</span>
+<div id="mode-menu">
+<div id='mode-button' title='exploration'>示例模式 &#9663;</div>
+<div id='other-modes'>
+<a title='e-Lecture'>电子讲座模式</a>
+</div>
+</div>
+</div>
+<div id="dark-overlay"></div>
+<div id="status" class="panel"><p></p></div>
+<div id="status-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide status panel" /></div>
+<div id="codetrace" class="panel">
+<p id="code1" style="padding-top: 10px;"></p>
+<p id="code2"></p>
+<p id="code3"></p>
+<p id="code4"></p>
+<p id="code5"></p>
+<p id="code6"></p>
+<p id="code7" style="padding-bottom: 10px;"></p>
+</div>
+<div id="codetrace-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide codetrace panel" /></div>
+<div id="left-bar"></div>
+<div id="right-bar"></div>
+<div id="media-controls">
+<div id='speed-control'>减速<div id='speed-input'></div>加速</div>
+<span id="go-to-beginning" class="media-control-button" title="go to beginning" onclick=goToBeginning()><img src="../img/goToBeginning.png" alt="go to beginning"></span>
+<span id="previous" class="media-control-button" title="step backward" onclick=stepBackward()><img src="../img/prevFrame.png" alt="previous frame"></span>
+<span id="pause" class="media-control-button" title="pause" onclick=pause()><img src="../img/pause.png" alt="pause"></span>
+<span id="play" class="media-control-button" title="play" onclick=play()><img src="../img/play.png" alt="play"></span>
+<span id="next" class="media-control-button" title="step forward" onclick=stepForward()><img src="../img/nextFrame.png" alt="next frame"></span>
+<span id="go-to-end" class="media-control-button" title="go to end" onclick=goToEnd()><img src="../img/goToEnd.png" alt="go to end"></span>
+<div id="progress-bar" class="media-control-button"></div>
+</div>
+<div id='viz'></div>
+<div id='current-action' class='panel'></div>
+<div id='e-lecture' class='panel'></div>
+<div id="overlay" hidden></div>
+<div id="dropdown-temp-holder" hidden></div>
+<div id="electure-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>A polygon is a plane figure that is bounded by a closed circuit composed of a <b>finite sequence</b> of <b>straight line segments</b>.</p><br><p>This visualization features a few computational geometry algorithms that can be carried out on simple (non-crossing) polygons with 3 or more non-collinear points, such as determining their perimeters and areas, determining concavity or convexity, determining whether a point is inside or outside, and to cut them with a simple line.</p>
+<hr>
+<p><b>Remarks</b>: By default, we show e-Lecture Mode for first time (or non logged-in) visitor.<br>
+Please <a href="login"><u>login</u></a> if you are a repeated visitor or <a href="login"><u>register</u></a> for an (optional) free account first.</p>
+<div id='electure-dropdown'>
+<select class="lecture-dropdown" style="width:100%">
+<option value="1">1. Polygon and Algorithms on Polygon</option>
+<option value="2">2. Visualization</option>
+<option value="3">3. Available Operations</option>
+<option value="3-1">&nbsp;&nbsp;&nbsp;3-1. Draw Polygon</option>
+<option value="3-2">&nbsp;&nbsp;&nbsp;3-2. Example Polygons</option>
+<option value="3-3">&nbsp;&nbsp;&nbsp;3-3. Perimeter of a Polygon</option>
+<option value="3-4">&nbsp;&nbsp;&nbsp;3-4. Area of a Polygon</option>
+<option value="3-5">&nbsp;&nbsp;&nbsp;3-5. Checking if the Polygon is Convex</option>
+<option value="3-6">&nbsp;&nbsp;&nbsp;3-6. Checking if a Point is Inside Polygon</option>
+<option value="3-7">&nbsp;&nbsp;&nbsp;3-7. Cutting a Convex Polygon with a Line</option>
+<option value="4">4. Extras</option>
+<option value="99">99. 状态面板</option>
+<option value="99-1">&nbsp;&nbsp;&nbsp;99-1. 代码追踪面板</option>
+<option value="99-2">&nbsp;&nbsp;&nbsp;99-2. 媒体控制</option>
+<option value="99-3">&nbsp;&nbsp;&nbsp;99-3. 返回 ”探索模式“</option>
+</select>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-next' data-nextid="2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2" class="electure-dialog" style="bottom:280px;margin-left:60px;width:500px;">
+<p>Vertices of a polygon can be ordered either in ClockWise (CW) or CounterClockWise (CCW) order. In this visualization, we prefer to use CCW order (although drawing polygon with vertices in CW order is also acceptable). Under the hood, we also set the first vertex = the last vertex to simplify implementation.</p><br><p>Note that we limit the drawn polygon to be a <b>simple</b> polygon, i.e. there is no edge intersection.</p><br><p>The number of vertices/corners of the polygon is stored in variable <b>n</b>. As polygon is a closed circuit, the number of edges/sides of the polygon is also <b>n</b>.</p>
+<hr>
+<p>Pro-tip: Since you are not <a href="login"><u>logged-in</u></a>, you may be a first time visitor who are not aware of the following keyboard shortcuts to navigate this e-Lecture mode: <b>[PageDown]</b> to advance to the next slide, <b>[PageUp]</b> to go back to the previous slide, <b>[Esc]</b> to toggle between this e-Lecture mode and exploration mode.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3" class="electure-dialog" style="bottom:280px;left:60px;width:500px;">
+<p>All available operations are listed in the left hand side menu as usual.</p><br><p>The first two are for giving simple input polygons and the next five are the computational geometry algorithms that you can run on the currently drawn polygon.</p>
+<hr>
+<p>Another pro-tip: We designed this visualization and this e-Lecture mode to look good on 1366x768 resolution <b>or larger</b> (typical modern laptop resolution in 2017). We recommend using Google Chrome to access VisuAlgo. Go to full screen mode (<b>F11</b>) to enjoy this setup. However, you can use zoom-in (<b>Ctrl +</b>) or zoom-out (<b>Ctrl -</b>) to calibrate this.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-1" class="electure-dialog" style="bottom:280px;left:60px;width:500px;">
+<p>In this visualization, you can draw <b>any</b> simple polygon (at least 3 points), without any collinear points. The smallest such polygon is a triangle.</p><br><p>The polygon that you draw can be either <b>convex</b> (line connecting any two points inside the polygon will remain inside the polygon) or <b>concave</b>.</p><br><p>If you do not close the loop (draw an edge from last vertex back to vertex 0), we will do that automatically for you.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-2" class="electure-dialog" style="bottom:280px;left:60px;width:500px;">
+<p>We provide a few example polygons as a starting point.</p><br><p>Upon loading this visualization page, we will randomize the chosen example polygon.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-3" class="electure-dialog" style="bottom:280px;left:60px;width:500px;">
+<p>The perimeter of a polygon is simply the sum of the lengths (Euclidean distances) of consecutive line segments (polygon edges).</p><br><p>This routine works for both convex and concave polygons and runs in O(<b>n</b>).</p><br><p>Without further ado, let&#39;s compute the <span class="slide-actions" onclick="doButtonAction119()">Perimeter</span> of the currently drawn polygon.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-4" class="electure-dialog" style="bottom:280px;left:60px;width:500px;">
+<p>When the vertices of a polygon are given in a circular manner (CW or CCW), we can compute its area using the <a href="https://en.wikipedia.org/wiki/Shoelace_formula" target="_blank"><u>Shoelace Formula</u></a>.</p><br><p>This Shoelace Formula returns the area, which is half the cross products of vectors defined by edge endpoints.</p><br><p>This formula is versatile as it works for both convex and concave polygons. It can be computed in O(<b>n</b>).</p><br><p>Without further ado, let&#39;s compute the <span class="slide-actions" onclick="doButtonAction120()">Area</span> of the currently drawn polygon.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-5" class="electure-dialog" style="bottom:280px;left:60px;width:500px;">
+<p>A polygon is called a <b>Convex</b> polygon if we draw a line between <b>any two</b> different points inside the polygon and the line always remain inside the polygon. Otherwise, the polygon is called <b>Concave</b>.</p><br><p>There is a far easier method to check if a given polygon (assume no three collinear points) is convex without using the direct definition above. We can check if <b>all three</b> consecutive vertices of the polygon form the same kind of turn (all CCWs or all CWs). This check is clearly O(<b>n</b>).</p><br><p>Without further ado, let&#39;s check if the currently drawn polygon <span class="slide-actions" onclick="doButtonAction121()">IsConvex</span>.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-6" class="electure-dialog" style="bottom:280px;left:60px;width:500px;">
+<p>There are a few algorithms for checking if a point (pt1) is inside a polygon or not. We reckon the most robust algorithm is the <a href="https://en.wikipedia.org/wiki/Point_in_polygon#Winding_number_algorithm" target="_blank"><u>Winding Number algorithm</u></a> that computes the sum of angles subtended by each edge/side of the polygon with pt1 as the origin. As there are only <b>n</b> such angles, this check also runs in O(<b>n</b>).</p><br><p>The input simple polygon can be as complicated as the currently displayed "MAZE" test case. Try <span class="slide-actions" onclick="doButtonAction122()">InsidePolygon</span> and <span class="slide-actions" onclick="doButtonAction123()">OutsidePolygon</span> test cases.</p><br><p>In Exploration Mode, you will be asked to provide the tested point (pt1) as additional input of this operation.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-7">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-7" class="electure-dialog" style="bottom:280px;left:60px;width:500px;">
+<p>We can cut a convex polygon with a straight line defined by two points (pt1, pt2). The result of the cut are two smaller but also convex polygons. This algorithm currently returns the smaller polygon on &#39;the left side&#39; of the cutting line (pt1, pt2).</p><br><p>Note that although possible, cutting a Concave polygon is more complicated as it may result in more than two (and possibly degenerate) polygons and is thus not supported in this visualization.</p><br><p>Try <span class="slide-actions" onclick="doButtonAction124()">Left Side</span> to see the default version of this routine and <span class="slide-actions" onclick="doButtonAction125()">Right Side</span> where we swap pt1 and pt2 to get the other side of the cut.</p><br><p>In Exploration Mode, you will be asked to provide two points to define the cut line (pt1 and pt2) as additional input of this operation.</p><br><p>This routine also runs in O(<b>n</b>).</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>There is one more computational geometry visualization in VisuAlgo: <a href="./convexhull" target="_blank"><u>Convex Hull</u></a>.</p><br><p>You can now use some of these algorithm on polygon routines to solve a few programming exercises: <a href="https://uva.onlinejudge.org/external/112/11265.pdf" title="" target="_blank"><u>UVa 11265 - The Sultan&#39;s Problem</u></a> and <a href="https://open.kattis.com/problems/robotprotection" title="" target="_blank"><u>Kattis - robotprotection</u></a>.</p><br><p>You are allowed to use/modify our implementation code for various polygon algorithms:<br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch7/polygon.cpp" target="_blank"><u>polygon.cpp</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch7/polygon.java" target="_blank"><u>polygon.java</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch7/polygon.py" target="_blank"><u>polygon.py</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch7/polygon.ml" target="_blank"><u>polygon.ml</u></a><br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-7">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99" class="electure-dialog" style="right:150px;bottom:335px;width:500px;">
+当操作进行时，状态面板将会有每个步骤的描述。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-1" class="electure-dialog" style="right:170px;bottom:275px;width:180px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-2" class="electure-dialog" style="bottom:70px;left:50%;margin-left:-120px;width:260px;">
+使用用户控件控制动画！可用的快捷键有：<div>空格键：绘制／停止／重绘</div><div>左／右箭头：上一步／下一步</div><div>-／+：减缓／增加速度</div><div><br></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-3" class="electure-dialog" style="top:70px;right:60px;width:300px;">
+<p>Return to &#39;Exploration Mode&#39; to start exploring!</p><br><p>Note that if you notice any bug in this visualization or if you want to request for a new visualization feature, do not hesitate to drop an email to the project leader: Dr Steven Halim via his email address: stevenhalim at gmail dot com.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-2">上一个 <u>PgUp</u></div>
+</div>
+<div id="popup" hidden>
+<div id="popup-content"></div>
+<span id="hide-popup" hidden>X <u>关闭</u></span>
+</div>
+<div id="actions" class="panel">
+<p id="draw" class="execAction" onclick="drawGraph()">绘制多边形</p>
+<p id="examples">Example Polygon</p>
+<p id="perimeter" class="execAction" onclick="findPerimeter()">周长(P)</p>
+<p id="area" class="execAction" onclick="findArea()">面积(P)</p>
+<p id="is_convex" class="execAction" onclick="isConvex()">isConvex(P)</p>
+<p id="point_inside" class="execAction" onclick="checkPointInsidePolygon()">inPolygon(pt, P)</p>
+<p id="cut_polygon" class="execAction" onclick="cutPolygon()">cutPolygon（ln，P）</p>
+</div>
+<div id="actions-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide actions panel" /></div>
+<div id="actions-extras">
+<div class="examples action-menu-pullout">
+<div id="examples-convex" class="execAction new-menu-option coloured-menu-option" onClick="example('CONCAVE')"><p>Concave</p></div>
+<div id="examples-concave" class="execAction new-menu-option coloured-menu-option" onClick="example('CONVEX')"><p>Convex</p></div>
+<div id="examples-mountain" class="execAction new-menu-option coloured-menu-option" onClick="example('MOUNTAIN')"><p>Mountain</p></div>
+<div id="examples-maze" class="execAction new-menu-option coloured-menu-option" onClick="example('MAZE')"><p>Maze</p></div>
+</div>
+<div class="perimeter action-menu-pullout">
+<div id="perimeter-err" class="err"></div>
+</div>
+<div class="area action-menu-pullout">
+<div id="area-err" class="err"></div>
+</div>
+<div class="is_convex action-menu-pullout">
+<div id="is_convex-err" class="err"></div>
+</div>
+<div class="point_inside action-menu-pullout">
+<div id="point_inside-err" class="err"></div>
+</div>
+<div class="cut_polygon action-menu-pullout">
+<div id="cut_polygon-err" class="err"></div>
+</div>
+</div>
+<div id="drawgraph" class="overlays"></div>
+<div id="bottom-bar">
+<a id="trigger-about">关于</a>
+</div>
+<div id="about" class="overlays">
+<h4>关于</h4><span class='close-overlay'>&#x2715;</span>
+<div class='content'>
+VisuAlgo在2011年由Steven Halim博士概念化，作为一个工具，帮助他的学生更好地理解数据结构和算法，让他们自己和自己的步伐学习基础。<br>VisuAlgo包含许多高级算法，这些算法在Steven Halim博士的书（“竞争规划”，与他的兄弟Felix Halim博士合作）和其他书中讨论。今天，一些高级算法的可视化/动画只能在VisuAlgo中找到。<br>虽然专门为新加坡国立大学（NUS）学生采取各种数据结构和算法类（例如CS1010，CS1020，CS2010，CS2020，CS3230和CS3230），作为在线学习的倡导者，我们希望世界各地的好奇心发现这些可视化也很有用。<br>VisuAlgo不是从一开始就设计为在小触摸屏（例如智能手机）上工作良好，因为需要满足许多复杂的算法可视化，需要大量的像素和点击并拖动手势进行交互。一个令人尊敬的用户体验的最低屏幕分辨率为1024x768，并且只有着陆页相对适合移动设备。<br>VisuAlgo是一个正在进行的项目，更复杂的可视化仍在开发中。<br>最令人兴奋的发展是自动问题生成器和验证器（在线测验系统），允许学生测试他们的基本数据结构和算法的知识。这些问题是通过一些规则随机生成的，学生的答案会在提交给我们的评分服务器后立即自动分级。这个在线测验系统，当它被更多的世界各地的CS教师采用，应该技术上消除许多大学的典型计算机科学考试手动基本数据结构和算法问题。通过在通过在线测验时设置小（但非零）的重量，CS教练可以（显着地）增加他/她的学生掌握这些基本问题，因为学生具有几乎无限数量的可以立即被验证的训练问题他们参加在线测验。培训模式目前包含12个可视化模块的问题。我们将很快添加剩余的8个可视化模块，以便VisuAlgo中的每个可视化模块都有在线测验组件。<br>另一个积极的发展分支是VisuAlgo的国际化子项目。我们要为VisuAlgo系统中出现的所有英语文本准备一个CS术语的数据库。这是一个很大的任务，需要众包。一旦系统准备就绪，我们将邀请VisuAlgo游客贡献，特别是如果你不是英语母语者。目前，我们还以各种语言写了有关VisuAlgo的公共注释：<br>
+<a href="https://weibo.com/p/230418436e9ee80102v4rk" target='_blank'><u>zh</u></a>, <a href='https://www.facebook.com/notes/steven-halim/httpidvisualgonet-visualisasi-struktur-data-dan-algoritma-dengan-animasi/10153236934439689' target='_blank'><u>id</u></a>, <a href="https://blog.naver.com/visualgo_nus" target='_blank'><u>kr</u></a>, <a href='https://www.facebook.com/groups/163215593699283/permalink/824003417620494/' target='_blank'><u>vn</u></a>, <a href='http://pantip.com/topic/32736343' target='_blank'><u>th</u></a>.</p>
+</div>
+</div>
+
+<script src="../js/jquery-3.3.1.min.js"></script>
+<script>
+      var PHP_DOMAIN = "";
+
+      // surprise colour!
+      // Referenced to in  home.js and viz.js also
+      var colourArray = ["#52bc69", "#d65775"/*"#ed5a7d"*/, "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"]; // green, pink, blue, red, yellow, indigo, orange, lime
+
+      function disableScroll() { $('html').css('overflow', 'hidden'); }
+
+      function enableScroll() { $('html').css('overflow', 'visible'); }
+
+      function replaceAll(find, replace, str) { return str.replace(new RegExp(find, 'g'), replace); }
+
+      function getColours() {
+        var generatedColours = new Array();
+        while (generatedColours.length < 4) {
+          var n = (Math.floor(Math.random() * colourArray.length));
+          if ($.inArray(n, generatedColours) == -1)
+            generatedColours.push(n);
+        }
+        return generatedColours;
+      }
+
+      function isOn(value, position) {
+        return (value>>position) & 1 === 1;
+      }
+
+      function customAlert(msg) {
+        $('#custom-alert p').html(msg);
+        var m = -1 * ($('#custom-alert').outerHeight()/2);
+        $('#custom-alert').css('margin-top', m+'px');
+        $('#dark-overlay').fadeIn(function() {
+          $('#custom-alert').fadeIn(function() {
+            setTimeout(function() {
+              $('#custom-alert').fadeOut(function() {
+                $('#dark-overlay').fadeOut();
+              });
+            }, 1000);
+          });
+        });
+      }
+
+      function showLoadingScreen() {
+        $('#loading-overlay').show();
+        $('#loading-message').show();
+      }
+
+      function hideLoadingScreen() {
+        $('#loading-overlay').hide();
+      }
+
+      function commonAction(retval, msg) {
+        //setTimeout(function() {
+          if (retval) { // mode == "exploration" && // now not only for exploration mode, but check if this opens other problems
+            $('#current-action').show();
+            $('#current-action').html(mode == "exploration" ? msg : ("e-Lecture Example (auto play until done)<br>" + msg));
+            $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+            triggerRightPanels();
+            isPlaying = true;
+          }
+        //}, 500);
+      }
+
+      function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable)
+            return decodeURIComponent(pair[1]);
+        }
+        return "";
+      }
+
+      var generatedColours = getColours();
+      var surpriseColour = colourArray[generatedColours[0]];
+      var colourTheSecond = colourArray[generatedColours[1]];
+      var colourTheThird = colourArray[generatedColours[2]];
+      var colourTheFourth = colourArray[generatedColours[3]];
+
+      $(function() {
+        $('.links').css('background', surpriseColour);
+        $('.right-links').css('background', surpriseColour);
+        $('#login-go').css('background', surpriseColour);
+
+        $('.colour').css("color", surpriseColour); // name
+        $('h4').css("background-color", surpriseColour); // about, contact us etc. button background
+
+        // title
+        $('#title a').click(function() {
+          $('#title a').removeClass('selected-viz');
+          $(this).addClass('selected-viz');
+          // temporary quick fix for Google Chrome Aug 2016 issue...
+          setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 100); // force resize/redraw...
+          setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        });
+
+        // overlays stuffs
+        $('#trigger-about').click(function() {
+          if ($(window).width() > 600) {
+            $('#dark-overlay').fadeIn(function() {
+              $('#about').fadeIn();
+            });
+          }
+          else
+            alert('Sorry, this dialog is too big. Please load it on bigger screen');
+        });
+
+        $('.close-overlay').click(function() {
+          $('.overlays').fadeOut(function() {
+            $('#dark-overlay').fadeOut();
+          });
+        });
+
+        $('#dark-overlay').click(function() {
+          $('.overlays').fadeOut();
+          $('#dark-overlay').fadeOut();
+        });
+      });
+    </script>
+
+<script src="../js/jquery-ui.min.js"></script>
+<script src="../js/d3.min.js"></script>
+<script src="../js/viz-1.0.3.js"></script>
+<script src="../js/visualgo_print.js"></script>
+<script src="../js/graph_library.js"></script>
+<script>
+      function runSlide(slide) {
+        if (slide == '1') {
+          $("#e-lecture").html("slide " + slide + " (" + 6 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2') {
+          $("#e-lecture").html("slide " + slide + " (" + 13 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3') {
+          $("#e-lecture").html("slide " + slide + " (" + 20 + "%)");
+          
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 26 + "%)");
+          closeExamples();
+$("#draw").addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 33 + "%)");
+          $("#examples").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 40 + "%)");
+          closeExamples();
+$("#perimeter").addClass("menu-highlighted");
+GeometryWidget.redrawPolygon();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-4') {
+          $("#e-lecture").html("slide " + slide + " (" + 46 + "%)");
+          closeExamples();
+$("#area").addClass("menu-highlighted");
+GeometryWidget.redrawPolygon();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-5') {
+          $("#e-lecture").html("slide " + slide + " (" + 53 + "%)");
+          closeExamples();
+$("#is_convex").addClass("menu-highlighted");
+var option = ['CONVEX', 'CONCAVE'];
+example(option[Math.floor(Math.random()*2)]); // either Convex or Concave upon loading this slide
+GeometryWidget.redrawPolygon();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-6') {
+          $("#e-lecture").html("slide " + slide + " (" + 60 + "%)");
+          closeExamples();
+$("#point_inside").addClass("menu-highlighted");
+example('MAZE');
+GeometryWidget.redrawPolygon();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-7') {
+          $("#e-lecture").html("slide " + slide + " (" + 66 + "%)");
+          closeExamples();
+$("#cut_polygon").addClass("menu-highlighted");
+example('CONVEX');
+GeometryWidget.redrawPolygon();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4') {
+          $("#e-lecture").html("slide " + slide + " (" + 73 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99') {
+          $("#e-lecture").html("slide " + slide + " (" + 80 + "%)");
+          
+          hideEntireActionsPanel();
+ 
+          showStatusPanel();
+          showCodetracePanel();
+      
+        }
+        if (slide == '99-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 86 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 93 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 100 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+      }
+
+      window.onpopstate = function(event) {
+        var slide = event.state['slide'];
+        openSlide(slide, function() {
+          runSlide(slide);
+        });
+      };
+
+      function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'), sParameterName, i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+          if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+      };
+
+      function pushState(slideValue) {
+        var url = '/zh/polygon';
+        if (typeof slideValue != 'undefined' && slideValue != null) url += '?slide=' + slideValue;
+        window.history.pushState({slide: slideValue}, "slide " + slideValue, url);
+      }
+
+      function showPopup(callback) {
+        $('#popup').fadeIn(100, callback);
+      }
+
+      function hidePopup(callback) {
+        $('#popup').fadeOut(100, callback);
+      }
+
+      function showOverlay() {
+        $('#overlay').css('opacity', 0.5); 
+        $('#overlay').show();
+      }
+
+      function hideOverlay() {
+        $('#overlay').hide();
+        $("#e-lecture").html("");
+      }
+
+      function makeOverlayTransparent() {
+        $('#overlay').css('opacity', 0);
+      }
+
+      function hideSlide(callback) {
+        isPlaying = true;
+        closeSlide(cur_slide, function() {
+          makeOverlayTransparent();
+          setTimeout(callback, 700); // don't immediately run the animation, wait for 500ms+ first
+        });
+      }
+
+      function showSlide() {
+        isPlaying = false;
+        openSlide(cur_slide);
+        showOverlay();
+      }
+
+      $(function() {
+        var slide = getUrlParameter('slide');
+        
+        $.get('/hasvisited' + '/polygon', function(data) {
+          var hasVisited = data['hasvisited'] == '1';
+          if (!hasVisited) {
+            var postData = {
+              '_token': 'kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh',
+              'page': '/polygon'.substring(1),
+            };
+
+            $.post("/visitpage", postData, function(data) {
+              // non critical request...
+            });
+
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+            }
+
+            $("#mode-menu a").trigger("click");
+          }
+          else {
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+              $('#mode-menu a').click();
+            }    
+          }
+        }).fail(function() {
+          if (typeof slide != undefined && slide != null) {
+            cur_slide = slide;
+            $('#mode-menu a').click();
+          }
+        });
+
+        $('.mcq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#mcq-answer-' + questionId).val();
+          var userAnswer = $('input[type=radio][name=mcq-'+questionId+'-choice]:checked').val();
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green"><b>Correct!</b></font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red"><b>Wrong Answer! Try again...</b></font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('.msq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#msq-answer-' + questionId).val();
+
+          var answers = [];
+          $('input[type=checkbox][class=msq-choice]:checked').each(function() {
+            answers.push($(this).attr('id').split('-')[3]);
+          });
+          answers.sort();
+          var userAnswer = answers.join(',');
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green">Correct!</font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red">Wrong Answer! Try again...</font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('select.lecture-dropdown').change(function() {
+          var nextSlide = $(this).val();
+          openSlide(nextSlide, function() {
+            runSlide(nextSlide);
+            pushState(nextSlide);
+          });
+        });
+
+        $('#hide-popup').click(function() {
+          hidePopup();
+        });
+
+        $('#popup').hover(function() {
+          $('#hide-popup').show();
+        }, function() {
+          $('#hide-popup').hide();
+        });
+
+        $('#electure-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+        $('#electure-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('1');
+          pushState('1');
+        });
+      
+        $('#electure-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-1');
+          pushState('3-1');
+        });
+        $('#electure-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-3-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-2');
+          pushState('3-2');
+        });
+        $('#electure-3-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+      
+        $('#electure-3-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-3');
+          pushState('3-3');
+        });
+        $('#electure-3-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-1');
+          pushState('3-1');
+        });
+      
+        $('#electure-3-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-4');
+          pushState('3-4');
+        });
+        $('#electure-3-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-2');
+          pushState('3-2');
+        });
+      
+        $('#electure-3-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-5');
+          pushState('3-5');
+        });
+        $('#electure-3-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-3');
+          pushState('3-3');
+        });
+      
+        $('#electure-3-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-6');
+          pushState('3-6');
+        });
+        $('#electure-3-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-4');
+          pushState('3-4');
+        });
+      
+        $('#electure-3-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-7');
+          pushState('3-7');
+        });
+        $('#electure-3-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-5');
+          pushState('3-5');
+        });
+      
+        $('#electure-3-7 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+        $('#electure-3-7 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-6');
+          pushState('3-6');
+        });
+      
+        $('#electure-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+        $('#electure-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-7');
+          pushState('3-7');
+        });
+      
+        $('#electure-99 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+        $('#electure-99 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+      
+        $('#electure-99-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+        $('#electure-99-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+      
+        $('#electure-99-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-3');
+          pushState('99-3');
+        });
+        $('#electure-99-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+      
+        $('#electure-99-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+      
+ 
+
+        // temporary quick fix for Google Chrome Aug 2016 issue..., put at last part so that everything else has been loaded
+        // setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 500);
+        // setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        // I turn it off on 14 June 2018, seems 'ok'?
+      });
+
+      function doButtonAction119() {
+        CUSTOM_ACTION('perimeter');
+      }
+      function doButtonAction120() {
+        CUSTOM_ACTION('area');
+      }
+      function doButtonAction121() {
+        CUSTOM_ACTION('isconvex');
+      }
+      function doButtonAction122() {
+        CUSTOM_ACTION('pointinpolygon', 'in');
+      }
+      function doButtonAction123() {
+        CUSTOM_ACTION('pointinpolygon', 'out');
+      }
+      function doButtonAction124() {
+        CUSTOM_ACTION('cutpolygon');
+      }
+      function doButtonAction125() {
+        CUSTOM_ACTION('cutpolygon', 'swap');
+      }
+
+      function adjustPopupToImageSize() {
+        var width = $('#popup-image').prop('width');
+        var height = $('#popup-image').prop('height');
+        $('#popup').width(width + 20);
+        $('#popup').height(height + 20);
+        if (width == 0 && height == 0) {
+          setTimeout(adjustPopupToImageSize, 200);
+        } else {
+          showPopup();  
+        }
+      }
+
+      function POPUP_IMAGE(url) {
+        $('#popup-content').html('<img id="popup-image" src="' + url + '">');
+        adjustPopupToImageSize();
+      }
+
+      function URL(url) {
+        window.open(url, '_blank');
+      }
+
+      // Implement these functions in each visualisation
+      // This function will be called before entering e-Lecture Mode
+      function ENTER_LECTURE_MODE() {}
+
+      // This function will be called before returning to Explore Mode
+      function ENTER_EXPLORE_MODE() {}
+
+      // Lecture action functions
+      function CUSTOM_ACTION(action, data, mode) {}
+    </script>
+<script src="../js/geometry_library/geometryHelper.js"></script>
+<script src="../js/geometry_library/drawGeometry.js"></script>
+<script>
+
+// Geometry widget
+// beta version: Victor Loh Bo Huai
+// original author of this version: Nguyen Hoang Duy, then enhanced by Truong Ngoc Khanh
+// current maintainer: Steven Halim
+var Geometry = function() {
+  var self = this;
+  var graphWidget = new GraphWidget();
+
+  var polygonPointList = [];
+  var extraPoint1 = null;
+  var extraPoint2 = null;
+  var intersectPointList = [];
+  var highlightedVertexIdList = [];
+  var infinitePoint1 = null;
+  var infinitePoint2 = null;
+
+  const EXTRA_POINT_1_ID = "ex1";
+  const EXTRA_POINT_2_ID = "ex2";
+  const INF_POINT_1_ID = "inf1";
+  const INF_POINT_2_ID = "inf2";
+  const INF_LINE_ID = "inf-line";
+  const ORIGIN_ID = "origin";
+  const CUT_POLYGON_RESULT_ID = "cutPolygonResult";
+  var stateList = [];
+
+  const MODE_DEFAULT = 0;
+  const MODE_POINT_IN_POLYGON = 1;
+  const MODE_CUT_POLYGON = 2;
+
+  var mode = MODE_DEFAULT;
+  var screenHeight = window.innerHeight - 100;
+  var screenWidth = window.innerWidth - 80;
+
+  mainSvg.style("class", "unselectable");
+  mainSvg.append('svg:defs').append('svg:marker')
+         .attr('id', 'end-arrow')
+         .attr('viewBox', '0 -5 10 10')
+         .attr('refX', 9)
+         .attr('markerWidth', 4)
+         .attr('markerHeight', 3)
+         .attr('orient', 'auto')
+         .append('svg:path')
+         .attr('d', 'M0,-5L10,0L0,5')
+         .attr('fill', '#000');
+  mainSvg.style("cursor", "crosshair");
+
+  mainSvg.attr("height", screenHeight);
+  mainSvg.attr("width", screenWidth);
+
+  takeJSON = function(pointListJson) {
+    if (pointListJson == null) return;
+    polygonPointList = JSON.parse(pointListJson);
+  }
+
+  statusChecking = function() {
+    $('#draw-status p').html('绘制一个简单的多边形（至少3点），没有任何共线点。<br>');
+  }
+
+  warnChecking = function() {
+    // var warn = "";
+    // if (amountVertex >= 17) warn += "Too much vertex on screen, consider drawing smaller graph. ";
+    // if (warn == "") $('#draw-warn p').html('No Warning");
+    // else            $('#draw-warn p').html(warn);
+  }
+
+  errorChecking = function() {
+    $('#done-button').hide();
+
+    if (Object.size(polygonPointList) < 3) {
+      $('#draw-err p').html('你必须画至少3点。<br>');
+      return;
+    }
+
+    if (hasCollinearPoints(polygonPointList)) {
+      $('#draw-err p').html('你不能画出3个线性点。<br>');
+      return;
+    }
+
+    if (!isSimplePolygon(polygonPointList)) {
+      $('#draw-err p').html('您必须绘制一个简单的多边形<br>');
+      return;
+    }
+
+    $('#draw-err p').html('没有错误');
+
+    $('#done-button').show();
+  }
+
+  this.getPolygonPointList = function() {
+    return polygonPointList;
+  }
+
+  var intervalID;
+
+  this.startLoop = function() {
+    intervalID = setInterval(function() {
+      takeJSON(JSONresult);
+      warnChecking();
+      errorChecking();
+      statusChecking();
+    }, 100);
+  }
+
+  this.stopLoop = function() {
+    clearInterval(intervalID);
+  }
+
+  this.draw = function() {
+    if ($('#draw-err p').html() != '没有错误')
+      return false;
+    if ($('#submit').is(':checked'))
+      this.submit(JSONresult);
+    if ($('#copy').is(':checked'))
+      window.prompt("Copy to clipboard:", JSONresult);
+
+    graph = createState();
+    graphWidget.updateGraph(graph, 500);
+    return true;
+  }
+
+  this.drawPolygon = function(JSON_input) {
+    takeJSON(JSON_input);
+    graph = createState();
+    graphWidget.updateGraph(graph, 500);
+    return true;
+  }
+
+  this.setExtraPoints = function(newPoint1, newPoint2) {
+    extraPoint1 = newPoint1;
+    extraPoint2 = newPoint2;
+  }
+
+  function doMouseDown() {
+    if (d3.event.ctrlKey) return;
+    if (mode == MODE_DEFAULT) return;
+
+    var cur = d3.mouse(mousedown_event);
+    var newPoint = {
+      x: cur[0],
+      y: cur[1]
+    }
+
+    if (mode == MODE_POINT_IN_POLYGON) {
+      if (extraPoint1 == null) {
+        extraPoint1 = newPoint;
+        self.draw();
+        self.goPointInside();
+      }
+      return;
+    }
+    else if (mode == MODE_CUT_POLYGON) {
+      if (extraPoint1 == null)
+        extraPoint1 = newPoint;
+      else
+        extraPoint2 = newPoint;
+      self.draw();
+      if (extraPoint1 != null && extraPoint2 != null)
+        self.goCutPolygon();
+      return;
+    }
+  }
+  
+  mainSvg.on("mousedown", function (d) { 
+    mousedown_event = this;
+    doMouseDown();
+  });
+
+  function createPointForState(point, text, state) {
+    if (typeof(state) == "undefined") {
+      state = VERTEX_DEFAULT
+    }
+    return {
+      cx: point.x,
+      cy: point.y,
+      text: text,
+      state: state
+    };
+  }
+
+  function createEdgeForState(vertexA, vertexB, type, weight, state, animateHighlighted) {
+    if (typeof(type) == undefined) type = EDGE_TYPE_UDE;
+    if (typeof(weight) == undefined) weight = 1;
+    if (typeof(state) == undefined) state = EDGE_DEFAULT
+    if (typeof(animateHighlighted) == undefined) animateHighlighted = false;
+      
+    return {
+      vertexA: vertexA,
+      vertexB: vertexB,
+      type: type,
+      weight: weight,
+      state: state,
+      animateHighlighted: animateHighlighted
+    };
+  }
+
+  function createState() {
+    var state = {
+      "vl":{},
+      "el":{},
+      "pl":{},
+      "status":{}
+    };
+
+    var size = Object.size(polygonPointList);
+    for (index in polygonPointList) {
+      state["vl"][index] = createPointForState(polygonPointList[index], index);
+      var nextPointId = (parseInt(index) + 1) % Object.size(polygonPointList);
+      state["el"][index] = createEdgeForState(index, nextPointId);
+    }
+
+    if (extraPoint1 != null)
+      state["vl"][EXTRA_POINT_1_ID] = createPointForState(extraPoint1, "pt1");
+    if (extraPoint2 != null)
+      state["vl"][EXTRA_POINT_2_ID] = createPointForState(extraPoint2, "pt2");
+    if (mode == MODE_CUT_POLYGON && extraPoint1 != null && extraPoint2 != null) {
+      var dist = dist2P(extraPoint1.x, extraPoint1.y, extraPoint2.x, extraPoint2.y);
+      var vector = {
+        x: (extraPoint2.x - extraPoint1.x)/dist*2000,
+        y: (extraPoint2.y - extraPoint1.y)/dist*2000
+      }
+      infinitePoint1 = {
+        x: extraPoint1.x + vector.x,
+        y: extraPoint1.y + vector.y
+      }
+      infinitePoint2 = {
+        x: extraPoint1.x - vector.x,
+        y: extraPoint1.y - vector.y
+      }
+      state["vl"][INF_POINT_1_ID] = createPointForState(infinitePoint1, '');
+      state["vl"][INF_POINT_2_ID] = createPointForState(infinitePoint2, '');
+      state["el"][INF_LINE_ID] = createEdgeForState(INF_POINT_2_ID, INF_POINT_1_ID);
+    }
+
+    for (var i = 0; i < Object.size(intersectPointList); i++) {
+      state["vl"]["inter" + i] = createPointForState(intersectPointList[i], '');
+    }
+    for (var i = 0; i < Object.size(highlightedVertexIdList); i++) {
+      state["vl"][highlightedVertexIdList[i]]["state"] = VERTEX_HIGHLIGHTED;
+    }
+    return state;
+  }
+
+  this.findPerimeter = function(callback) {
+    self.redrawPolygon();
+
+    var stateList = new Array();
+    populatePseudocode(0);
+    mainSvg.on("mousedown", null);
+
+    var currentState = createState();
+    //currentState["status"] = "Start<br>result = 0 px";  //status_perimeter_0
+    currentState["status"] = '开始<br>result = 0 px<br>';
+    currentState["lineNo"] = 1;
+    stateList.push(currentState);
+
+    var dist = 0, overall_dist = 0;
+    var size = Object.size(polygonPointList);
+    for (var i = 0; i < size; i++) {
+      currentState = createState();
+      
+      for (var j = 0; j < i; j++) {
+        currentState["vl"][j]["state"] = VERTEX_TRAVERSED;
+        currentState["el"][j]["state"] = EDGE_TRAVERSED;
+      }
+
+      currentState["vl"][i]["state"] = VERTEX_HIGHLIGHTED;
+      currentState["vl"][(i+1)%size]["state"] = VERTEX_HIGHLIGHTED;
+      currentState["el"][i]["state"] = EDGE_HIGHLIGHTED;
+      currentState["el"][i]["animateHighlighted"] = true;
+
+      var p1 = polygonPointList[i];
+      var p2 = polygonPointList[(i+1)%size];
+      dist = dist2P(p1.x, p1.y, p2.x, p2.y);
+      overall_dist += dist;
+      // currentState["status"] = "Distance between these 2 vertices = " + dist.toFixed(2) + "px<br>result = " + overall_dist.toFixed(2) + "px"; // status_perimeter_1
+      currentState["status"] = '这两个顶点之间的距离= {dist} px<br>result = {over_dist} px<br>'.replace("{dist}", dist.toFixed(2)).replace("{over_dist}", overall_dist.toFixed(2));
+      currentState["vl"][(i+1)%size]["extratext"] = "result = " + overall_dist.toFixed(2) + "px";
+      currentState["lineNo"] = [2, 3];
+      stateList.push(currentState);
+    }
+
+    currentState = createState();
+    for (var i = 0; i < size; i++) {
+      currentState["vl"][i]["state"] = VERTEX_TRAVERSED;
+      currentState["el"][i]["state"] = EDGE_TRAVERSED;
+    }
+    // currentState["status"] = "Finish<br>result = " + overall_dist.toFixed(2) + "px"; // status_perimeter_2
+    currentState["status"] = '完<br>result = {over_dist} px<br>'.replace("{over_dist}", overall_dist.toFixed(2));
+    currentState["vl"][0]["extratext"] = "result = " + overall_dist.toFixed(2) + "px";
+    currentState["lineNo"] = 4;
+    stateList.push(currentState);
+
+    graphWidget.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.findArea = function(callback) {
+    self.redrawPolygon();
+
+    var stateList = new Array();
+    populatePseudocode(2);
+    mainSvg.on("mousedown", null);
+
+    var origin = {x:50, y:500};
+    var originPoint = createPointForState(origin, "O");
+
+    var positivePolygonList = [];
+    var negativePolygonList = [];
+
+    var area = 0, over_area = 0;
+    var size = Object.size(polygonPointList);
+    var polygon = null;
+    var p1, p2, p3;
+    
+    var currentState = createState();
+    currentState["vl"][ORIGIN_ID] = originPoint;
+    // currentState["status"] = "Start<br>result = 0px^2"; // status_area_0
+    currentState["status"] = 'Start<br>result = 0.00px^2';
+    currentState["lineNo"] = 1;
+
+    for (var i = 0; i < size; i++) {
+      polygon = [origin, polygonPointList[i], polygonPointList[(i+1)%size]];
+      p1 = origin;
+      p2 = polygonPointList[i];
+      p3 = polygonPointList[(i+1)%size];
+      area = cross(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+      if (area+EPS > 0)
+        positivePolygonList.push(i);  
+      else
+        negativePolygonList.push(i);  
+    }
+
+    for (key in negativePolygonList) {
+      var polygon = [
+        origin,
+        polygonPointList[negativePolygonList[key]],
+        polygonPointList[(negativePolygonList[key]+1)%size]
+      ];
+      currentState["pl"]["n"+negativePolygonList[key]] = { points: polygon, state: POLYGON_HIDDEN };
+    }
+    for (key in positivePolygonList) {
+      var polygon = [
+        origin,
+        polygonPointList[positivePolygonList[key]],
+        polygonPointList[(positivePolygonList[key]+1)%size]
+      ];
+      currentState["pl"]["p"+positivePolygonList[key]] = { points: polygon, state: POLYGON_HIDDEN };
+    }
+    stateList.push(currentState);
+
+    for (var i = 0; i < size; i++) {
+      currentState = createState();
+      currentState["vl"][ORIGIN_ID] = originPoint;
+      currentState["vl"][ORIGIN_ID]["state"] = VERTEX_TRAVERSED;
+      currentState["vl"][i]["state"] = VERTEX_TRAVERSED;
+      currentState["vl"][(i+1)%size]["state"] = VERTEX_TRAVERSED;
+      
+      polygon = [origin, polygonPointList[i], polygonPointList[(i+1)%size]];
+      p1 = origin;
+      p2 = polygonPointList[i];
+      p3 = polygonPointList[(i+1)%size];
+      area = cross(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
+      
+      for (key in negativePolygonList) {
+        if (negativePolygonList[key] <= i) {
+          polygon = [
+            origin, 
+            polygonPointList[negativePolygonList[key]], 
+            polygonPointList[(negativePolygonList[key]+1)%size]
+          ];
+          var state = (negativePolygonList[key] < i?POLYGON_RED_TRANSPARENT:POLYGON_RED_FILL);
+          currentState["pl"]["n"+negativePolygonList[key]] = { points: polygon, state: state };
+        }
+      }
+      for (key in positivePolygonList) {
+        if (positivePolygonList[key] <= i) {
+          polygon = [
+            origin, 
+            polygonPointList[positivePolygonList[key]], 
+            polygonPointList[(positivePolygonList[key]+1)%size]
+          ];
+          var state = (positivePolygonList[key] < i?POLYGON_GREEN_TRANSPARENT:POLYGON_GREEN_FILL);
+          currentState["pl"]["p"+positivePolygonList[key]] = { points: polygon, state: state };
+        }
+      }
+
+      over_area += area;
+      // currentState["status"] = "Area under triangle = " + area.toFixed(2) + "px<br>result = " + Math.abs(over_area.toFixed(2)); // status_area_1
+      currentState["status"] = 'Area under triangle = {area}px^2<br>result = {over_area}px^2'.replace("{area}", area.toFixed(2)).replace("{over_area}", over_area.toFixed(2));
+      currentState["lineNo"] = 3;
+      stateList.push(currentState);
+    }
+
+    currentState = createState();
+    currentState["vl"][ORIGIN_ID] = originPoint;
+    currentState["vl"][ORIGIN_ID]["state"] = VERTEX_DEFAULT;
+    for (key in negativePolygonList) {
+      polygon = [
+        origin, 
+        polygonPointList[negativePolygonList[key]], 
+        polygonPointList[(negativePolygonList[key]+1)%size]
+      ];
+      currentState["pl"]["n"+negativePolygonList[key]] = { points: polygon, state: POLYGON_RED_TRANSPARENT };
+    }
+    for (key in positivePolygonList) {
+      polygon = [
+        origin, 
+        polygonPointList[positivePolygonList[key]], 
+        polygonPointList[(positivePolygonList[key]+1)%size]
+      ];
+      currentState["pl"]["p"+positivePolygonList[key]] = { points: polygon, state: POLYGON_GREEN_TRANSPARENT };
+    }
+
+    // currentState["status"] = "Finish<br>result = " + Math.abs(over_area.toFixed(2)); // status_area_2
+    currentState["status"] = 'Finish<br>result = {over_area}px^2'.replace("{over_area}", Math.abs(over_area.toFixed(2)));
+    currentState["lineNo"] = 4;
+    stateList.push(currentState);
+
+    graphWidget.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.isConvex = function(callback) {
+    self.redrawPolygon();
+
+    var stateList = new Array();
+    populatePseudocode(1);
+
+    var currentState = createState();    
+    // have to inverse the sign because the coordinate system. 
+    var isCCW = !ccw(
+      polygonPointList[0].x, polygonPointList[0].y, 
+      polygonPointList[1].x, polygonPointList[1].y, 
+      polygonPointList[2].x, polygonPointList[2].y
+    );
+    // currentState["status"] = "First 3 points turn is a " + firstTurn; // status_is_convex_1
+    currentState["status"] = 'First 3 points turn is a {firstTurn}'.replace('{firstTurn}', isCCW ? 'CCW' : 'CW');
+    currentState["lineNo"] = 2;
+    currentState["vl"][0]["state"] = VERTEX_HIGHLIGHTED;
+    currentState["vl"][1]["state"] = VERTEX_HIGHLIGHTED;
+    currentState["vl"][1]["extratext"] = isCCW ? "CCW" : "CW";
+    currentState["vl"][2]["state"] = VERTEX_HIGHLIGHTED;
+    currentState["el"][0]["state"] = EDGE_HIGHLIGHTED;
+    currentState["el"][0]["animateHighlighted"] = true;
+    currentState["el"][1]["state"] = EDGE_HIGHLIGHTED;
+    currentState["el"][1]["animateHighlighted"] = true;
+    stateList.push(currentState);
+
+    var size = Object.size(polygonPointList);
+    
+    for (var i = 1; i < size; i++) {
+      currentState = createState();
+      for (var j = 0; j < i; j++) {
+        currentState["vl"][j]["state"] = VERTEX_TRAVERSED;
+        currentState["el"][j]["state"] = EDGE_TRAVERSED;
+      }
+
+      currentState["el"][i]["state"] = EDGE_HIGHLIGHTED;
+      currentState["el"][i]["animateHighlighted"] = true;
+      currentState["el"][(i+1)%size]["state"] = EDGE_HIGHLIGHTED;
+      currentState["el"][(i+1)%size]["animateHighlighted"] = true;
+      
+      currentState["vl"][i]["state"] = VERTEX_HIGHLIGHTED;
+      currentState["vl"][(i+1)%size]["state"] = VERTEX_HIGHLIGHTED;
+      currentState["vl"][(i+2)%size]["state"] = VERTEX_HIGHLIGHTED;
+      
+      var tmp = !ccw(
+        polygonPointList[i].x, polygonPointList[i].y, 
+        polygonPointList[(i+1)%size].x, polygonPointList[(i+1)%size].y, 
+        polygonPointList[(i+2)%size].x, polygonPointList[(i+2)%size].y
+      );
+      // var status = "These 3 points turn is a " + tmp; // status_is_convex_2
+      var status = 'These 3 points turn is a {tmp}'.replace('{tmp}', tmp ? "CCW" : "CW");
+      currentState["vl"][1]["extratext"] = isCCW ? "CCW" : "CW"; // always mentioned for comparison
+      currentState["vl"][(i+1)%size]["extratext"] = tmp ? "CCW" : "CW";
+
+      if (tmp == isCCW) {
+        // status += ", the same as the first turn<br>Continue" // status_is_convex_3
+        status += ', the same as the first turn<br>Continue';
+        currentState["lineNo"] = [3, 4, 5];
+      }
+      else {
+        // status += ", different from the first turn<br>Stop, the Polygon is not convex" // status_is_convex_4
+        status += ', different from the first turn<br>Stop, Polygon is not convex';
+
+        currentState["status"] = status;
+        currentState["lineNo"] = [3, 4, 5, 6];
+        stateList.push(currentState);
+
+        graphWidget.startAnimation(stateList, callback);
+        return true;
+      }
+      currentState["status"] = status;
+      stateList.push(currentState);
+    }
+
+    currentState = createState();
+    for (var j = 0; j < size; j++) {
+      currentState["vl"][j]["state"] = VERTEX_TRAVERSED;
+      currentState["el"][j]["state"] = EDGE_TRAVERSED;
+    }
+    // currentState["status"] = "Polygon is convex"; // status_is_convex_6
+    currentState["status"] = '多边形是凸的<br>';
+    currentState["lineNo"] = 7;
+    stateList.push(currentState);
+
+    graphWidget.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.checkPointInsidePolygon = function() {
+    mode = MODE_POINT_IN_POLYGON;
+    self.redrawPolygon();
+
+    mainSvg.on("mousedown", function (d) { 
+      mousedown_event = this;
+      doMouseDown();
+    });
+    return true;
+  }
+
+  this.goPointInside = function(callback) {
+    mode = MODE_POINT_IN_POLYGON;
+    $('#current-action').show();
+    $('#current-action p').html('Check point is inside polygon');
+    triggerRightPanels();
+    isPlaying = true;
+    
+    var stateList = new Array();
+    var sum = 0;
+    populatePseudocode(3);
+    
+    var currentState = createState();
+    // currentState["status"] = "Start"; // status_in_polygon_0
+    currentState["status"] = '开始';
+    currentState["lineNo"] = 1;
+    stateList.push(currentState);
+    
+    var size = Object.size(polygonPointList);
+    for (var i = 0; i < size; i++) {
+      currentState = createState();
+      currentState["vl"][EXTRA_POINT_1_ID]["state"] = VERTEX_HIGHLIGHTED;
+      currentState["vl"][i]["state"] = VERTEX_HIGHLIGHTED;
+      currentState["vl"][(i+1)%size]["state"] = VERTEX_HIGHLIGHTED;
+      
+      currentState["el"]["ex-line1"] = createEdgeForState(EXTRA_POINT_1_ID, i);
+      currentState["el"]["ex-line1"].state = EDGE_HIGHLIGHTED;
+      
+      currentState["el"]["ex-line2"] = createEdgeForState(EXTRA_POINT_1_ID, (i+1)%size);
+      currentState["el"]["ex-line2"].state = EDGE_HIGHLIGHTED;
+      
+      // currentState["status"] = "Checking these 3 points"; // status_in_polygon_1
+      currentState["status"] = '检查这3个点<br>';
+      currentState["lineNo"] = 2;
+      stateList.push(currentState);
+
+      var ccwResult = ccw(
+        polygonPointList[i].x, polygonPointList[i].y, 
+        extraPoint1.x, extraPoint1.y, 
+        polygonPointList[(i+1)%size].x, polygonPointList[(i+1)%size].y
+      );
+      var angleResult = angle(
+        polygonPointList[i].x, polygonPointList[i].y, 
+        extraPoint1.x, extraPoint1.y, 
+        polygonPointList[(i+1)%size].x, polygonPointList[(i+1)%size].y
+      );
+
+      if (ccwResult) {
+        sum += angleResult;
+        // currentState["status"] = "Left turn<br>Sum angle = " + sum.toFixed(2); // status_in_polygon_2
+        currentState["status"] = '左转。 Sum angle = {sum}<br>'.replace('{sum}', sum.toFixed(2));
+        currentState["vl"][EXTRA_POINT_1_ID]["extratext"] = sum.toFixed(2);
+        currentState["lineNo"] = 3; 
+      }
+      else {
+        sum -= angleResult;
+        // currentState["status"] = "Right turn<br>Sum angle = " + sum.toFixed(2); // status_in_polygon_3
+        currentState["status"] = '右转。 Sum angle = {sum}'.replace('{sum}', sum.toFixed(2));
+        currentState["vl"][EXTRA_POINT_1_ID]["extratext"] = sum.toFixed(2);
+        currentState["lineNo"] = 4;
+      }
+      stateList.push(currentState);
+    }
+
+    var PI = Math.acos(-1.0);
+    var res = Math.abs(Math.abs(sum) - 2*PI) < 0.000001;
+    currentState = createState();
+    // currentState["status"] = "Sum angle = " + sum.toFixed(2) + "<br>The point is " + isIn + "polygon"; // status_in_polygon_4
+    if (res) {
+      currentState["status"] = 'Sum angle = {sum}<div>The point is inside polygon</div>'.replace('{sum}', Math.abs(sum).toFixed(2)); // inside
+      currentState["vl"][EXTRA_POINT_1_ID]["extratext"] = Math.abs(sum).toFixed(2) + ", Inside";
+    }
+    else {
+      currentState["status"] = 'Sum angle = {sum}<div>The point is outside polygon</div>'.replace('{sum}', Math.abs(sum).toFixed(2)); // outside
+      currentState["vl"][EXTRA_POINT_1_ID]["extratext"] = Math.abs(sum).toFixed(2) + ", Outside";
+    }
+    currentState["lineNo"] = 5;
+    stateList.push(currentState);
+
+    graphWidget.startAnimation(stateList, callback);
+    $('#progress-bar').slider( "option", "max", graphWidget.getTotalIteration()-1);
+  }
+
+  this.doCutPolygon = function() {
+    mode = MODE_CUT_POLYGON;
+    self.redrawPolygon();
+
+    mainSvg.on("mousedown", function (d) { 
+      mousedown_event = this;
+      doMouseDown();
+    });
+    return true;
+  }
+
+  var cutPolygonResult = [];
+
+  function cutPolygonCheckPointOnLeftState(pointIndex) {
+    var currentState = createState();
+    currentState["vl"][EXTRA_POINT_1_ID]["state"] = VERTEX_TRAVERSED;
+    currentState["vl"][EXTRA_POINT_2_ID]["state"] = VERTEX_TRAVERSED;
+    currentState["el"][INF_LINE_ID]["state"] = EDGE_TRAVERSED;
+    currentState["vl"][pointIndex]["state"] = VERTEX_TRAVERSED;
+    // currentState["status"] = "Checking this point"; // status_cut_polygon_0
+    currentState["status"] = 'Checking this point';
+    currentState["lineNo"] = [1, 2];
+    
+    return currentState;
+  }
+
+  function cutPolygonChoosePointIfOnLeftState(pointIndex) {
+    var isLeft = !ccw(
+      extraPoint1.x, extraPoint1.y,
+      extraPoint2.x, extraPoint2.y,
+      polygonPointList[pointIndex].x, polygonPointList[pointIndex].y
+    );
+    if (isLeft) {
+      cutPolygonResult.push(polygonPointList[pointIndex]);
+      highlightedVertexIdList.push(pointIndex);
+    }
+
+    currentState = createState();
+    currentState["vl"][EXTRA_POINT_1_ID]["state"] = VERTEX_TRAVERSED;
+    currentState["vl"][EXTRA_POINT_2_ID]["state"] = VERTEX_TRAVERSED;
+    currentState["el"][INF_LINE_ID]["state"] = EDGE_TRAVERSED;
+    currentState["vl"][pointIndex]["state"] = VERTEX_TRAVERSED;
+    
+    if (isLeft) {
+      currentState["lineNo"] = 3;
+      // currentState["status"] = "This point is on the left of line pt1-pt2, add to result" // status_cut_polygon_1
+      currentState["status"] = 'This point is on the left of line pt1-pt2, add to result';
+    }
+    else {
+      // currentState["status"] = "This point is on the right of line pt1-pt2, skip"; // status_cut_polygon_2
+      currentState["status"] = 'This point is on the right of line pt1-pt2, skip';
+      currentState["lineNo"] = 2;
+    }
+    return currentState;
+  }
+
+  function cutPolygonCheckEdgeIfCutLineState(pointIndex) {
+    currentState = createState();
+    currentState["vl"][EXTRA_POINT_1_ID]["state"] = VERTEX_TRAVERSED;
+    currentState["vl"][EXTRA_POINT_2_ID]["state"] = VERTEX_TRAVERSED;
+    currentState["el"][INF_LINE_ID]["state"] = EDGE_TRAVERSED;
+    
+    var size = Object.size(polygonPointList);
+    currentState["vl"][pointIndex]["state"] = VERTEX_TRAVERSED;
+    currentState["vl"][(pointIndex+1)%size]["state"] = VERTEX_TRAVERSED;
+    currentState["el"][pointIndex]["state"] = EDGE_TRAVERSED;
+    // currentState["status"] = "Checking if this edge crosses the line"; // status_cut_polygon_3
+    currentState["status"] = '检查这条边是否穿过线<br>';
+    currentState["lineNo"] = 4;
+    return currentState;
+  }
+
+  function cutPolygonHighlightIntersectState(pointIndex) {
+    var a1 = -(extraPoint2.y - extraPoint1.y);
+    var b1 = (extraPoint2.x - extraPoint1.x);
+    var c1 = (a1*extraPoint1.x + b1*extraPoint1.y);
+
+    var size = Object.size(polygonPointList);
+    var a2 = -(polygonPointList[(pointIndex+1)%size].y - polygonPointList[pointIndex].y);
+    var b2 = (polygonPointList[(pointIndex+1)%size].x - polygonPointList[pointIndex].x);
+    var c2 = (a2*polygonPointList[pointIndex].x + b2*polygonPointList[pointIndex].y);
+
+    var intersect = getLinesIntersection(a1, b1, c1, a2, b2, c2);
+    var intersectId = "inter" + Object.size(intersectPointList);
+    var intersectPoint = {
+      x: intersect[0],
+      y: intersect[1]
+    };
+    intersectPointList.push(intersectPoint);
+    cutPolygonResult.push(intersectPoint);
+    highlightedVertexIdList.push(intersectId);
+    currentState = createState();
+    currentState["vl"][EXTRA_POINT_1_ID]["state"] = VERTEX_TRAVERSED;
+    currentState["vl"][EXTRA_POINT_2_ID]["state"] = VERTEX_TRAVERSED;
+    currentState["el"][INF_LINE_ID]["state"] = EDGE_TRAVERSED;
+    // currentState["status"] = "This edge crosses the line"; // status_cut_polygon_4
+    currentState["status"] = 'This edge crosses the line pt1-pt2';
+    currentState["lineNo"] = 5;
+    return currentState;
+  }
+
+  this.goCutPolygon = function(callback) {
+    mode = MODE_CUT_POLYGON;
+    mainSvg.on("mousedown", null);
+    $('#current-action').show();
+    $('#current-action p').html('Cut polygon');
+    triggerRightPanels();
+    isPlaying = true;
+    populatePseudocode(4);
+    cutPolygonResult = [];
+
+    var stateList = new Array();
+
+    var currentState = createState();
+    //currentState["status"] = "Start"; //status_cut_polygon_5
+    currentState["status"] = '开始';
+    stateList.push(currentState);
+
+    var size = Object.size(polygonPointList);
+    for (var i = 0; i < size; i++) {
+      // Check if the point is on the left side 
+      currentState = cutPolygonCheckPointOnLeftState(i);
+      stateList.push(currentState);
+
+      // Choose the point if it's on the left side
+      currentState = cutPolygonChoosePointIfOnLeftState(i);
+      stateList.push(currentState);
+
+      // Check the edge if it intersects with the line
+      currentState = cutPolygonCheckEdgeIfCutLineState(i);
+      stateList.push(currentState);
+
+      // Highlight the intersection if it cuts
+      var cross1 = cross(
+        extraPoint1.x, extraPoint1.y,
+        extraPoint2.x, extraPoint2.y,
+        polygonPointList[i].x, polygonPointList[i].y
+      )
+      var cross2 = cross(
+        extraPoint1.x, extraPoint1.y,
+        extraPoint2.x, extraPoint2.y,
+        polygonPointList[(i+1)%size].x, polygonPointList[(i+1)%size].y
+      )
+
+      // if has intersect
+      if (cross1*cross2 < EPS) {
+        currentState = cutPolygonHighlightIntersectState(i);
+        stateList.push(currentState);
+      }
+    }
+
+    currentState = createState();
+    currentState["pl"][CUT_POLYGON_RESULT_ID] = {
+      points: cutPolygonResult,
+      state: POLYGON_GREEN_FILL
+    }
+    // currentState["status"] = "Finish."; // status_cut_polygon_6
+    currentState["status"] = '结束';
+    stateList.push(currentState);
+    
+    graphWidget.startAnimation(stateList, callback);
+    $('#progress-bar').slider( "option", "max", graphWidget.getTotalIteration()-1);
+  }
+
+  this.getGraphWidget = function() { return graphWidget; }
+
+  // Javascript addon: get size of an object
+  Object.size = function(obj) {
+    var size = 0, key;
+    for (key in obj) {
+      if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+  };
+
+  function populatePseudocode(act) {
+    switch (act) {
+      case 0: // Perimeter
+        $('#code1').html('result = 0.0');
+        $('#code2').html('for (i = 0; i &lt; P.size()-1; i++)');
+        $('#code3').html('&nbsp;&nbsp;result += dist(P[i], P[i+1])');
+        $('#code4').html('return result');
+        $('#code5').html('');
+        $('#code6').html('');
+        $('#code7').html('');
+        break;
+      case 1: // isConvex
+        $('#code1').html('point or line is clearly not convex, return');
+        $('#code2').html('firstTurn = ccw(P[0], P[1], P[2])');
+        $('#code3').html('for (i = 1; i < sz-1; i++)');
+        $('#code4').html('&nbsp;&nbsp;tmp = (i+2 == sz ? 1: i+2)');
+        $('#code5').html('&nbsp;&nbsp;if ccw(P[i], P[i+1], P[tmp]) != firstTurn');
+        $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;return polygon is not convex');
+        $('#code7').html('return polygon is convex');
+        break;
+      case 2: // Area
+        $('#code1').html('result = 0.0, point O(0.0, 0.0)&nbsp;');
+        $('#code2').html('for (i = 0; i &lt; P.size()-1; i++)');
+        $('#code3').html('&nbsp;&nbsp;result += cross(toVec(O, P[i]), toVec(O, P[i+1]))');
+        $('#code4').html('return fabs(result)/2.0');
+        $('#code5').html(''); // &nbsp;&nbsp;result += dist(P[i], P[(i+1)%sz]');
+        $('#code6').html('');
+        $('#code7').html('');
+        break;
+      case 3: // check point inside polygon
+        $('#code1').html('for (i = 0; i &lt; P.size()-1; i++)');
+        $('#code2').html('&nbsp;&nbsp;if ccw(p, P[i], P[i+1])');
+        $('#code3').html('&nbsp;&nbsp;&nbsp;&nbsp;sum += angle(P[i], p, P[i+1])');
+        $('#code4').html('&nbsp;&nbsp;else sum -= angle(P[i], p, P[i+1])');
+        $('#code5').html('return fabs(fabs(sum) - 2*PI) &lt; EPS');
+        $('#code6').html('');
+        $('#code7').html('');
+        break;
+      case 4: // cut polygon
+        $('#code1').html('for (point i in polygon)');
+        $('#code2').html('&nbsp;if left1 &gt; -EPS // left1 = cross(A, B, i)');
+        $('#code3').html('&nbsp;&nbsp;add i to result');
+        $('#code4').html('&nbsp;if left1*left2 &lt; -EPS // eft2 = cross(A, B, i+1)');
+        $('#code5').html('&nbsp;&nbsp;add intersection to result');
+        $('#code6').html('');
+        $('#code7').html('');
+        break;
+    } 
+  }
+
+  this.redrawPolygon = function() {
+    extraPoint1 = null;
+    graphWidget.removeVertex(EXTRA_POINT_1_ID);
+    
+    extraPoint2 = null;
+    graphWidget.removeVertex(EXTRA_POINT_2_ID);
+    
+    for (var i = 0; i < Object.size(intersectPointList); i++)
+      graphWidget.removeVertex("inter"+i);
+    intersectPointList = [];
+    
+    highlightedVertexIdList = [];
+
+    infinitePoint1 = null;
+    graphWidget.removeVertex(INF_POINT_1_ID);
+    infinitePoint2 = null;
+    graphWidget.removeVertex(INF_POINT_2_ID);
+    graphWidget.removeEdge(INF_LINE_ID);
+    
+    graphWidget.removeAll();
+    return self.draw();
+  }
+}
+
+// Geometry action
+var actionsWidth = 150;
+var statusCodetraceWidth = 410;
+var isExamplesOpen = false, isPerimeterOpen = false, isAreaOpen = false, isConvexOpen = false, isCutOpen = false, isPointInsideOpen = false;
+
+function openExamples() {
+  if (!isExamplesOpen) {
+    $('.examples').fadeIn('fast');
+    isExamplesOpen = true;
+  }
+}
+
+function closeExamples() {
+  if (isExamplesOpen) {
+    $('.examples').fadeOut('fast');
+    isExamplesOpen = false;
+  }
+}
+
+function openPerimeter() {
+  if (!isPerimeterOpen) {
+    $('.perimeter').fadeIn('fast');
+    isPerimeterOpen = true;
+  }
+}
+
+function closePerimeter() {
+  if (isPerimeterOpen) {
+    $('.perimeter').fadeOut('fast');
+    $('#perimeter-err').html('');
+    isPerimeterOpen = false;
+  }
+}
+
+function openArea() {
+  if (!isAreaOpen) {
+    $('.area').fadeIn('fast');
+    isAreaOpen = true;
+  }
+}
+
+function closeArea() {
+  if (isAreaOpen) {
+    $('.area').fadeOut('fast');
+    $('#area-err').html('');
+    isAreaOpen = false;
+  }
+}
+
+function openConvex() {
+  if (!isConvexOpen) {
+    $('.is_convex').fadeIn('fast');
+    isConvexOpen = true;
+  }
+}
+
+function closeConvex() {
+  if (isConvexOpen) {
+    $('.is_convex').fadeOut('fast');
+    $('#is_convex-err').html('');
+    isConvexOpen = false;
+  }
+}
+
+function openCut() {
+  if (!isCutOpen) {
+    $('.cut_polygon').fadeIn('fast');
+    isCutOpen = true;
+  }
+}
+
+function closeCut() {
+  if (isCutOpen) {
+    $('.cut_polygon').fadeOut('fast');
+    $('#cut_polygon-err').html('');
+    isCutOpen = false;
+  }
+}
+
+function openPointInside() {
+  if (!isPointInsideOpen) {
+    $('.point_inside').fadeIn('fast');
+    isPointInsideOpen = true;
+  }
+}
+
+function closePointInside() {
+  if (isPointInsideOpen) {
+    $('.point_inside').fadeOut('fast');
+    $('#point_inside-err').html('');
+    isPointInsideOpen = false;
+  }
+}
+
+function hideEntireActionsPanel() {
+  closeExamples();
+  closePerimeter();
+  closeArea();
+  closeConvex();
+  closeCut();
+  closePointInside();
+  hideActionsPanel();
+}
+
+// local
+// start by showing actions panel
+// enableActionsOnly();
+$('#play').hide();
+var GeometryWidget = new Geometry();
+var gw = GeometryWidget.getGraphWidget(); // usage of gw is inconsistent with other widgets >:(
+var choices = ['CONCAVE', 'CONVEX', 'MOUNTAIN', 'MAZE'];
+var random_polygon = choices[Math.floor(Math.random()*4)];
+example(random_polygon);
+
+initGeometryVisu(true);
+
+$(function() {
+  $('#dark-overlay').click(function() { // clicking outside Draw Polygon
+    drawCancel(); // should be treated as clicking cancel...
+  });
+
+  $('#examples').click(function() {
+    openExamples();
+    closePerimeter();
+    closeArea();
+    closeConvex();
+    closeCut();
+    closePointInside();
+  });
+
+  $('#perimeter').click(function() {
+    closeExamples();
+    openPerimeter();
+    closeArea();
+    closeConvex();
+    closeCut();
+    closePointInside();
+  });
+
+  $('#area').click(function() {
+    closeExamples();
+    closePerimeter();
+    openArea();
+    closeConvex();
+    closeCut();
+    closePointInside();
+  });
+
+  $('#is_convex').click(function() {
+    closeExamples();
+    closePerimeter();
+    closeArea();
+    openConvex();
+    closeCut();
+    closePointInside();
+  });
+
+  $('#cut_polygon').click(function() {
+    closeExamples();
+    closePerimeter();
+    closeArea();
+    closeConvex();
+    openCut();
+    closePointInside();
+  });
+
+  $('#point_inside').click(function() {
+    closeExamples();
+    closePerimeter();
+    closeArea();
+    closeConvex();
+    closeCut();
+    openPointInside();
+  });
+});
+
+var temp_polygon;
+
+function drawGraph() {
+  if (isPlaying) stop();
+  if (mode == "exploration") { // only valid during exploration mode
+    $('#dark-overlay').fadeIn(function() {
+      $('#drawgraph').fadeIn();
+    });
+    temp_polygon = GeometryWidget.getPolygonPointList();
+    GeometryWidget.startLoop();
+    isPlaying = false;
+  }
+}
+
+function drawDone() {
+  if (!GeometryWidget.redrawPolygon()) return false;
+  GeometryWidget.stopLoop();
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+function drawCancel() {
+  GeometryWidget.stopLoop();
+  GeometryWidget.drawPolygon(JSON.stringify(temp_polygon));
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+function example(id) {
+  if (isPlaying) stop();
+  if (id == "CONCAVE")
+    GeometryWidget.drawPolygon('[{"x":150,"y":350},{"x":250,"y":250},{"x":550,"y":350},{"x":700,"y":200},{"x":550,"y":50},{"x":150,"y":50}]');
+  else if (id == "CONVEX")
+    GeometryWidget.drawPolygon('[{"x":150,"y":350},{"x":550,"y":350},{"x":700,"y":200},{"x":550,"y":50},{"x":150,"y":50}]');
+  else if (id == "MOUNTAIN")
+    GeometryWidget.drawPolygon('[{"x":150,"y":350},{"x":750,"y":350},{"x":650,"y":50},{"x":550,"y":300},{"x":450,"y":50},{"x":350,"y":300},{"x":250,"y":50}]');
+  else if (id == "MAZE")
+    GeometryWidget.drawPolygon('[{"x":150,"y":400},{"x":500,"y":400},{"x":500,"y":50},{"x":150,"y":50},{"x":150,"y":300},{"x":400,"y":300},{"x":400,"y":150},{"x":250,"y":150},{"x":250,"y":200},{"x":350,"y":200},{"x":350,"y":250},{"x":200,"y":250},{"x":200,"y":100},{"x":450,"y":100},{"x":450,"y":350},{"x":150,"y":350}]');
+  // GeometryWidget.redrawPolygon();
+}
+
+function findPerimeter(callback) {
+  if (isPlaying) stop();
+  if (Object.size(GeometryWidget.getPolygonPointList()) < 3)
+    $('#perimeter-err').html('您必须绘制一个简单的多边形<br>');
+  else
+    commonAction(GeometryWidget.findPerimeter(callback), 'Compute Perimeter of Drawn Polygon');
+}
+
+function findArea(callback) {
+  if (isPlaying) stop();
+  if (Object.size(GeometryWidget.getPolygonPointList()) < 3)
+    $('#area-err').html('您必须绘制一个简单的多边形<br>');
+  else
+    commonAction(GeometryWidget.findArea(callback), 'Compute Area of Drawn Polygon');
+}
+
+function isConvex(callback) {
+  if (isPlaying) stop();
+  if (Object.size(GeometryWidget.getPolygonPointList()) < 3)
+    $('#is_convex-err').html('您必须绘制一个简单的多边形<br>');
+  else
+    commonAction(GeometryWidget.isConvex(callback), 'Check if the Drawn Polygon is Convex');
+}
+
+function checkPointInsidePolygon() { // uh the callback one will be harder due to extra input
+  if(isPlaying) stop();
+  if (Object.size(GeometryWidget.getPolygonPointList()) < 3)
+    $('#point_inside-err').html('您必须绘制一个简单的多边形<br>');
+  else
+    commonAction(GeometryWidget.checkPointInsidePolygon(), 'Check if Input Point is in Drawn Polygon<div>Please Click to Draw your Input Point</div>');
+}
+
+function cutPolygon() {
+  if (isPlaying) stop();
+  if (!isConvexPolygon(GeometryWidget.getPolygonPointList()))
+    $('#cut_polygon-err').html('You must draw a convex polygon!');
+  else
+    commonAction(GeometryWidget.doCutPolygon(), 'Cut Polygon with a Straight Line<div>Click Two Points to Define Your Line</div>');
+}
+
+// Implement these functions in each visualisation
+
+// This function will be called before entering E-Lecture Mode
+function ENTER_LECTURE_MODE() {
+  temp_polygon = GeometryWidget.getPolygonPointList();
+}
+
+// This function will be called before returning to Explore Mode
+function ENTER_EXPLORE_MODE() {
+  GeometryWidget.drawPolygon(JSON.stringify(temp_polygon));
+  GeometryWidget.redrawPolygon(); // no extra pt1 (and pt2)
+}
+
+// Lecture action functions
+function CUSTOM_ACTION(action, data, mode) {
+  if (action == 'perimeter') {
+    hideSlide(function() {
+      findPerimeter(showSlide);
+    });
+  }
+  else if (action == 'area') {
+    hideSlide(function() {
+      findArea(showSlide);
+    });
+  }
+  else if (action == 'isconvex') {
+    hideSlide(function() {
+      isConvex(showSlide);
+    });
+  }
+  else if (action == 'pointinpolygon') {
+    hideSlide(function() {
+      GeometryWidget.redrawPolygon();
+      var inPoint = {
+        x: 300,
+        y: 175
+      }
+      var outPoint = {
+        x: 300,
+        y: 225
+      }
+      if (data == 'in')
+        GeometryWidget.setExtraPoints(inPoint, null);
+      else
+        GeometryWidget.setExtraPoints(outPoint, null);
+      GeometryWidget.draw();
+      GeometryWidget.goPointInside(showSlide);
+    });
+  }
+  else if (action == 'cutpolygon') {
+    hideSlide(function() {
+      GeometryWidget.redrawPolygon();
+      var pt1 = {
+        x: 200,
+        y: 400
+      }
+      var pt2 = {
+        x: 300,
+        y: 100
+      }
+      if (data == 'swap')
+        GeometryWidget.setExtraPoints(pt2, pt1);
+      else
+        GeometryWidget.setExtraPoints(pt1, pt2);
+      GeometryWidget.draw();
+      GeometryWidget.goCutPolygon(showSlide);
+    });
+  }
+}
+</script>
+</body>
+</html>

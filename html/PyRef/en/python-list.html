@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+
+<link rel="stylesheet" href="../css/book.css" />
+<script src="../js/book.js"></script>
+
+<style>
+pre.reveal { }  /* mark pre that should get this setup */
+span.phide { display:none; }
+span.pshow { color:darkgreen;} /* display:inline; */
+</style>
+
+</head>
+<body>
+
+<nav><div id="toc"></div></nav>
+
+<main>
+
+<h1>Python Lists</h1>
+
+<p>A list contains series of any data type: strings, ints, other lists. The things inside a list are generically called "elements". Unlike strings, lists are "mutable" - they can be changed.</p>
+
+<p>Using the standard indexing scheme, the first element is at index 0, the next at index 1, and so on up to index length-1. As elements are added and removed, Python maintains the elements as contiguous block alwayx indexed by the numbers 0..length-1 inclusive.</p>
+
+<p>Here is the code to create a list of the three strings 'a' 'b' and 'c'. The list is written within square brackets, and the elements are separated by commas.</p>
+
+<pre>
+>>><b> lst = ['a', 'b', 'c']</b>
+</pre>
+
+<p>Here is what that list looks like in memory</p>
+
+<p>
+<img src="../img/python-listabc.png" alt="alt: list of ['a', 'b', 'c']" />
+</p>
+
+<h2>Basic Operations</h2>
+
+<p><code>lst = []</code> - create empty list</p>
+
+<p><code>lst = [1, 2, 3]</code> - create list with data in it. As a convenience, it's allowable to have an extra comma at the end of the series of elements like this:
+<br><code>[1, 2, 3,]</code></p>
+
+<p><code>len(lst)</code> - access length of string</p>
+
+<p><code>lst[0]</code> - access individual elements with square brackets</p>
+
+<p><code>for x in lst:</code>  - loop over contents, do not modify lst during loop</p>
+
+<p><code>x in lst</code>  - boolean test if x is in lst (just like for string)</p>
+
+<p><code>lst.append(x)</code> - add x to the end of lst, increasing its length by 1. The easiest way to add to a list. Does not return anything. Changes lst in place.</p>
+
+<pre>
+>>><b> lst = []          </b> # Start with empty list
+>>><b> lst.append('a')   </b> # Append() elements
+>>><b> lst.append('b')</b>
+>>><b> lst.append('c')</b>
+>>><b> lst</b>
+['a', 'b', 'c']
+>>><b> len(lst)</b>
+3
+>>><b> lst[0]</b>
+'a'
+>>><b> lst[2]</b>
+'c'
+>>><b> lst[3]</b>
+IndexError: list index out of range
+>>><b> </b>
+>>><b> lst</b>
+['a', 'b', 'c']
+>>><b> lst[0] = 'apple'  </b> # Change data at index 0
+>>><b> </b>
+>>><b> lst</b>
+['apple', 'b', 'c']
+>>><b> </b>
+>>><b> 'b' in lst        </b> # "in" check
+True
+</pre>
+
+<h2>List pop()</h2>
+
+<p><code>lst.pop()</code> - remove the element from the end of the list and return it, decreasing the length of the list by 1. Mnemonic: the exact opposite of <code>append()</code>.</p>
+
+<p><code>lst.pop(<i>index</i>)</code> - alternate version with the index to remove is given, e.g. <code>lst.pop(0)</code> removes the element at index 0. Raises an error if the index is not valid.</p>
+
+<pre>
+>>><b> lst = ['a', 'b', 'c', 'd']</b>
+>>><b> lst.pop()  </b> # default = remove from end
+'d'
+>>><b> lst</b>
+['a', 'b', 'c']
+>>><b> lst.pop(0) </b> # can specify index to pop
+'a'
+>>><b> lst</b>
+['b', 'c']
+</pre>
+
+<h2>List remove()</h2>
+
+<p><code>lst.remove(<i>elem</i>)</code> - search the list for the first instance of <i>elem</i> and remove it. It's an error to remove() an elem not in the list - could use <code>in</code> to check first. Note that pop() uses index numbers, but remove() uses the value, e.g. 'b', to search for and remove.</p>
+
+<pre>
+>>><b> lst = ['a', 'b', 'c', 'd']</b>
+>>><b> lst.remove('b')</b>
+>>><b> lst</b>
+['a', 'c', 'd']
+>>><b> lst.remove('b')</b>
+ValueError: list.remove(x): x not in list
+</pre>
+
+<h2>List extend()</h2>
+
+<p><code>lst.extend(lst2)</code> - add all the elements of lst2 on to the end of lst.</p>
+
+<pre>
+>>><b> lst = [1, 2, 3]</b>
+>>><b> x = [4, 5]</b>
+>>><b> lst.extend(x)  </b> # extend = add all
+>>><b> lst</b>
+[1, 2, 3, 4, 5]
+</pre>
+
+<h2>Append vs. Extend</h2>
+
+<p>Append vs. extend example:</p>
+
+<pre>
+>>><b> lst = [1, 2, 3]</b>
+>>><b> x = [4, 5]</b>
+>>><b></b> # what happens .append() vs. .extend() ?
+>>><b></b>
+>>><b></b> # 1. append:
+>>><b> lst.append(x)</b>
+>>><b></b> # x is added as an *element* so lst is [1, 2, 3, [4, 5]]
+>>><b></b>
+>>><b></b> # 2. extend:
+>>><b> lst.extend(x)</b>
+>>><b></b> # all elements of x are added at end, so lst is [1, 2, 3, 4, 5]
+</pre>
+
+<h2>List +</h2>
+
+<p>The <code>+</code> operation is an alternative to extend(), combining lists to make a bigger list (very analogous to <code>+</code> with strings)</p>
+
+<pre>
+>>><b> lst = [1, 2, 3]</b>
+>>><b> x = [4, 5]</b>
+>>><b> lst + x     </b> # put lists together
+[1, 2, 3, 4, 5]
+>>><b> lst         </b> # original is unchanged
+[1, 2, 3]
+</pre>
+
+<h2>List index()</h2>
+
+<p><code>lst.index(x)</code> - Look for first instance of x in lst and return its index.
+Raises an error if x is not in there - this is rather inconvenient. Therefore check with <code>in</code> first, and only if x is in there  call index(). In other words, there is nothing as simple as str.find() for lists which IMHO seems
+like a real omission.</p>
+
+<pre>
+>>><b> lst = ['a', 'b', 'c']</b>
+>>><b> lst.index('c')</b>
+2
+>>><b> lst.index('x')</b>
+ValueError: 'x' is not in list
+</pre>
+
+<h2>List min(), max()</h2>
+
+<p><code>min(lst) max(lst)</code> - Return the smallest or largest element in lst. Uses the same underlying < foundation as sorted(), but much faster than sorting the whole list. Raises an error if the list is empty. Note that some functions, like these and len(), are regular functions, not noun.verb. That is because these functions work on many data types, not just lists.</p>
+
+<pre>
+>>><b> min([2, 5, 1, 6])</b>
+1
+</pre>
+
+<h2>List insert(), copy()</h2>
+
+<p><code>lst.insert(index, x)</code>  - insert the element x so it is at the given index, shifting elements towards the end of the list as needed. Use index=len(lst) to insert at the end. Append() is simpler since it just goes on the end without any shifting and you don't have to think about index numbers.</p>
+
+<p><code>lst.copy()</code> - returns a copy of lst. You could use this to loop over a list and also modify it - loop over a copy, modify the original. (mentioned for completeness, I don't think we will ever need this function in CS106A.)</p>
+
+<p>More details at official
+<a href='https://docs.python.org/3/library/stdtypes.html#sequence-types-list-tuple-range'>Python List Docs</a>
+</p>
+
+<a name=listslice></a>
+<h2>List Slices</h2>
+
+<p>Slices work to pull out parts of list just as with strings.</p>
+
+<pre>
+lst = ['a', 'b', 'c']
+lst[:2] -> ['a', 'b']
+lst[2:] -> ['c']
+</pre>
+
+<p>The original list is not modified, this creates a new list populated with elements from the original. Omitting both start and end indexes yields a copy of the whole list - <code>lst[:]</code></p>
+
+<h2>Foreach loop - for elem in list</h2>
+
+<p>It's very easy to "foreach" loop over all the elements in a list, seeing each element once. Do not modify the list during iteration.</p>
+
+<pre>
+urls = ['https://....', ...]
+for url in urls:
+    # use url in here
+    print(url)
+</pre>
+
+<p>Style: it's a nice pattern to name the list variable with the letter "s"  like "urls". Then the loop variable can use the singular form "url" - confirming as you type that the loop variable and what's in the collection match up. Many Python bugs amount to mixing up what type of data is in a variable, so this convention can help you keep in mind what is in the collection.</p>
+
+<h2>Index loop - for i in range</h2>
+
+<p>The standard for/i/range loop works on lists too, using square brackets to access each element. Use this form if you want to know the index number each element during iteration.</p>
+
+<pre>
+lst = [...]
+for i in range(len(lst)):
+    # use lst[i]
+</pre>
+
+<h2>Load a list with data</h2>
+
+<p>A common pattern to load up a list is to start with the empty list, and then in a loop of some sort, perhaps reading lines from a file, use .append() to load elements into the list.</p>
+
+<pre>
+lst = []
+for i in range(10):
+  lst.append(i)
+# lst = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+</pre>
+
+<a name=del></a>
+<h2>List Del</h2>
+
+<p>This is more rarely used, but it can be a handy syntax.</p>
+
+<p>The <code>del</code> feature is Python deletes items out of a list or dict, modifying the structure in place. For its syntax, basically write a square bracket expression to refer to an element, and <code>del</code> can delete that element. Like this</p>
+
+<pre>
+>>><b> lst = ['a', 'b', 'c']</b>
+>>><b> lst[0]</b>
+'a'
+>>><b> del lst[0] </b> # delete the [0] element, lst is modified
+>>><b> lst</b>
+['b', 'c']
+>>><b></b>
+>>><b></b> # Elements shift over to stay in 0..len-1, so now [0] is 'b'
+>>><b> lst[0]</b>
+'b'
+</pre>
+
+<p>Python list elements are are kept in contiguous block, with index numbers 0..len-1. Therefore, deleting an element from a list, Python will automatically shift over the elements to its right to keep the elements contiguous.</p>
+
+<p>Del works with slices too, deleting a range deletes that sub-part of the list:</p>
+
+<pre>
+>>><b> lst = ['a', 'b', 'c', 'd']</b>
+>>><b> del lst[1:3]</b>
+>>><b> lst</b>
+['a', 'd']
+</pre>
+
+<p>Del works with dicts too.</p>
+
+<p>&nbsp;</p>
+
+<p class="small">Copyright 2020 Nick Parlante</p>
+
+</main>
+
+</body>
+</html>

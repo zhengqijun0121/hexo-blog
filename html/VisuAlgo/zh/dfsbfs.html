@@ -1,0 +1,4505 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="Given a graph, we can use the O(V+E) DFS (Depth-First Search) or BFS (Breadth-First Search) algorithm to traverse the graph and explore the features/properties of the graph. Each algorithm has its own characteristics, features, and side-effects that we will explore in this visualization.This visualization is rich with a lot of DFS and BFS variants (all run in O(V+E)) such as: Topological Sort algorithm (both DFS and BFS/Kahn&#39;s algorithm version),Bipartite Graph Checker algorithm (both DFS and BFS version),Cut Vertex &amp; Bridge finding algorithm,Strongly Connected Components (SCC) finding algorithms(both Kosaraju&#39;s and Tarjan&#39;s version), and2-SAT Checker algorithm.">
+<meta name="keywords" content="图的遍历 深度 广度优先搜索 有向 无向 DFS BFS 拓扑排序 拓扑排序 二分图检查 &lt;span style=&quot;white-space: normal;&quot;&gt;Tarjan Kosaraju 2-SAT&lt;/span&gt; ">
+ 
+<meta name="csrf-token" content="kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<meta property="og:image" content="../img/png/dfsbfs.png">
+<title>VisuAlgo - 图的遍历（深度/广度优先搜索）</title>
+<link rel="icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="114x114" href="../img/favicon.png">
+<link rel="stylesheet" type="text/css" href="../fonts/silkscreen/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="../css/common.css">
+<link rel="stylesheet" href="../css/viz-1.0.1.css">
+<link rel="stylesheet" href="../css/visual.css">
+<link rel="stylesheet" href="../css/drawgraph.css">
+<style>
+      #e-lecture {
+        top: 45px;
+        right: 130px;
+        width: 400px;
+        display: block;
+        background: none;
+        /*overflow: normal;*/
+        white-space: normal;
+        text-align: right;
+        color: black; font-weight: bold; font-size: 20px;
+      }
+      .electure-prev, .electure-next { /* force update, copied from viz.css */
+        position: absolute;
+        /* bottom: -12px; */
+        top: -20px;
+        /*bottom: '';*/
+        padding: 3px 8px;
+        background: #999;
+        color: white;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .electure-prev {
+        left: -10px;
+        /* right: 30px; */
+      }
+      .electure-next {
+        right: -10px;
+        color: white;
+      }
+    </style>
+<style>
+.execAction { padding: 5px 8px; }
+.err { padding: 5px 0px; }
+#actions-extras input {
+  width: 35px;
+  padding: 5px 8px 7px;
+}
+
+/*
+.directedChange { bottom: 200px; }
+#directedChange-err { padding: 5px 8px; }
+*/
+
+#twosat-board {
+  height: 470px;
+  width: 600px;
+  margin-left: -300px;
+  margin-top: -235px;
+}
+
+.draw { bottom: 308px; }
+.examples { bottom: 254px; }
+.dfs { bottom: 227px; }
+.bfs { bottom: 200px; }
+.topo { bottom : 173px; }
+.bipartite { bottom: 146px; }
+.bridge { bottom: 119px; }
+.scc { bottom: 92px;}
+.twosat { bottom: 65px; }
+</style>
+<script>
+      function changeURL() {
+        var URL = window.location.href.split('/');
+        var val = document.getElementById("Language").value;
+        URL[3] = val;
+        window.location.assign(URL.join('/'));
+      }
+    </script>
+</head>
+<body>
+<div id="top-bar">
+<a id="home" href="/">Visu<span class="colour">Algo</span><span style="font-size: 40%">.net</span></a>
+/
+<select id="Language" onchange="changeURL()">
+<option value="zh" selected>zh</option>
+</select>
+/dfsbfs
+<span id="title">
+<a id='title-dfsbfs' class='selected-viz'>图遍历（DFS / BFS）<br></a>
+</span>
+<div id="mode-menu">
+<div id='mode-button' title='exploration'>示例模式 &#9663;</div>
+<div id='other-modes'>
+<a title='e-Lecture'>电子讲座模式</a>
+</div>
+</div>
+</div>
+<div id="dark-overlay"></div>
+<div id="status" class="panel"><p></p></div>
+<div id="status-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide status panel" /></div>
+<div id="codetrace" class="panel">
+<p id="code1" style="padding-top: 10px;"></p>
+<p id="code2"></p>
+<p id="code3"></p>
+<p id="code4"></p>
+<p id="code5"></p>
+<p id="code6"></p>
+<p id="code7" style="padding-bottom: 10px;"></p>
+</div>
+<div id="codetrace-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide codetrace panel" /></div>
+<div id="left-bar"></div>
+<div id="right-bar"></div>
+<div id="media-controls">
+<div id='speed-control'>减速<div id='speed-input'></div>加速</div>
+<span id="go-to-beginning" class="media-control-button" title="go to beginning" onclick=goToBeginning()><img src="../img/goToBeginning.png" alt="go to beginning"></span>
+<span id="previous" class="media-control-button" title="step backward" onclick=stepBackward()><img src="../img/prevFrame.png" alt="previous frame"></span>
+<span id="pause" class="media-control-button" title="pause" onclick=pause()><img src="../img/pause.png" alt="pause"></span>
+<span id="play" class="media-control-button" title="play" onclick=play()><img src="../img/play.png" alt="play"></span>
+<span id="next" class="media-control-button" title="step forward" onclick=stepForward()><img src="../img/nextFrame.png" alt="next frame"></span>
+<span id="go-to-end" class="media-control-button" title="go to end" onclick=goToEnd()><img src="../img/goToEnd.png" alt="go to end"></span>
+<div id="progress-bar" class="media-control-button"></div>
+</div>
+<div id='viz'></div>
+<div id='current-action' class='panel'></div>
+<div id='e-lecture' class='panel'></div>
+<div id="overlay" hidden></div>
+<div id="dropdown-temp-holder" hidden></div>
+<div id="electure-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>Given a graph, we can use the O(<b>V</b>+<b>E</b>) DFS (Depth-First Search) or BFS (Breadth-First Search) algorithm to traverse the graph and explore the features/properties of the graph. Each algorithm has its own characteristics, features, and side-effects that we will explore in this visualization.</p><br><p>This visualization is rich with a lot of DFS and BFS variants (all run in O(<b>V</b>+<b>E</b>)) such as: </p><ol><li>Topological Sort algorithm (both DFS and BFS/Kahn&#39;s algorithm version),</li><li>Bipartite Graph Checker algorithm (both DFS and BFS version),</li><li>Cut Vertex &amp; Bridge finding algorithm,</li><li>Strongly Connected Components (SCC) finding algorithms<br>(both Kosaraju&#39;s and Tarjan&#39;s version), and</li><li>2-SAT Checker algorithm.</li></ol>
+<hr>
+<p><b>Remarks</b>: By default, we show e-Lecture Mode for first time (or non logged-in) visitor.<br>
+Please <a href="login"><u>login</u></a> if you are a repeated visitor or <a href="login"><u>register</u></a> for an (optional) free account first.</p>
+<div id='electure-dropdown'>
+<select class="lecture-dropdown" style="width:100%">
+<option value="1">1. DFS &amp; BFS</option>
+<option value="2">2. 可视化</option>
+<option value="3">3. 指定一个输入图</option>
+<option value="4">4. 概括</option>
+<option value="4-1">&nbsp;&nbsp;&nbsp;4-1. 二叉树遍历 - 源 = 根</option>
+<option value="4-2">&nbsp;&nbsp;&nbsp;4-2. 二叉树遍历 - 前序-/中序-/后序-遍历</option>
+<option value="4-3">&nbsp;&nbsp;&nbsp;4-3. 答案</option>
+<option value="4-4">&nbsp;&nbsp;&nbsp;4-4. 二叉树遍历 - 无环</option>
+<option value="4-5">&nbsp;&nbsp;&nbsp;4-5. 一般图的问题</option>
+<option value="5">5. DFS</option>
+<option value="5-1">&nbsp;&nbsp;&nbsp;5-1. 比喻</option>
+<option value="5-2">&nbsp;&nbsp;&nbsp;5-2. 尝试所有选项</option>
+<option value="5-3">&nbsp;&nbsp;&nbsp;5-3. 避免循环</option>
+<option value="5-4">&nbsp;&nbsp;&nbsp;5-4. 记住这个路径</option>
+<option value="5-5">&nbsp;&nbsp;&nbsp;5-5. 动手实例</option>
+<option value="5-6">&nbsp;&nbsp;&nbsp;5-6. O(V+E) 时间复杂度</option>
+<option value="5-7">&nbsp;&nbsp;&nbsp;5-7. 始终是 O(V+E) ？</option>
+<option value="5-8">&nbsp;&nbsp;&nbsp;5-8. 答案</option>
+<option value="6">6. BFS</option>
+<option value="6-1">&nbsp;&nbsp;&nbsp;6-1. 比喻</option>
+<option value="6-2">&nbsp;&nbsp;&nbsp;6-2. 尝试全部，避免循环，记住路径</option>
+<option value="6-3">&nbsp;&nbsp;&nbsp;6-3. 动手实例</option>
+<option value="6-4">&nbsp;&nbsp;&nbsp;6-4. O(V+E) 时间复杂度</option>
+<option value="7">7. 简单的 DFS/BFS 应用</option>
+<option value="7-1">&nbsp;&nbsp;&nbsp;7-1. 检测圈 - 第一部分</option>
+<option value="7-2">&nbsp;&nbsp;&nbsp;7-2. 探测圈 - 第2部分</option>
+<option value="7-3">&nbsp;&nbsp;&nbsp;7-3. 实践例子（细节）</option>
+<option value="7-4">&nbsp;&nbsp;&nbsp;7-4. 打印遍历路径</option>
+<option value="7-5">&nbsp;&nbsp;&nbsp;7-5. 可达性测试</option>
+<option value="7-6">&nbsp;&nbsp;&nbsp;7-6. 识别一个连接分量（CC）</option>
+<option value="7-7">&nbsp;&nbsp;&nbsp;7-7. 计算 CC 的数量/ 标记 CC</option>
+<option value="7-8">&nbsp;&nbsp;&nbsp;7-8. 等等，时间复杂性是什么？</option>
+<option value="7-9">&nbsp;&nbsp;&nbsp;7-9. 答案</option>
+<option value="7-10">&nbsp;&nbsp;&nbsp;7-10. 拓扑排序 - 定义</option>
+<option value="7-11">&nbsp;&nbsp;&nbsp;7-11. 拓扑排序</option>
+<option value="8">8. 更多高级的 DFS/BFS 的应用</option>
+<option value="9">9. 二分图检查</option>
+<option value="10">10. 查找切割节点 &amp; 桥</option>
+<option value="11">11. 找到强联通分量</option>
+<option value="12">12. 2-SAT Checker 算法</option>
+<option value="13">13. 哪一个更好？</option>
+<option value="13-1">&nbsp;&nbsp;&nbsp;13-1. 答案</option>
+<option value="14">14. 额外的</option>
+<option value="14-1">&nbsp;&nbsp;&nbsp;14-1. 在线测试</option>
+<option value="14-2">&nbsp;&nbsp;&nbsp;14-2. 在线评判练习</option>
+<option value="14-3">&nbsp;&nbsp;&nbsp;14-3. 讨论</option>
+<option value="99">99. 状态面板</option>
+<option value="99-1">&nbsp;&nbsp;&nbsp;99-1. 代码追踪面板</option>
+<option value="99-2">&nbsp;&nbsp;&nbsp;99-2. 媒体控制</option>
+<option value="99-3">&nbsp;&nbsp;&nbsp;99-3. 返回 ”探索模式“</option>
+</select>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-next' data-nextid="2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<p>当所选的图遍历算法运行时，将在次处显示动画。</p><div><span lang="zh-CN"><br></span></div><div><span lang="zh-CN">我们使用节点 + 边颜色（颜色方案将很快阐述），偶尔使用节点下的额外的文本（</span><span style="color: rgb(255, 0, 0);">红色字体</span>）来突出显示更改。</div><div><span lang="zh-CN"><br></span></div><div><span lang="zh-CN">所有的图遍历算法都适用于有向图（这是默认设置，其中每个边都有一个箭头指示其反向），但是</span> <b>Bipartite Graph Check</b> 算法和 <b>Cut Vertex &amp; Bridge</b> 查找算法 需要无向图（通过这种可视化，转换是自动完成的）。</div>
+<hr>
+<p>Pro-tip: Since you are not <a href="login"><u>logged-in</u></a>, you may be a first time visitor who are not aware of the following keyboard shortcuts to navigate this e-Lecture mode: <b>[PageDown]</b> to advance to the next slide, <b>[PageUp]</b> to go back to the previous slide, <b>[Esc]</b> to toggle between this e-Lecture mode and exploration mode.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+<p>对于指定一个输入图，有两种不同的方法：</p><ol><li><b>绘制图</b>: 您可以绘制<b>任何</b>未加权的有向图作为输入图（绘制双向边 (u, v) ，您可以绘制两个有向边 u → v and v → u ）。</li><li><b>示例图</b>: 您可以从我们选择的示例图列表中进行挑选，以帮助您入门。</li></ol>
+<hr>
+<p>Another pro-tip: We designed this visualization and this e-Lecture mode to look good on 1366x768 resolution <b>or larger</b> (typical modern laptop resolution in 2017). We recommend using Google Chrome to access VisuAlgo. Go to full screen mode (<b>F11</b>) to enjoy this setup. However, you can use zoom-in (<b>Ctrl +</b>) or zoom-out (<b>Ctrl -</b>) to calibrate this.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4" class="electure-dialog" style="top:100px;right:60px;width:500px;">
+<p>If you arrive at this e-Lecture <b>without</b> having first explore/master the concept of <a href="./heap"><u>Binary Heap</u></a> and especially <a href="./bst"><u>Binary Search Tree</u></a>, we suggest that you explore them first, as traversing a (Binary) Tree structure is much simpler than traversing a general graph.</p><br><input class="msq-answer" id="msq-answer-14" value="60,63,64" hidden><p>Quiz: <b>Mini pre-requisite check. What are the Pre-/In-/Post-order traversal of the binary tree shown (root = vertex 0), left and right child are as drawn?</b></p><input type="checkbox" class="msq-choice" id="msq-14-choice-61"> Pre = 0, 2, 4, 3, 1<br><input type="checkbox" class="msq-choice" id="msq-14-choice-62"> In = 4, 2, 3, 0, 1<br><input type="checkbox" class="msq-choice" id="msq-14-choice-63"> In = 1, 0, 3, 2, 4<br><input type="checkbox" class="msq-choice" id="msq-14-choice-64"> Post = 1, 3, 4, 2, 0<br><input type="checkbox" class="msq-choice" id="msq-14-choice-60"> Pre = 0, 1, 2, 3, 4<br><input type="checkbox" class="msq-choice" id="msq-14-choice-65"> Post = 4, 3, 2, 1, 0<br><button class="msq-submit" id="submit-14">Submit</button> <span id="answer-status-14"></span>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-1" class="electure-dialog" style="top:100px;right:60px;width:500px;">
+我们通常从（二叉）树的最重要的顶点：<b>根</b>节点 开始。<div>如果给定的树不是“rooted”（参见示例图片），我们可以选择任何一个顶点（例如，示例图片中的顶点0）并将其指定为根。如果我们想象所有边都是相似长度的弦，那么在”实际向上拉指定的根“并让中立向下拉动其余部分之后，我们有一个有根的（向下）树 - 见下一张幻灯片。</div><div>PS：从技术上来讲，这种转换是通过运行我们即将探索的 DFS(0) 来实现的。</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-2" class="electure-dialog" style="top:100px;right:60px;width:500px;">
+在<b>二叉</b>树中，我们<b>最多只有两个</b>相邻的选择：从当前顶点开始，我们可以先到左边的子树，或者先到右边的子树。我们还可以选择在访问其中一个（或两个）子树之前或之后访问当前顶点。<div>这产生了个有代表性的：前序（访问当前顶点，访问其左子树，访问其右子树），中序（左，当前，右），和后序（左，右，当前）遍历。</div><div>讨论：您是否注意到还有其它三种可能的二叉树的遍历组合？他们是什么？</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-3" class="electure-dialog" style="top:100px;right:60px;width:500px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-4" class="electure-dialog" style="top:100px;right:60px;width:500px;">
+一个二叉树中，或者概括来说 一个树结构，不包含大于三个不同的顶点（我们不考虑那些连通两个顶点的双向路径所产生的小圈 我们可以很容易的处理掉它们 - 往前翻三页）
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-5" class="electure-dialog" style="top:100px;right:60px;width:500px;">
+<p>In general graph, we do not have the notion of root vertex. Instead, we need to pick one distinguished vertex to be the starting point of the traversal, i.e. the source vertex <b>s</b>.</p><br><p>We also have 0, 1, ..., <b>k</b> neighbors of a vertex instead of just &le; 2.</p> <br><p>We <b>may (or actually very likely)</b> have cycle(s) in our general graph instead of acyclic tree,<br> be it the trivial one like u &rarr; v &rarr; u or the non-trivial one like a &rarr; b &rarr; c &rarr; a.</p><br><p>But fret not, graph traversal is an easy problem with two classic algorithms: DFS and BFS.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+最基本的图遍历算法之一是<span style="white-space: normal;">&nbsp;O(</span><b style="white-space: normal;">V</b><span style="white-space: normal;">+</span><b style="white-space: normal;">E</b><span style="white-space: normal;">) 深度优先搜索（DFS）。</span><div><span style="white-space: normal;">DFS 采用一个输入参数：源点</span><span style="white-space: normal;">&nbsp;</span><b style="white-space: normal;">s</b><span style="white-space: normal;">。</span></div><div><span style="white-space: normal;">DFS 是最基本的图的算法之一，因此请花时间了解该算法的关键步骤。</span></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5-1" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+<p><img src="/img/maze.svg" width="100" height="100" style="background-color: white; float: right;" alt="maze">The closest analogy of the behavior of DFS is to imagine a maze with only one entrance and one exit. You are at the entrance and want to explore the maze to reach the exit. Obviously you cannot split yourself into more than one.</p><br><p>Ask these reflective questions before continuing: What will you do if there are branching options in front of you? How to avoid going in cycle? How to mark your own path? Hint: You need a chalk, stones (or any other marker) and a (long) string.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5-2" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+顾名思义，DFS从一个已知的源顶点 <span style="white-space: normal;">&nbsp;</span><b style="white-space: normal;">s</b><span style="white-space: normal;">&nbsp;使用递归（隐式堆）来控制访问顺序为走到最深再返回。</span><p><span style="white-space: normal;">如果DFS在顶点 u 并且它有 X 个邻居，它会选择第一个邻居</span> <b>V<sub>1</sub></b> (通常是序号最小的那个顶点), 使用递归访问所有 <b>V<sub>1</sub></b>可以到达的顶点, 最终返回顶点 <b>u</b>. DFS 接下来对其他的邻居做同样的事指导探索完成最后一个邻居 <b>V<sub>X</sub></b> 和它所能触及到的顶点.</p>等下看了DFS的动画 这个冗长的解释会变得清晰起来。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5-3" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+<p>如果一个图是圈，之前的“尝试所有”的方法可能让DFS陷入循环。所以DFS的基本形式用一个大小为 <b>V</b> 个顶点的数组 <b>status[u]</b> 来确定两种情况 分别为 u 已经被访问过了 或者没有被访问过。只有当 <b>u</b> 还没有被访问过的时候 DFS才可以访问顶点 <b>u</b>.</p><br><p>当DFS没有路可走的时候它会跳出当前的递归 <b>回去</b> 到之前的顶点 (<b>p[u]</b>, 看下一页).</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5-4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5-4" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+<p>DFS 用另一个大小为 <b>V</b> 个顶点数组 <b>p[u]</b> 来记住在DFS遍历路径上每一个顶点 <b>u</b> 的 <b>parent/predecessor/previous（父/祖先/前）</b></p><p>最开始的顶点的祖先也就是 <b>p[s]</b> 被设定为-1也就是说它没有祖先 (因为最低的顶点是顶点0).</p><p>从一个源顶点 <b>s</b> 到一个可以到达的顶点 <b>u</b> 所生成的路径反过来 就是 <b>DFS 生成树</b>. 我们给这些 <b>树路径</b> 上 <span style="color: red;">红色</span>.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5-5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5-5" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<p>现在，忽略显示的伪代码中额外的 <b>status[u] = explored</b> 以及可视化中的 <span style="color: lightblue;">蓝色</span> 和 <span style="color: grey;">灰色</span> 边的存在 （将很快会解释）。</p>不用多说，让我们在这个 e-Lecture 的默认示例图上执行 <span class="slide-actions" onclick="doButtonAction39()">DFS(0)</span> (CP3 Figure 4.1)。 <span id="dfsrecap"><span class="slide-actions" onclick="doButtonAction41()">Recap DFS Example</span></span><br>到目前为止，DFS 的基本版本已经足够用于大多数的简单案例。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5-4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5-6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5-6" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+<p>DFS 的时间复杂度是 O(<b>V</b>+<b>E</b>) ，因为：</p><ol><li>每个节点只访问过一次，因为 DFS 将仅递归地探索节点 <b>u</b> 如果 <b>status[u] = unvisited</b> — O(<b>V</b>)</li><li>每次访问完一个节点，都会探索其所有 <b>k</b> 个邻点，因此在访问所有节点之后，我们已检查了所有 <b>E</b> 边 — （O(<b>E</b>) ，因为i每个节点的邻点总数等于 <b>E</b>）。</li></ol>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5-5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5-7">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5-7" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+<p>DFS 的he O(<b>V</b>+<b>E</b>) 时间复杂度只有当我们可以在 O(<b>k</b>) 时间内访问一个顶点的所有 <b>k </b>个邻点时才可以实现。</p><input class="mcq-answer" id="mcq-answer-13" value="57" hidden><p>Quiz: <b>Which underlying graph data structure support that operation?</b></p><form><input type="radio" name="mcq-13-choice" value="57"> Adjacency List<br><input type="radio" name="mcq-13-choice" value="56"> Adjacency Matrix<br><input type="radio" name="mcq-13-choice" value="58"> Edge List<br></form><button class="mcq-submit" id="submit-13">Submit</button> <span id="answer-status-13"></span><br>讨论：为什么？
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5-6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5-8">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5-8" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5-7">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-6" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+另一种基本的图遍历算法是<span style="white-space: normal;">&nbsp;O(</span><b style="white-space: normal;">V</b><span style="white-space: normal;">+</span><b style="white-space: normal;">E</b><span style="white-space: normal;">) 广度优先搜索 (BFS)。</span><div><span style="white-space: normal;">与 DFS 一样，BFS 也采用一个输入参数：</span><span style="white-space: normal;">源点</span><span style="white-space: normal;">&nbsp;</span><b style="white-space: normal;">s</b><span style="white-space: normal;">。</span></div><div><span style="white-space: normal;">DFS 和 BFS 都有自己的优点和缺点。学习两者并对正确的情况采用正确的图遍历算法是非常重要的。</span></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5-8">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="6-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-6-1" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+想象一下静止的水，然后你扔石头。石头撞击水面的第一个位置是源点的位置，并且随后在水面上的<b>波纹效应</b>类似于 BFS 遍历模式。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="6-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-6-2" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+<p>BFS 与之前讨论过的非常相似，但有一些差异。</p><p>BFS 从源点 <b>s</b> 开始，但它在更深入之前使用 <a href="./list?mode=Queue"><u>queue</u></a> 尽最宽可能地将访问序列排序。</p><br><p>BFS 还是用大小为 <b>V</b> 节点的布尔数组来区分两种不同的状态：已访问节点和未访问节点（我们不会像使用 DFS 那样使用 BFS 来检测反向边）。</p>在此可视化中，我们还展示从<b>未加权图</b>中的相同源点 <b>s</b> 开始，此图的 BFS 生成树等于其 <a href="./sssp"><u>SSSP spanning tree</u></a>.
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="6-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="6-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-6-3" class="electure-dialog" style="top:100px;right:60px;width:500px;">
+<p>Without further ado, let&#39;s execute <span class="slide-actions" onclick="doButtonAction40()">BFS(5)</span> on the default example graph for this e-Lecture (CP3 Figure 4.3). <span id="bfsrecap"><span class="slide-actions" onclick="doButtonAction42()">Recap BFS Example</span></span>.</p><br><p>Notice the <i>Breadth-first</i>&nbsp;exploration due to the usage of FIFO data structure: Queue?</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="6-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="6-4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-6-4" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+<p>BFS的时间复杂度是 O(<b>V</b>+<b>E</b>)，因为:</p><ol><li>每一个顶点都被访问一次 因为它们只能进入队列一次— O(<b>V</b>)</li><li>每当一个顶点从队列中出队时，所有它的 <b>k</b> 个邻居都会被探索 所以当所有的顶点都被访问过后，我们一共探索了 <b>E</b> 条路径 — (O(<b>E</b>) 因为每个顶点的邻居总数为 <b>E</b>).</li></ol><p>对于DFS来说 O(<b>V</b>+<b>E</b>) 只有在用 <a href="./graphds"><u>邻接表</u></a> 图数据结构 — 和DFS分析相同</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="6-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>到现在为止，我们可以用 DFS/BFS 去解决一些遍历图的问题变种：</p><ol><li>探测图是否有圈（cyclic）</li><li>显示出遍历路径</li><li>检测可达性</li><li>分辨/计数/标记 一个无向图连接的部分（CCs）</li><li>拓补排序（只在有向无圈图 DAG中）</li></ol><p>多数的数据结构和算法课程只传授这些 DFS/BFS 的基本应用，尽管它们可以做更多...</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="6-4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-1" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<p>We can actually <i>augment</i> the basic DFS further to give more insights about the underlying graph.</p><br><p>In this visualization, we use <span style="color: lightblue;">blue color</span> to highlight <b>back</b> edge(s) of the DFS spanning tree. The presence of at least one back edge shows that the traversed graph (component) is <b>cyclic</b> while its absence shows that at least the component connected to the source vertex of the traversed graph is <b>acyclic</b>.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-2" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<p>Back edge can be detected by modifying array <b>status[u]</b> to record <b>three</b> different states:</p><ol><li><b>unvisited</b>: same as earlier, DFS has not reach vertex <b>u</b> before,</li><li><b>explored</b>: DFS has visited vertex <b>u</b>, but at least one neighbor of vertex <b>u</b> has not been visited yet (DFS will go depth-first to that neighbor first),</li><li><b>visited</b>: now stronger definition: all neighbors of vertex <b>u</b> have also been visited and DFS is about to backtrack from vertex <b>u</b> to vertex <b>p[u]</b>.</li></ol><p>If DFS is now at vertex <b>x</b> and explore edge <b>x &rarr; y</b> and encounter <b>status[y] = explored</b>, we can declare <b>x &rarr; y</b> is a <b>back edge</b> (a cycle is found as we were previously at vertex <b>y</b> (hence <b>status[y] = explored</b>), go deep to neighbor of <b>y</b> and so on, but we are now at vertex <b>x</b> that is reachable from <b>y</b> but vertex <b>x</b> leads back to vertex <b>y</b>).</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-3" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<p>The edges in the graph that are not <span style="color: red;">tree edge(s)</span> nor <span style="color: lightblue;">back edge(s)</span> are colored <span style="color: grey;">grey</span>. They are called <b>forward or cross edge(s)</b> and currently have limited use (not elaborated).</p><br><p>Now try <span class="slide-actions" onclick="doButtonAction39()">DFS(0)</span> on the example graph above with this new understanding, especially about the 3 possible status of a vertex (unvisited/<span style="color: black; background-color: white;">normal black circle</span>, explored/<span style="color: lightblue;">blue circle</span>, <span style="color: orange;">visited/orange circle</span>) and <span style="color: lightblue;">back edge</span>. Edge 2 → 1 will be discovered as a back edge as it is part of cycle 1 → 3 → 2 → 1 (similarly with Edge 6 → 4 as part of cycle 4 &rightarrow; 5 &rightarrow; 7 &rightarrow; 6 &rightarrow; 4).</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-4" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<p>我们可以使用以下简单的递归函数来打印出存储在数组 <b>p </b>中的路径。可能的后续讨论：您能以<b>迭代的</b>形式写出来吗？（容易解决的）</p><pre>method backtrack(u)<br>  if (u == -1) stop<br>  backtrack(p[u]);<br>  output vertex u<br></pre><p>要打印图中从源点到目标顶点 <b>t</b> 的路径，可以调用 O(<b>V</b>+<b>E</b>) <samp>DFS(s)</samp> (或 <samp>BFS(s)</samp>) ，然后调用 O(<b>V</b>) 去返回 <samp>(t)。示例：</samp> <b>s = 0</b> 和 <b>t = 4</b>，您可以调用 <span class="slide-actions" onclick="doButtonAction39()">DFS(0)</span> 然后回溯 <samp>(4)。</samp> <span id="printexample"><span class="slide-actions" onclick="doButtonAction43()">Elaborate</span></span></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-5" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<p>如果您被要求测试图中的节点 <b>s</b> 和一个（不同的）节点 <b>t</b> 是否可达，即直接连接（通过一条边）或间接连接（通过简单的非环路径），则可以调用 O(<b>V</b>+<b>E</b>) <samp>DFS(s)</samp> (或 <samp>BFS(s)</samp>) 并检查是否 <samp>status[t] = visited。</samp></p><p>例子 1: <b>s = 0</b> 和 <b>t = 4</b>, 运行 <span class="slide-actions" onclick="doButtonAction39()">DFS(0)</span> 并注意 <samp>status[4] = visited</samp>. 例子 2: <b>s = 0</b> 和 <b>t = 7</b>, 运行 <span class="slide-actions" onclick="doButtonAction39()">DFS(0)</span> 并注意 <samp>status[7] = unvisited</samp>.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-6" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<p>我们可以通过简单地调用 O(<b>V</b>+<b>E</b>) <samp>DFS(s)</samp> (或 <samp>BFS(s)</samp>) 来枚举从<b>无向图</b>中的节点 <b>s</b> 可到达的所有节点（如上图的示例图所示），并枚举所有 <samp>status[v] = visited 的</samp>节点 <b>v</b>。 </p>示例： <b>s = 0</b>，运行 <span class="slide-actions" onclick="doButtonAction39()">DFS(0)</span> 并注意 <samp>status[{0,1,2,3,4}] = visited，因此它们都是从节点 </samp>0 可到达的节点，即它们形成一个<b>连通分量（CC）</b>。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-7">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-7" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<p>我们可以用如下的伪代码来计数连接部分（CCs）的数量：</p><pre>CC = 0<br>for all u in V, set status[u] = unvisited<br>for all u in V<br>  if (status[u] == unvisited)<br>    CC++ // 我们可以用CC计数器的数量来标记CC<br>    DFS(u) // 或者 BFS(u), 来标记它的成员为已访问<br>output CC // 上面的示例图的答案是3<br>// CC 0 = {0,1,2,3,4}, CC 1 = {5}, CC 2 = {6,7,8}</pre><p>如果你想要给每一个CC你自己的标记 你可以修改一点 DFS(u)/BFS(u) 的代码</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-8">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-8" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<input class="mcq-answer" id="mcq-answer-15" value="67" hidden><p>Quiz: <b>What is the time complexity of Counting the Number of CCs algorithm?</b></p><form><input type="radio" name="mcq-15-choice" value="68"> Trick question, the answer is none of the above, it is O(_____)<br><input type="radio" name="mcq-15-choice" value="67"> It is still O(V+E)<br><input type="radio" name="mcq-15-choice" value="66"> Calling O(V+E) DFS/BFS V times, so O(V*(V+E)) = O(V^2 + VE)<br></form><button class="mcq-submit" id="submit-15">Submit</button> <span id="answer-status-15"></span><br>讨论：为什么？
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-7">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-9">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-9" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+ </div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-8">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-10">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-10" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<p>还有另一个可以被视为”简单“的 DFS（以及 BFS）应用：执行有向五环图（DAG）的拓扑排序 — 参见上面的示例。<br></p>DAG 的拓扑排序是此 DAG 的节点的线性排序，其中每个节点位于其传出边所连接的所有节点之前。<br>每个 DAG 至少有一个但可能更多的拓扑排序/秩序。<br>其中一个DAG的拓扑排序的主要目的（至少一个）是用于 <a href="./recursion"><u>Dynamic Programming (DP)</u></a> 技术。例如，此拓扑排序过程用在 <a href="./sssp"><u>DP solution for SSSP on DAG</u></a>.内部。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-9">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-11">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-11" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<p>我们可以使用 O(<b>V</b>+<b>E</b>) DFS 或 BFS 来执行有向无环图（DAG）的拓扑排序。<br></p>与普通 DFS 相比，DFS 版本只需要额外的一行，基本上是此图的后序遍历。在示例的DAG上尝试 <span class="slide-actions" onclick="doButtonAction44()">Toposort (DFS)</span> 。<div><span lang="zh-CN">BFS 版本基于没有传入边的节点的概念，也称为</span> Kahn 算法.。在示例的DAG上尝试 <span class="slide-actions" onclick="doButtonAction45()">Toposort (BFS/Kahn's)</span> 。</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-10">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="8">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-8" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+<p>As of now, you have seen DFS/BFS and what it can solve (with just minor tweaks). There are a few more advanced applications that require more tweaks and we will let advanced students to explore them on their own:</p><ol><li>Bipartite Graph Checker (DFS and BFS variants),</li><li>Finding Articulation Points (Cut Vertices) and Bridges of an Undirected Graph (DFS only),</li><li>Finding Strongly Connected Components (SCCs) of a Directed Graph (Tarjan&#39;s and Kosaraju&#39;s algorithms), and</li><li>2-SAT(isfiability) Checker algorithms.</li></ol><hr><p>Advertisement: The details are written in <a href="https://cpbook.net" target="_blank"><u>Competitive Programming book</u></a>.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-11">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="9">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-9" class="electure-dialog" style="top:300px;left:50%;margin-left:-250px;width:500px;">
+<p>We can use the O(<b>V</b>+<b>E</b>) DFS or BFS (they work similarly) to check if a given graph is a Bipartite Graph by giving alternating color (<span style="color: orange;">orange</span> versus <span style="color: lightblue;">blue</span> in this visualization) between neighboring vertices and report &#39;non bipartite&#39; if we ends up assigning same color to two adjacent vertices or &#39;bipartite&#39; if it is possible to do such &#39;2-coloring&#39; process. Try <span class="slide-actions" onclick="doButtonAction46()">DFS_Checker</span> or <span class="slide-actions" onclick="doButtonAction47()">BFS_Checker</span> on the example Bipartite Graph.</p><br><p>Bipartite Graphs have useful applications in <a href="./matching"><u>(Bipartite) Graph Matching problem</u></a>.</p><br><p>Note that Bipartite Graphs are usually only defined for undirected graphs so this visualization will convert directed input graphs into its undirected version automatically before continuing. This action is irreversible and you may have to redraw the directed input graph again for other purposes.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="8">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="10">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-10" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<p>We can modify (but unfortunately, not trivially) the O(<b>V</b>+<b>E</b>) DFS algorithm into an algorithm to find Cut Vertices &amp; Bridges of an Undirected Graph.</p><br><p>A Cut Vertex, or an Articulation Point, is a vertex of an undirected graph which removal disconnects the graph. Similarly, a bridge is an edge of an undirected graph which removal disconnects the graph.</p><br><p>Note that this algorithm for finding Cut Vertices &amp; Bridges only works for undirected graphs so this visualization will convert directed input graphs into its undirected version automatically before continuing. This action is irreversible and you may have to redraw the directed input graph again for other purposes. You can try to <span class="slide-actions" onclick="doButtonAction48()">Find Cut Vertices &amp; Bridges</span> on the example graph above.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="9">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="11">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-11" class="electure-dialog" style="top:270px;left:50%;margin-left:-250px;width:500px;">
+<p>We can modify (but unfortunately, not trivially) the O(<b>V</b>+<b>E</b>) DFS algorithm into an algorithm to find Strongly Connected Components (SCCs) of a Directed Graph G.</p><br><p>An SCC of a directed graph G a is defined as a subgraph S of G such that for any two vertices u and v in S, vertex u can reach vertex v directly or via a path, and vertex v can also reach vertex u back directly or via a path.</p><br><p>There are two known algorithms for finding SCCs of a Directed Graph: Kosaraju&#39;s and Tarjan&#39;s. Both of them are available in this visualization. Try <span class="slide-actions" onclick="doButtonAction49()">Kosaraju's Algorithm</span> and/or <span class="slide-actions" onclick="doButtonAction50()">Tarjan's Algorithm</span> on the example directed graph above.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="10">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="12">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-12" class="electure-dialog" style="bottom:320px;left:60px;width:500px;">
+<p>We also have the 2-SAT Checker algorithm. Given a 2-Satisfiability (2-SAT) instance in the form of conjuction of clauses: (clause<sub>1</sub>) ^ (clause<sub>2</sub>) ^ ... ^ (clause<sub>n</sub>) and each clause is in form of disjunction of up to two variables (var<sub>a</sub> v var<sub>b</sub>), determine if we can assign True/False values to these variables so that the entire 2-SAT instance is evaluated to be true, i.e. satisfiable.</p><br><p>It turns out that each clause (a v b) can be turned into four vertices a, not a, b, and not b with two edges: (not a &rarr; b) and (not b &rarr; a). Thus we have a Directed Graph. If there is at least one variable and its negation inside an SCC of such graph, we know that it is impossible to satisfy the 2-SAT instance.</p><br><p>After such directed graph modeling, we can run an SCC finding algorithm (Kosaraju&#39;s or Tarjan&#39;s algorithm) to determine the satisfiability of the 2-SAT instance.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="11">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="13">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-13" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<input class="mcq-answer" id="mcq-answer-22" value="95" hidden><p>Quiz: <b>Which Graph Traversal Algorithm is Better?</b></p><form><input type="radio" name="mcq-22-choice" value="93"> Always DFS<br><input type="radio" name="mcq-22-choice" value="96"> Both are Equally Good<br><input type="radio" name="mcq-22-choice" value="95"> It Depends on the Situation<br><input type="radio" name="mcq-22-choice" value="94"> Always BFS<br></form><button class="mcq-submit" id="submit-22">Submit</button> <span id="answer-status-22"></span><br><p>讨论：为什么？</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="12">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="13-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-13-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="13">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="14">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-14" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+我们仍然可以只用 DFS/BFS 做很多事情......
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="13-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="14-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-14-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>There are interesting questions about these two graph traversal algorithms: DFS+BFS and variants of graph traversal problems, please practice on <a href="training?diff=Medium&amp;n=7&amp;tl=0&amp;module=dfsbfs"><u>Graph Traversal</u></a> training module (no login is required, but short and of medium difficulty setting only).</p><br><p>However, for registered users, you should login and then go to the <a href="training"><u>Main Training Page</u></a> to officially clear this module and such achievement will be recorded in your user account.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="14">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="14-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-14-2" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>We also have a few programming problems that somewhat requires the usage of DFS and/or BFS: <a href="https://open.kattis.com/problems/reachableroads" title="" target="_blank"><u>Kattis - reachableroads</u></a> and <a href="https://open.kattis.com/problems/breakingbad" title="" target="_blank"><u>Kattis - breakingbad</u></a>.</p><br><p>Try to solve them and then try the <b>many more</b> interesting twists/variants of this simple graph traversal problem and/or algorithm.</p><br><p>You are allowed to use/modify our implementation code for DFS/BFS Algorithms:<br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch4/traversal/dfs_cc.cpp" target="_blank"><u>dfs_cc.cpp</u></a>/<a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch4/sssp/bfs.cpp" target="_blank"><u>bfs.cpp</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch4/traversal/dfs_cc.java" target="_blank"><u>dfs_cc.java</u></a>/<a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch4/sssp/bfs.java" target="_blank"><u>bfs.java</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch4/traversal/dfs_cc.py" target="_blank"><u>dfs_cc.py</u></a>/<a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch4/sssp/bfs.py" target="_blank"><u>bfs.py</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch4/traversal/dfs_cc.ml" target="_blank"><u>dfs_cc.ml</u></a>/<a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch4/sssp/bfs.ml" target="_blank"><u>bfs.ml</u></a><br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="14-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="14-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-14-3" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="14-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99" class="electure-dialog" style="right:150px;bottom:335px;width:500px;">
+当操作进行时，状态面板将会有每个步骤的描述。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="14-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-1" class="electure-dialog" style="right:170px;bottom:275px;width:180px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-2" class="electure-dialog" style="bottom:70px;left:50%;margin-left:-120px;width:260px;">
+使用用户控件控制动画！可用的快捷键有：<div>空格键：绘制／停止／重绘</div><div>左／右箭头：上一步／下一步</div><div>-／+：减缓／增加速度</div><div><br></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-3" class="electure-dialog" style="top:70px;right:60px;width:300px;">
+<p>Return to &#39;Exploration Mode&#39; to start exploring!</p><br><p>Note that if you notice any bug in this visualization or if you want to request for a new visualization feature, do not hesitate to drop an email to the project leader: Dr Steven Halim via his email address: stevenhalim at gmail dot com.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-2">上一个 <u>PgUp</u></div>
+</div>
+<div id="popup" hidden>
+<div id="popup-content"></div>
+<span id="hide-popup" hidden>X <u>关闭</u></span>
+</div>
+<div id="actions" class="panel">
+<p id="draw" onclick=drawGraph()>绘制图表</p>
+<p id="examples">图示</p>
+<p id="dfs">深度优先搜索(s)</p>
+<p id="bfs">广度优先搜说(s)</p>
+<p id="topo">拓扑排序</p>
+<p id="bipartite">二分图检查</p>
+<p id="bridge" onclick=bridge()>切断顶点/ 桥</p>
+<p id="scc">SCC 算法</p>
+<p id="twosat">2-SAT 检查</p>
+</div>
+<div id="actions-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title='显示/隐藏 动作面板'></div>
+<div id="actions-extras">
+<div class="examples action-menu-pullout">
+<div id="example1" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_1)"><p>CP3 4.1</p></div>
+<div id="example2" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_3)"><p>CP3 4.3</p></div>
+<div id="example3" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_4)"><p>CP3 4.4 DAG</p></div>
+<div id="example4" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_9)"><p>CP3 4.9</p></div>
+<div id="example5" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_17)"><p>CP3 4.17 DAG</p></div>
+<div id="example6" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_18)"><p>CP3 4.18 DAG, Bipartite</p></div>
+<div id="example7" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_19)"><p>CP3 4.19 Bipartite</p></div>
+</div>
+<div class="dfs action-menu-pullout">
+<div id="dfs-input" class="new-menu-option">s = <input type="number" id="dfs-v" title='输入源顶点' autocomplete="off" min=0 max=99 value=0></div>
+<div id="dfs-go" class="execAction coloured-menu-option" onclick="dfs()"><p>执行</p></div>
+<div id="dfs-err" class="err"></div>
+</div>
+<div class="bfs action-menu-pullout">
+<div id="bfs-input" class="new-menu-option">s = <input type="number" id="bfs-v" title='输入源顶点' autocomplete="off" min=0 max=99 value=0></div>
+<div id="bfs-go" class="execAction coloured-menu-option" onclick="bfs()"><p>执行</p></div>
+<div id="bfs-err" class="err"></div>
+</div>
+<div class="topo action-menu-pullout">
+<div id="toposortDfs" class="execAction new-menu-option coloured-menu-option" onclick="toposortDfs()"><p>DFS 版本</p></div>
+<div id="toposortBfs" class="execAction new-menu-option coloured-menu-option" onclick="toposortBfs()"><p>BFS 版本 (Kahn&#39;s 算法)</p></div>
+<div id="topo-err" class="err"></div>
+</div>
+<div class="bipartite action-menu-pullout">
+<div id="bipartiteDfs" class="execAction new-menu-option coloured-menu-option" onclick="bipartiteDfs()"><p>DFS 版本</p></div>
+<div id="bipartiteBfs" class="execAction new-menu-option coloured-menu-option" onclick="bipartiteBfs()"><p>BFS 版本</p></div>
+<div id="bipartite-err" class="err"></div>
+</div>
+<div class="bridge action-menu-pullout">
+<div id="bridge-err" class="err"></div>
+</div>
+<div class="scc action-menu-pullout">
+<div id="kosaraju" class="execAction new-menu-option coloured-menu-option" onclick="kosaraju()"><p>Kosaraju 算法</p></div>
+<div id="tarjan" class="execAction new-menu-option coloured-menu-option" onclick="tarjan()"><p>Tarjan 算法</p></div>
+<div id="scc-err" class="err"></div>
+</div>
+<div class="twosat action-menu-pullout">
+<div class="new-menu-option">条款的数量 = <input type="number" id="twosat-v1" title="Enter the number of clauses" autocomplete="off" min=0 max=10 value=0>, 变量的数量 = <input type="number" id="twosat-v2" title="Enter the number of variables" autocomplete="off" min=0 max=10 value=0></div>
+<div id="twosat-go" class="execAction coloured-menu-option" onclick="twosat()"><p>走</p></div>
+<div id="twosat-err" class="err"></div>
+</div>
+</div>
+<div id="drawgraph" class="overlays"></div>
+<div id="twosat-board" class="overlays"></div>
+<div id="bottom-bar">
+<a id="trigger-about">关于</a>
+</div>
+<div id="about" class="overlays">
+<h4>关于</h4><span class='close-overlay'>&#x2715;</span>
+<div class='content'>
+VisuAlgo在2011年由Steven Halim博士概念化，作为一个工具，帮助他的学生更好地理解数据结构和算法，让他们自己和自己的步伐学习基础。<br>VisuAlgo包含许多高级算法，这些算法在Steven Halim博士的书（“竞争规划”，与他的兄弟Felix Halim博士合作）和其他书中讨论。今天，一些高级算法的可视化/动画只能在VisuAlgo中找到。<br>虽然专门为新加坡国立大学（NUS）学生采取各种数据结构和算法类（例如CS1010，CS1020，CS2010，CS2020，CS3230和CS3230），作为在线学习的倡导者，我们希望世界各地的好奇心发现这些可视化也很有用。<br>VisuAlgo不是从一开始就设计为在小触摸屏（例如智能手机）上工作良好，因为需要满足许多复杂的算法可视化，需要大量的像素和点击并拖动手势进行交互。一个令人尊敬的用户体验的最低屏幕分辨率为1024x768，并且只有着陆页相对适合移动设备。<br>VisuAlgo是一个正在进行的项目，更复杂的可视化仍在开发中。<br>最令人兴奋的发展是自动问题生成器和验证器（在线测验系统），允许学生测试他们的基本数据结构和算法的知识。这些问题是通过一些规则随机生成的，学生的答案会在提交给我们的评分服务器后立即自动分级。这个在线测验系统，当它被更多的世界各地的CS教师采用，应该技术上消除许多大学的典型计算机科学考试手动基本数据结构和算法问题。通过在通过在线测验时设置小（但非零）的重量，CS教练可以（显着地）增加他/她的学生掌握这些基本问题，因为学生具有几乎无限数量的可以立即被验证的训练问题他们参加在线测验。培训模式目前包含12个可视化模块的问题。我们将很快添加剩余的8个可视化模块，以便VisuAlgo中的每个可视化模块都有在线测验组件。<br>另一个积极的发展分支是VisuAlgo的国际化子项目。我们要为VisuAlgo系统中出现的所有英语文本准备一个CS术语的数据库。这是一个很大的任务，需要众包。一旦系统准备就绪，我们将邀请VisuAlgo游客贡献，特别是如果你不是英语母语者。目前，我们还以各种语言写了有关VisuAlgo的公共注释：<br>
+<a href="https://weibo.com/p/230418436e9ee80102v4rk" target='_blank'><u>zh</u></a>, <a href='https://www.facebook.com/notes/steven-halim/httpidvisualgonet-visualisasi-struktur-data-dan-algoritma-dengan-animasi/10153236934439689' target='_blank'><u>id</u></a>, <a href="https://blog.naver.com/visualgo_nus" target='_blank'><u>kr</u></a>, <a href='https://www.facebook.com/groups/163215593699283/permalink/824003417620494/' target='_blank'><u>vn</u></a>, <a href='http://pantip.com/topic/32736343' target='_blank'><u>th</u></a>.</p>
+</div>
+</div>
+
+<script src="../js/jquery-3.3.1.min.js"></script>
+<script>
+      var PHP_DOMAIN = "";
+
+      // surprise colour!
+      // Referenced to in  home.js and viz.js also
+      var colourArray = ["#52bc69", "#d65775"/*"#ed5a7d"*/, "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"]; // green, pink, blue, red, yellow, indigo, orange, lime
+
+      function disableScroll() { $('html').css('overflow', 'hidden'); }
+
+      function enableScroll() { $('html').css('overflow', 'visible'); }
+
+      function replaceAll(find, replace, str) { return str.replace(new RegExp(find, 'g'), replace); }
+
+      function getColours() {
+        var generatedColours = new Array();
+        while (generatedColours.length < 4) {
+          var n = (Math.floor(Math.random() * colourArray.length));
+          if ($.inArray(n, generatedColours) == -1)
+            generatedColours.push(n);
+        }
+        return generatedColours;
+      }
+
+      function isOn(value, position) {
+        return (value>>position) & 1 === 1;
+      }
+
+      function customAlert(msg) {
+        $('#custom-alert p').html(msg);
+        var m = -1 * ($('#custom-alert').outerHeight()/2);
+        $('#custom-alert').css('margin-top', m+'px');
+        $('#dark-overlay').fadeIn(function() {
+          $('#custom-alert').fadeIn(function() {
+            setTimeout(function() {
+              $('#custom-alert').fadeOut(function() {
+                $('#dark-overlay').fadeOut();
+              });
+            }, 1000);
+          });
+        });
+      }
+
+      function showLoadingScreen() {
+        $('#loading-overlay').show();
+        $('#loading-message').show();
+      }
+
+      function hideLoadingScreen() {
+        $('#loading-overlay').hide();
+      }
+
+      function commonAction(retval, msg) {
+        //setTimeout(function() {
+          if (retval) { // mode == "exploration" && // now not only for exploration mode, but check if this opens other problems
+            $('#current-action').show();
+            $('#current-action').html(mode == "exploration" ? msg : ("e-Lecture Example (auto play until done)<br>" + msg));
+            $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+            triggerRightPanels();
+            isPlaying = true;
+          }
+        //}, 500);
+      }
+
+      function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable)
+            return decodeURIComponent(pair[1]);
+        }
+        return "";
+      }
+
+      var generatedColours = getColours();
+      var surpriseColour = colourArray[generatedColours[0]];
+      var colourTheSecond = colourArray[generatedColours[1]];
+      var colourTheThird = colourArray[generatedColours[2]];
+      var colourTheFourth = colourArray[generatedColours[3]];
+
+      $(function() {
+        $('.links').css('background', surpriseColour);
+        $('.right-links').css('background', surpriseColour);
+        $('#login-go').css('background', surpriseColour);
+
+        $('.colour').css("color", surpriseColour); // name
+        $('h4').css("background-color", surpriseColour); // about, contact us etc. button background
+
+        // title
+        $('#title a').click(function() {
+          $('#title a').removeClass('selected-viz');
+          $(this).addClass('selected-viz');
+          // temporary quick fix for Google Chrome Aug 2016 issue...
+          setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 100); // force resize/redraw...
+          setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        });
+
+        // overlays stuffs
+        $('#trigger-about').click(function() {
+          if ($(window).width() > 600) {
+            $('#dark-overlay').fadeIn(function() {
+              $('#about').fadeIn();
+            });
+          }
+          else
+            alert('Sorry, this dialog is too big. Please load it on bigger screen');
+        });
+
+        $('.close-overlay').click(function() {
+          $('.overlays').fadeOut(function() {
+            $('#dark-overlay').fadeOut();
+          });
+        });
+
+        $('#dark-overlay').click(function() {
+          $('.overlays').fadeOut();
+          $('#dark-overlay').fadeOut();
+        });
+      });
+    </script>
+
+<script src="../js/jquery-ui.min.js"></script>
+<script src="../js/d3.min.js"></script>
+<script src="../js/viz-1.0.3.js"></script>
+<script src="../js/visualgo_print.js"></script>
+<script src="../js/graph_library.js"></script>
+<script>
+      function runSlide(slide) {
+        if (slide == '1') {
+          $("#e-lecture").html("slide " + slide + " (" + 2 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2') {
+          $("#e-lecture").html("slide " + slide + " (" + 4 + "%)");
+          example(CP3_4_1);
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3') {
+          $("#e-lecture").html("slide " + slide + " (" + 6 + "%)");
+          $("#draw").addClass("menu-highlighted");
+$("#random").addClass("menu-highlighted");
+$("#examples").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4') {
+          $("#e-lecture").html("slide " + slide + " (" + 8 + "%)");
+          loadGraph({
+  'vl': {
+    0: { "x": 100, "y": 50  },
+    1: { "x":  50, "y": 150 },
+    2: { "x": 150, "y": 150 },
+    3: { "x": 125, "y": 250 },
+    4: { "x": 175, "y": 250 },
+  },
+  'el': {
+    0: { "u": 0, "v": 1, "w": 1 },
+    1: { "u": 0, "v": 2, "w": 1 },
+    2: { "u": 2, "v": 3, "w": 1 },
+    3: { "u": 2, "v": 4, "w": 1 },
+  }
+});
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 10 + "%)");
+          loadGraph({
+  'vl': {
+    0: { "x": 100, "y": 150 },
+    1: { "x":  50, "y": 50  },
+    2: { "x": 150, "y": 50  },
+    3: { "x": 175, "y": 150 },
+    4: { "x": 225, "y": 150 },
+  },
+  'el': {
+    0: { "u": 0, "v": 1, "w": 1 },
+    1: { "u": 0, "v": 2, "w": 1 },
+    2: { "u": 2, "v": 3, "w": 1 },
+    3: { "u": 2, "v": 4, "w": 1 },
+    4: { "u": 1, "v": 0, "w": 1 },
+    5: { "u": 2, "v": 0, "w": 1 },
+    6: { "u": 3, "v": 2, "w": 1 },
+    7: { "u": 4, "v": 2, "w": 1 },
+  }
+});
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 12 + "%)");
+          loadGraph({
+  'vl': {
+    0: { "x": 100, "y": 50  },
+    1: { "x":  50, "y": 150 },
+    2: { "x": 150, "y": 150 },
+    3: { "x": 125, "y": 250 },
+    4: { "x": 175, "y": 250 },
+  },
+  'el': {
+    0: { "u": 0, "v": 1, "w": 1 },
+    1: { "u": 0, "v": 2, "w": 1 },
+    2: { "u": 2, "v": 3, "w": 1 },
+    3: { "u": 2, "v": 4, "w": 1 },
+  }
+});
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 14 + "%)");
+          loadGraph({
+  'vl': {
+    0: { "x": 100, "y": 50  },
+    1: { "x":  50, "y": 150 },
+    2: { "x": 150, "y": 150 },
+    3: { "x": 125, "y": 250 },
+    4: { "x": 175, "y": 250 },
+  },
+  'el': {
+    0: { "u": 0, "v": 1, "w": 1 },
+    1: { "u": 0, "v": 2, "w": 1 },
+    2: { "u": 2, "v": 3, "w": 1 },
+    3: { "u": 2, "v": 4, "w": 1 },
+  }
+});
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-4') {
+          $("#e-lecture").html("slide " + slide + " (" + 16 + "%)");
+          loadGraph({
+  'vl': {
+    0: { "x": 100, "y": 50  },
+    1: { "x":  50, "y": 150 },
+    2: { "x": 150, "y": 150 },
+    3: { "x": 125, "y": 250 },
+    4: { "x": 175, "y": 250 },
+  },
+  'el': {
+    0: { "u": 0, "v": 1, "w": 1 },
+    1: { "u": 0, "v": 2, "w": 1 },
+    2: { "u": 2, "v": 3, "w": 1 },
+    3: { "u": 2, "v": 4, "w": 1 },
+  }
+});
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-5') {
+          $("#e-lecture").html("slide " + slide + " (" + 18 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5') {
+          $("#e-lecture").html("slide " + slide + " (" + 20 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+example(CP3_4_1);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 22 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 24 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 26 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5-4') {
+          $("#e-lecture").html("slide " + slide + " (" + 28 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5-5') {
+          $("#e-lecture").html("slide " + slide + " (" + 30 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+example(CP3_4_1);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5-6') {
+          $("#e-lecture").html("slide " + slide + " (" + 32 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5-7') {
+          $("#e-lecture").html("slide " + slide + " (" + 34 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5-8') {
+          $("#e-lecture").html("slide " + slide + " (" + 36 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '6') {
+          $("#e-lecture").html("slide " + slide + " (" + 38 + "%)");
+          $("#bfs").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '6-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 40 + "%)");
+          $("#bfs").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '6-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 42 + "%)");
+          $("#bfs").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '6-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 44 + "%)");
+          $("#bfs").click().addClass("menu-highlighted");
+example(CP3_4_3);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '6-4') {
+          $("#e-lecture").html("slide " + slide + " (" + 46 + "%)");
+          $("#bfs").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7') {
+          $("#e-lecture").html("slide " + slide + " (" + 48 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+$("#bfs").addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 50 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+example(CP3_4_9);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 52 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+example(CP3_4_9);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 54 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+example(CP3_4_9);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-4') {
+          $("#e-lecture").html("slide " + slide + " (" + 56 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+$("#bfs").addClass("menu-highlighted");
+example(CP3_4_1);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-5') {
+          $("#e-lecture").html("slide " + slide + " (" + 58 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+$("#bfs").addClass("menu-highlighted");
+example(CP3_4_1);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-6') {
+          $("#e-lecture").html("slide " + slide + " (" + 60 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+$("#bfs").addClass("menu-highlighted");
+example(CP3_4_1);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-7') {
+          $("#e-lecture").html("slide " + slide + " (" + 62 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+$("#bfs").addClass("menu-highlighted");
+example(CP3_4_1);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-8') {
+          $("#e-lecture").html("slide " + slide + " (" + 64 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+$("#bfs").addClass("menu-highlighted");
+example(CP3_4_1);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-9') {
+          $("#e-lecture").html("slide " + slide + " (" + 66 + "%)");
+          $("#dfs").click().addClass("menu-highlighted");
+$("#bfs").addClass("menu-highlighted");
+example(CP3_4_1);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-10') {
+          $("#e-lecture").html("slide " + slide + " (" + 68 + "%)");
+          $("#topo").click().addClass("menu-highlighted");
+example(CP3_4_4);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-11') {
+          $("#e-lecture").html("slide " + slide + " (" + 70 + "%)");
+          $("#topo").click().addClass("menu-highlighted");
+example(CP3_4_4);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '8') {
+          $("#e-lecture").html("slide " + slide + " (" + 72 + "%)");
+          $("#bipartite").click().addClass("menu-highlighted");
+$("#bridge").addClass("menu-highlighted");
+$("#scc").addClass("menu-highlighted");
+$("#twosat").addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '9') {
+          $("#e-lecture").html("slide " + slide + " (" + 74 + "%)");
+          $("#bipartite").click().addClass("menu-highlighted");
+example(CP3_4_18);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '10') {
+          $("#e-lecture").html("slide " + slide + " (" + 76 + "%)");
+          $("#bridge").addClass("menu-highlighted");
+example(CP3_4_9);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '11') {
+          $("#e-lecture").html("slide " + slide + " (" + 78 + "%)");
+          $("#scc").click().addClass("menu-highlighted");
+example(CP3_4_9);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '12') {
+          $("#e-lecture").html("slide " + slide + " (" + 80 + "%)");
+          $("#twosat").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '13') {
+          $("#e-lecture").html("slide " + slide + " (" + 82 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '13-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 84 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '14') {
+          $("#e-lecture").html("slide " + slide + " (" + 86 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '14-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 88 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '14-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 90 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '14-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 92 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99') {
+          $("#e-lecture").html("slide " + slide + " (" + 94 + "%)");
+          
+          hideEntireActionsPanel();
+ 
+          showStatusPanel();
+          showCodetracePanel();
+      
+        }
+        if (slide == '99-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 96 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 98 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 100 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+      }
+
+      window.onpopstate = function(event) {
+        var slide = event.state['slide'];
+        openSlide(slide, function() {
+          runSlide(slide);
+        });
+      };
+
+      function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'), sParameterName, i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+          if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+      };
+
+      function pushState(slideValue) {
+        var url = '/zh/dfsbfs';
+        if (typeof slideValue != 'undefined' && slideValue != null) url += '?slide=' + slideValue;
+        window.history.pushState({slide: slideValue}, "slide " + slideValue, url);
+      }
+
+      function showPopup(callback) {
+        $('#popup').fadeIn(100, callback);
+      }
+
+      function hidePopup(callback) {
+        $('#popup').fadeOut(100, callback);
+      }
+
+      function showOverlay() {
+        $('#overlay').css('opacity', 0.5); 
+        $('#overlay').show();
+      }
+
+      function hideOverlay() {
+        $('#overlay').hide();
+        $("#e-lecture").html("");
+      }
+
+      function makeOverlayTransparent() {
+        $('#overlay').css('opacity', 0);
+      }
+
+      function hideSlide(callback) {
+        isPlaying = true;
+        closeSlide(cur_slide, function() {
+          makeOverlayTransparent();
+          setTimeout(callback, 700); // don't immediately run the animation, wait for 500ms+ first
+        });
+      }
+
+      function showSlide() {
+        isPlaying = false;
+        openSlide(cur_slide);
+        showOverlay();
+      }
+
+      $(function() {
+        var slide = getUrlParameter('slide');
+        
+        $.get('/hasvisited' + '/dfsbfs', function(data) {
+          var hasVisited = data['hasvisited'] == '1';
+          if (!hasVisited) {
+            var postData = {
+              '_token': 'kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh',
+              'page': '/dfsbfs'.substring(1),
+            };
+
+            $.post("/visitpage", postData, function(data) {
+              // non critical request...
+            });
+
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+            }
+
+            $("#mode-menu a").trigger("click");
+          }
+          else {
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+              $('#mode-menu a').click();
+            }    
+          }
+        }).fail(function() {
+          if (typeof slide != undefined && slide != null) {
+            cur_slide = slide;
+            $('#mode-menu a').click();
+          }
+        });
+
+        $('.mcq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#mcq-answer-' + questionId).val();
+          var userAnswer = $('input[type=radio][name=mcq-'+questionId+'-choice]:checked').val();
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green"><b>Correct!</b></font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red"><b>Wrong Answer! Try again...</b></font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('.msq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#msq-answer-' + questionId).val();
+
+          var answers = [];
+          $('input[type=checkbox][class=msq-choice]:checked').each(function() {
+            answers.push($(this).attr('id').split('-')[3]);
+          });
+          answers.sort();
+          var userAnswer = answers.join(',');
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green">Correct!</font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red">Wrong Answer! Try again...</font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('select.lecture-dropdown').change(function() {
+          var nextSlide = $(this).val();
+          openSlide(nextSlide, function() {
+            runSlide(nextSlide);
+            pushState(nextSlide);
+          });
+        });
+
+        $('#hide-popup').click(function() {
+          hidePopup();
+        });
+
+        $('#popup').hover(function() {
+          $('#hide-popup').show();
+        }, function() {
+          $('#hide-popup').hide();
+        });
+
+        $('#electure-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+        $('#electure-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('1');
+          pushState('1');
+        });
+      
+        $('#electure-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+        $('#electure-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-1');
+          pushState('4-1');
+        });
+        $('#electure-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+      
+        $('#electure-4-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-2');
+          pushState('4-2');
+        });
+        $('#electure-4-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+      
+        $('#electure-4-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-3');
+          pushState('4-3');
+        });
+        $('#electure-4-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-1');
+          pushState('4-1');
+        });
+      
+        $('#electure-4-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-4');
+          pushState('4-4');
+        });
+        $('#electure-4-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-2');
+          pushState('4-2');
+        });
+      
+        $('#electure-4-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-5');
+          pushState('4-5');
+        });
+        $('#electure-4-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-3');
+          pushState('4-3');
+        });
+      
+        $('#electure-4-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+        $('#electure-4-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-4');
+          pushState('4-4');
+        });
+      
+        $('#electure-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5-1');
+          pushState('5-1');
+        });
+        $('#electure-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-5');
+          pushState('4-5');
+        });
+      
+        $('#electure-5-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5-2');
+          pushState('5-2');
+        });
+        $('#electure-5-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+      
+        $('#electure-5-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5-3');
+          pushState('5-3');
+        });
+        $('#electure-5-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5-1');
+          pushState('5-1');
+        });
+      
+        $('#electure-5-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5-4');
+          pushState('5-4');
+        });
+        $('#electure-5-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5-2');
+          pushState('5-2');
+        });
+      
+        $('#electure-5-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5-5');
+          pushState('5-5');
+        });
+        $('#electure-5-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5-3');
+          pushState('5-3');
+        });
+      
+        $('#electure-5-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5-6');
+          pushState('5-6');
+        });
+        $('#electure-5-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5-4');
+          pushState('5-4');
+        });
+      
+        $('#electure-5-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5-7');
+          pushState('5-7');
+        });
+        $('#electure-5-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5-5');
+          pushState('5-5');
+        });
+      
+        $('#electure-5-7 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5-8');
+          pushState('5-8');
+        });
+        $('#electure-5-7 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5-6');
+          pushState('5-6');
+        });
+      
+        $('#electure-5-8 .electure-next').click(function() {
+          hidePopup();
+          runSlide('6');
+          pushState('6');
+        });
+        $('#electure-5-8 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5-7');
+          pushState('5-7');
+        });
+      
+        $('#electure-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('6-1');
+          pushState('6-1');
+        });
+        $('#electure-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5-8');
+          pushState('5-8');
+        });
+      
+        $('#electure-6-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('6-2');
+          pushState('6-2');
+        });
+        $('#electure-6-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('6');
+          pushState('6');
+        });
+      
+        $('#electure-6-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('6-3');
+          pushState('6-3');
+        });
+        $('#electure-6-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('6-1');
+          pushState('6-1');
+        });
+      
+        $('#electure-6-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('6-4');
+          pushState('6-4');
+        });
+        $('#electure-6-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('6-2');
+          pushState('6-2');
+        });
+      
+        $('#electure-6-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7');
+          pushState('7');
+        });
+        $('#electure-6-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('6-3');
+          pushState('6-3');
+        });
+      
+        $('#electure-7 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-1');
+          pushState('7-1');
+        });
+        $('#electure-7 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('6-4');
+          pushState('6-4');
+        });
+      
+        $('#electure-7-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-2');
+          pushState('7-2');
+        });
+        $('#electure-7-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7');
+          pushState('7');
+        });
+      
+        $('#electure-7-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-3');
+          pushState('7-3');
+        });
+        $('#electure-7-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-1');
+          pushState('7-1');
+        });
+      
+        $('#electure-7-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-4');
+          pushState('7-4');
+        });
+        $('#electure-7-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-2');
+          pushState('7-2');
+        });
+      
+        $('#electure-7-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-5');
+          pushState('7-5');
+        });
+        $('#electure-7-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-3');
+          pushState('7-3');
+        });
+      
+        $('#electure-7-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-6');
+          pushState('7-6');
+        });
+        $('#electure-7-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-4');
+          pushState('7-4');
+        });
+      
+        $('#electure-7-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-7');
+          pushState('7-7');
+        });
+        $('#electure-7-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-5');
+          pushState('7-5');
+        });
+      
+        $('#electure-7-7 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-8');
+          pushState('7-8');
+        });
+        $('#electure-7-7 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-6');
+          pushState('7-6');
+        });
+      
+        $('#electure-7-8 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-9');
+          pushState('7-9');
+        });
+        $('#electure-7-8 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-7');
+          pushState('7-7');
+        });
+      
+        $('#electure-7-9 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-10');
+          pushState('7-10');
+        });
+        $('#electure-7-9 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-8');
+          pushState('7-8');
+        });
+      
+        $('#electure-7-10 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-11');
+          pushState('7-11');
+        });
+        $('#electure-7-10 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-9');
+          pushState('7-9');
+        });
+      
+        $('#electure-7-11 .electure-next').click(function() {
+          hidePopup();
+          runSlide('8');
+          pushState('8');
+        });
+        $('#electure-7-11 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-10');
+          pushState('7-10');
+        });
+      
+        $('#electure-8 .electure-next').click(function() {
+          hidePopup();
+          runSlide('9');
+          pushState('9');
+        });
+        $('#electure-8 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-11');
+          pushState('7-11');
+        });
+      
+        $('#electure-9 .electure-next').click(function() {
+          hidePopup();
+          runSlide('10');
+          pushState('10');
+        });
+        $('#electure-9 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('8');
+          pushState('8');
+        });
+      
+        $('#electure-10 .electure-next').click(function() {
+          hidePopup();
+          runSlide('11');
+          pushState('11');
+        });
+        $('#electure-10 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('9');
+          pushState('9');
+        });
+      
+        $('#electure-11 .electure-next').click(function() {
+          hidePopup();
+          runSlide('12');
+          pushState('12');
+        });
+        $('#electure-11 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('10');
+          pushState('10');
+        });
+      
+        $('#electure-12 .electure-next').click(function() {
+          hidePopup();
+          runSlide('13');
+          pushState('13');
+        });
+        $('#electure-12 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('11');
+          pushState('11');
+        });
+      
+        $('#electure-13 .electure-next').click(function() {
+          hidePopup();
+          runSlide('13-1');
+          pushState('13-1');
+        });
+        $('#electure-13 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('12');
+          pushState('12');
+        });
+      
+        $('#electure-13-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('14');
+          pushState('14');
+        });
+        $('#electure-13-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('13');
+          pushState('13');
+        });
+      
+        $('#electure-14 .electure-next').click(function() {
+          hidePopup();
+          runSlide('14-1');
+          pushState('14-1');
+        });
+        $('#electure-14 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('13-1');
+          pushState('13-1');
+        });
+      
+        $('#electure-14-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('14-2');
+          pushState('14-2');
+        });
+        $('#electure-14-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('14');
+          pushState('14');
+        });
+      
+        $('#electure-14-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('14-3');
+          pushState('14-3');
+        });
+        $('#electure-14-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('14-1');
+          pushState('14-1');
+        });
+      
+        $('#electure-14-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+        $('#electure-14-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('14-2');
+          pushState('14-2');
+        });
+      
+        $('#electure-99 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+        $('#electure-99 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('14-3');
+          pushState('14-3');
+        });
+      
+        $('#electure-99-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+        $('#electure-99-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+      
+        $('#electure-99-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-3');
+          pushState('99-3');
+        });
+        $('#electure-99-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+      
+        $('#electure-99-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+      
+ 
+
+        // temporary quick fix for Google Chrome Aug 2016 issue..., put at last part so that everything else has been loaded
+        // setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 500);
+        // setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        // I turn it off on 14 June 2018, seems 'ok'?
+      });
+
+      function doButtonAction39() {
+        CUSTOM_ACTION('dfs');
+      }
+      function doButtonAction40() {
+        CUSTOM_ACTION('bfs');
+      }
+      function doButtonAction41() {
+        $("#dfsrecap").html("We start from source vertex <b>s = 0</b> and DFS will explore vertices: 0 &rarr; 1 (cannot go back to 0) &rarr; 2 (cannot go back to 1) &rarr; 3 (cannot go back to 1 or to 2) &rarr; 4 (cannot go back to 3, backtrack to 3 &rarr; 2 &rarr; 1, cannot go to 3, backtrack to 0, done).");
+      }
+      function doButtonAction42() {
+        $("#bfsrecap").html("We start from source vertex <b>s = 5</b> and BFS will explore vertices: {5} (the source vertex), {1, 6, 10} (one edge away from the source vertex), {0, 2, 11, 9} (two edges away), {4, 3, 12, 8} (three edges away), and finally {7} (four edges away).");
+      }
+      function doButtonAction43() {
+        $("#printexample").html(" When we call <samp>backtrack(4)</samp> after executing <samp>DFS(0)</samp> on the sample graph, we go back from 4 &rarr; p[4] = 3 &rarr; p[3] = 2 &rarr; p[2] = 1 &rarr; p[1] = 0 &rarr; p[0] = -1 (so 0 is the source) and print the path in reversed order (due to recursion) i.e.: 0 &rarr; 1 &rarr; 2 &rarr; 3 &rarr; 4.");
+      }
+      function doButtonAction44() {
+        CUSTOM_ACTION('toposort_dfs');
+      }
+      function doButtonAction45() {
+        CUSTOM_ACTION('toposort_bfs');
+      }
+      function doButtonAction46() {
+        CUSTOM_ACTION('bipartite_dfs');
+      }
+      function doButtonAction47() {
+        CUSTOM_ACTION('bipartite_bfs');
+      }
+      function doButtonAction48() {
+        CUSTOM_ACTION('bridge');
+      }
+      function doButtonAction49() {
+        CUSTOM_ACTION('kosaraju');
+      }
+      function doButtonAction50() {
+        CUSTOM_ACTION('tarjan');
+      }
+
+      function adjustPopupToImageSize() {
+        var width = $('#popup-image').prop('width');
+        var height = $('#popup-image').prop('height');
+        $('#popup').width(width + 20);
+        $('#popup').height(height + 20);
+        if (width == 0 && height == 0) {
+          setTimeout(adjustPopupToImageSize, 200);
+        } else {
+          showPopup();  
+        }
+      }
+
+      function POPUP_IMAGE(url) {
+        $('#popup-content').html('<img id="popup-image" src="' + url + '">');
+        adjustPopupToImageSize();
+      }
+
+      function URL(url) {
+        window.open(url, '_blank');
+      }
+
+      // Implement these functions in each visualisation
+      // This function will be called before entering e-Lecture Mode
+      function ENTER_LECTURE_MODE() {}
+
+      // This function will be called before returning to Explore Mode
+      function ENTER_EXPLORE_MODE() {}
+
+      // Lecture action functions
+      function CUSTOM_ACTION(action, data, mode) {}
+    </script>
+<script type="text/javascript">
+// Graph Traversal Widget
+// original author: Koh Zi Chun, improved by Nguyen Viet Dung, then maintained by Steven Halim
+
+var GraphTraversal = function() {
+  var self = this;
+  var gw = new GraphWidget();
+
+  var iVL = {};
+  var iEL = {};
+  var amountVertex = 0;
+  var amountEdge = 0;
+
+  this.getGraphWidget = function() { return gw; }
+
+  fixJSON = function() {
+    amountVertex = 0;
+    amountEdge = 0;
+    for (var key in iVL) amountVertex++;
+    for (var key in iEL) amountEdge++;
+
+    // for (var key in iEL) {
+    //   delete iEL[key]["type"];
+    //   delete iEL[key]["displayWeight"];
+    // }
+    // for (var key in iVL) {
+    //   iVL[key]["x"] = iVL[key]["cx"];
+    //   delete iVL[key]["cx"];
+    //   iVL[key]["y"] = iVL[key]["cy"];
+    //   delete iVL[key]["cy"];
+    //   delete iVL[key]["text"];
+    //   delete iVL[key]["state"];
+    // }
+    // for (var key in iEL) {
+    //   iEL[key]["u"] = +iEL[key]["vertexA"];
+    //   delete iEL[key]["vertexA"];
+    //   iEL[key]["v"] = +iEL[key]["vertexB"];
+    //   delete iEL[key]["vertexB"];
+    //   iEL[key]["w"] = +iEL[key]["weight"];
+    //   delete iEL[key]["weight"];
+    // }
+  }
+
+  takeJSON = function(graph) {
+    if (graph == null) return;
+    graph = JSON.parse(graph);
+    iVL = graph["vl"];
+    iEL = graph["el"];
+    fixJSON();
+  }
+
+  statusChecking = function() {
+    $("#draw-status p").html('绘制具有不同属性的图，然后尝试在其图上运行各种图的遍历算法。<div>默认绘图模式是有向图（每个边有一个或最多两个箭头）。</div>');
+  }
+
+  warnChecking = function() {
+    var warn = "";
+    if (amountVertex >= 10) warn += '屏幕上的顶点过多，请考虑绘制小的图';
+    if (warn == "") $("#draw-warn p").html('没有警告');
+    else            $("#draw-warn p").html(warn);
+  }
+
+  errorChecking = function() {
+    var error = "";
+    if (amountVertex == 0) {
+      $("#draw-err p").html('图不能为空。');
+      return;
+    }
+
+    if (error == "") $("#draw-err p").html('没有错误');
+    else             $("#draw-err p").html(error);
+  }
+
+  var intervalID;
+
+  this.startLoop = function() {
+    intervalID = setInterval(function() {
+      takeJSON(JSONresult);
+      warnChecking();
+      errorChecking();
+      statusChecking();
+    }, 100);
+  }
+
+  this.stopLoop = function() {
+    clearInterval(intervalID);
+  }
+
+  this.draw = function() {
+    if ($("#draw-err p").html() != '没有错误')
+      return false;
+    if ($("#submit").is(':checked'))
+      this.submit(JSONresult);
+    if ($("#copy").is(':checked'))
+      window.prompt('复制到剪贴板：', JSONresult);
+
+    DIRECTED_GR = true;
+    OLD_POSITION = amountEdge;
+
+    graph = createState(iVL, iEL);
+    gw.updateGraph(graph, 500);
+    return true;
+  }
+
+  // this.submit = function(graph) {
+  //   $.ajax({
+  //     url: PHP_DOMAIN + "php/Graph.php?mode=" + MODE_SUBMIT_GRAPH,
+  //     type: "POST",
+  //     data: {canvasWidth: 1000, canvasHeight: 500, graphTopics: 'Graph Traversal', graphState: graph, fbAccessToken: fbAccessToken},
+  //     error: function(xhr, errorType, exception) { //Triggered if an error communicating with server
+  //         var errorMessage = exception || xhr.statusText; //If exception null, then default to xhr.statusText
+  //         alert("There was an error submitting your graph " + errorMessage);
+  //     }
+  //   }).done(function(data) {
+  //     console.log(data);
+  //   });
+  // }
+
+  this.importjson = function(text) {
+    takeJSON(text);
+    statusChecking();
+
+    DIRECTED_GR = true;
+    OLD_POSITION = amountEdge;
+
+    graph = createState(iVL, iEL);
+    gw.updateGraph(graph, 500);
+  }
+
+  // this.initRandom = function(graph) {
+  //   iVL = graph.iVL;
+  //   iEL = graph.iEL;
+  //   amountVertex = iVL.length;
+  //   amountEdge = iEL.length;
+  //   fixJSON();
+  //   statusChecking();
+
+  //   DIRECTED_GR = true;
+  //   OLD_POSITION = amountEdge;
+
+  //   var newState = createState(iVL, iEL);
+  //   gw.updateGraph(newState, 500);
+  // }
+
+  var DIRECTED_GR;
+  var OLD_POSITION;
+
+  this.directedChange = function() {
+    for (var key in iVL) iVL[key]["extratext"] = "";
+    if (DIRECTED_GR == true) {
+      DIRECTED_GR = false;
+      for (var i = 0; i < OLD_POSITION; i++) {
+        var ok = false;
+        for (var j = 0; j < amountEdge; j ++)
+          if (iEL[i]["u"] == iEL[j]["v"] && iEL[i]["v"] == iEL[j]["u"]) {
+            ok = true;
+            break;
+          }
+        if (ok == false)
+          iEL[amountEdge++] = {
+            "u": iEL[i]["v"],
+            "v": iEL[i]["u"]
+          }
+      }
+    }
+    else {
+      DIRECTED_GR = true;
+      for (var i = OLD_POSITION; i < amountEdge; i ++)
+        delete iEL[i];
+      amountEdge = OLD_POSITION;
+    }
+
+    var newState = createState(iVL, iEL);
+    gw.updateGraph(newState, 500);
+    // $('#directedChange-err').html("Successful")
+    //   .delay(1000)
+    //   .queue(function(n) {
+    //     $(this).html("");
+    //   });
+    return true;
+  }
+
+  this.getGraph = function() {
+    return {
+      'vl': iVL,
+      'el': iEL
+    };
+  }
+
+  this.getV = function() {
+    return amountVertex;
+  }
+
+  this.dfs = function(sourceVertex, callback) {
+    var vertexHighlighted = {}, edgeHighlighted = {}, vertexTraversed = {}, vertexTraversing = {}, treeEdge = {}, backEdge = {}, forwardEdge = {}, crossEdge = {};
+    var stateList = [];
+    var cs;
+
+    // error checks   
+    if (amountVertex == 0) { // no graph
+      $('#dfs-err').html('没有图表运行此项。请首先选择图表。');
+      return false;
+    }
+
+    if (sourceVertex >= amountVertex || sourceVertex < 0) { // source vertex not in range
+      $('#dfs-err').html('图中不存在此顶点。请选择另一个源点');
+      return false;
+    }
+
+    var UNVISITED = 0, EXPLORED = 1, VISITED = 2;
+    var p = {}, num = {}, Count = 0; // low = {}, 
+    for (var i = 0; i < amountVertex; i++) {
+      p[i] = -1;
+      num[i] = UNVISITED;
+    }
+    p[sourceVertex] = -2;
+    for (var key in iVL) iVL[key]["extratext"] = "";
+    iVL[sourceVertex]["extratext"] = "source";
+
+    function dfsRecur(u) {
+      vertexHighlighted[u] = true;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+      cs["status"] = "DFS(" + u + ")";
+      cs["lineNo"] = 1;
+      stateList.push(cs);
+
+      delete vertexHighlighted[u];
+      vertexTraversing[u] = true;
+      num[u] = EXPLORED; // low[u] = ++Count;
+
+      var neighbors = [];
+      for (var j = 0; j < amountEdge; j++) if (iEL[j]["u"] == u) neighbors.push(j);
+      neighbors.sort(function(a, b) { return iEL[a]["v"]-iEL[b]["v"] });
+
+      while (neighbors.length > 0) {
+        var j = neighbors.shift();
+        var u = iEL[j]["u"], v = iEL[j]["v"];
+        edgeHighlighted[j] = true;
+        for (var key in iEL) if (iEL[key]["u"] == v && iEL[key]["v"] == u) edgeHighlighted[key] = true;
+        cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+        cs["status"] = '尝试边 {u} → {v}'.replace("{u}", u).replace("{v}", v);
+        cs["lineNo"] = 2;
+        cs["el"][j]["animateHighlighted"] = true;
+        stateList.push(cs);
+
+        for (var key in iVL) delete vertexHighlighted[key];
+        for (var key in iEL) delete edgeHighlighted[key];
+
+        if (num[v] == UNVISITED) {
+          vertexTraversing[v] = true;
+          treeEdge[j] = true;
+          for (var key in iEL) if (iEL[key]["u"] == v && iEL[key]["v"] == u) treeEdge[key] = true;
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+          cs["lineNo"] = [3];
+          cs["status"] = '尝试路径 {u} → {v}<br>顶点 {v} 还没有被访问过，我们有了 <font color="red">树路径</font>.'.replace("{u}", u).replace("{v}", v).replace("{v}", v);
+          stateList.push(cs);
+
+          p[v] = u;
+          dfsRecur(v);
+
+          vertexHighlighted[u] = true;
+          delete vertexHighlighted[v];
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+          cs["status"] = '完成 DFS({v})，原路返回到 DFS({u}).'.replace("{u}", u).replace("{v}", v);
+          cs["lineNo"] = 1;
+          stateList.push(cs);
+        }
+        else if (num[v] == EXPLORED) {
+          if (p[u] != v) {
+            backEdge[j] = true;
+            for (var key in iEL) if (iEL[key]["u"] == v && iEL[key]["v"] == u) backEdge[key] = true;
+          }
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+          var thisStatus = '尝试边 {u} → {v}<br>顶点 {v} 已经被探索,，我们有一个 '.replace("{u}", u).replace("{v}", v).replace("{v}", v);
+          if (p[u] == v)
+            thisStatus = thisStatus + '<font color="blue">双向边</font> (一个微不足道的循环）。';
+          else
+            thisStatus = thisStatus + '<font color="blue">返回路径</font> （一个真的圈）.';
+          cs["status"] = thisStatus;
+          cs["lineNo"] = 4;
+          stateList.push(cs);
+        }
+        else if (num[v] == VISITED) {
+          forwardEdge[j] = true;
+          for (var key in iEL) if (iEL[key]["u"] == v && iEL[key]["v"] == u) forwardEdge[key] = true;
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+          cs["status"] = '尝试边 {u} → {v}<br>顶点 {v} 已访问,，我们有一个 <font color="grey">前向/交叉 边</font>。'.replace("{u}", u).replace("{v}", v).replace("{v}", v);
+          cs["lineNo"] = 5;
+          stateList.push(cs);
+        }
+      }
+      num[u] = VISITED;
+      vertexTraversed[u] = true;
+      delete vertexTraversing[u];
+    }
+    dfsRecur(sourceVertex);
+
+    cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+    cs["status"] = 'DFS({sourceVertex}) 已经完成. <font color="red">红</font>/<font color="grey">灰</font>/<font color="blue">蓝</font> 边 分别是DFS生成树的 <font color="red">树</font>/<font color="grey">交叉/前</font>/<font color="blue">后</font> 边。'.replace("{sourceVertex}", sourceVertex);
+    cs["lineNo"] = 0;
+    stateList.push(cs);
+
+    populatePseudocode(0);
+    gw.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.bfs = function(sourceVertex, callback) {
+    var notVisited = {}, vertexHighlighted = {}, edgeHighlighted = {}, vertexTraversed = {}, vertexTraversing = {}, treeEdge = {}, backEdge = {}, forwardEdge = {}, crossEdge = {};
+    var stateList = [];
+    var key, i, cs;
+
+    // error checks
+    if (amountVertex == 0) { // no graph
+      $('#bfs-err').html('没有图表运行此项。请首先选择图表。');
+      return false;
+    }
+
+    if (sourceVertex >= amountVertex || sourceVertex < 0) { // source vertex not in range
+      $('#bfs-err').html('图中不存在此顶点。请选择另一个源点');
+      return false;
+    }
+
+    var p = {}, d = {};
+    for (var i = 0; i < amountVertex; i++) {
+      p[i] = -1;
+      d[i] = 999;
+    }
+    d[sourceVertex] = 0;
+    for (var key in iVL) iVL[key]["extratext"] = "";
+    iVL[sourceVertex]["extratext"] = "source";
+
+    var q = []; //, EdgeProcessed = 0;
+    q.push(sourceVertex);
+    p[sourceVertex] = -2;
+    vertexHighlighted[sourceVertex] = true;
+    cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+    cs["status"] = '从源点 s = {sourceVertex} 开始。<br>设置 Q = {{sourceVertex}} 。'.replace("{sourceVertex}", sourceVertex).replace("{sourceVertex}", sourceVertex); // d[" + sourceVertex + "] = 0, 
+    cs["lineNo"] = 1;
+    stateList.push(cs);
+    delete vertexHighlighted[sourceVertex];
+
+    while (q.length > 0) {
+      delete vertexTraversing[q[0]];
+      vertexHighlighted[q[0]] = true;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+      cs["status"] = '队列现在是 {{queue}}.<br>正在探索 u 的邻居 = {Lis}.'.replace("{queue}", q).replace("{Lis}", q[0]);
+      cs["lineNo"] = [2, 3];
+      stateList.push(cs);
+
+      var f = q.shift();
+      vertexTraversed[f] = true;
+
+      var neighbors = [];
+      for (var j = 0; j < amountEdge; j++) if (iEL[j]["u"] == f) neighbors.push(j);
+      neighbors.sort(function(a, b) { return iEL[a]["v"]-iEL[b]["v"] });
+
+      while (neighbors.length > 0) {
+        var j = neighbors.shift();
+        var u = iEL[j]["u"], v = iEL[j]["v"];
+        for (var key in iVL) delete vertexHighlighted[key];
+        for (var key in iEL) delete edgeHighlighted[key];
+        if (u == f) { // outgoing edge from vertex u
+          //EdgeProcessed++;
+          //var thisStatus = 'relax(' + u + ', ' + v + ', 1), #edge_processed = ' + EdgeProcessed + '.';
+          edgeHighlighted[j] = true;
+          for (var key in iEL) if (iEL[key]["u"] == v && iEL[key]["v"] == u) edgeHighlighted[key] = true;
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+          cs["status"] = '尝试边 {u} → {v}'.replace("{u}", u).replace("{v}", v).replace("{v}", v);
+          cs["lineNo"] = 3;
+          cs["el"][j]["animateHighlighted"] = true;
+          stateList.push(cs);
+
+          if (d[v] == 999) {
+            d[v] = d[u]+1;
+            p[v] = u;
+            treeEdge[j] = true;
+            for (var key in iEL) if (iEL[key]["u"] == v && iEL[key]["v"] == u) treeEdge[key] = true;
+            q.push(v);
+            vertexTraversing[v] = true;
+            iVL[v]["extratext"] = d[v];
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+            cs["status"] = '尝试路径 {u} → {v}<br>顶点 {v} 还没有被访问过，我们有了 <font color="red">树路径</font>.'.replace("{u}", u).replace("{v}", v).replace("{v}", v);
+            cs["lineNo"] = 4;
+          }
+          else {
+            var grey_it = true;
+            for (var key in iEL) if ((iEL[key]["u"] == v && iEL[key]["v"] == u) && treeEdge[key]) grey_it = false;
+            if (grey_it) {
+              forwardEdge[j] = true; // use grey to signify non-tree edge
+              for (var key in iEL) if (iEL[key]["u"] == v && iEL[key]["v"] == u) forwardEdge[key] = true;
+            }
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+            cs["status"] = '尝试边 {u} → {v}<br>节点 {v} 已探索，我们忽略这个<font color="grey">非树边</font>。'.replace("{u}", u).replace("{v}", v).replace("{v}", v);
+            cs["lineNo"] = 5;
+          }
+          stateList.push(cs);
+        }
+      }
+      // delete vertexHighlighted[u];
+      for (var key in iVL) delete vertexHighlighted[key];
+      for (var key in iEL) delete edgeHighlighted[key];
+    }
+
+    for (var key in iVL) delete vertexHighlighted[key];
+    for (var key in iEL) delete edgeHighlighted[key];
+    vertexHighlighted[sourceVertex] = true;
+    cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+    cs["status"] = 'BFS({sourceVertex}) 已经完成。 <font color="red">红</font>/<font color="grey">灰</font> 边是BFS &amp; SSSP 生成树的 <font color="red">树</font>/<font color="grey">非树 </font>边 （对于未加权图）。'.replace("{sourceVertex}", sourceVertex);
+    stateList.push(cs);
+
+    populatePseudocode(1);
+    gw.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.toposortDfs = function(callback) {
+    var vertexHighlighted = {}, edgeHighlighted = {}, vertexTraversed = {}, vertexTraversing = {}, treeEdge = {}, backEdge = {}, forwardEdge = {}, crossEdge = {}, hiddenEdge = {};
+    var stateList = [];
+    var cs, flag = true;
+
+    // check error
+    if (!DIRECTED_GR) {
+      // cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+      // cs["status"] = "The input graph is not set as 'directed' graph yet.<br>This algorithm only works with directed graphs.";
+      // cs["lineNo"] = 0;
+      // stateList.push(cs);
+
+      this.directedChange(); // force change
+
+      // cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+      // cs["status"] = "We turn on the directed graph mode.<br>This action is irreversible.";
+      // cs["lineNo"] = 0;
+      // stateList.push(cs);
+
+      // $('#topo-err').html("Undirected graph clearly has no topological sort. Give a directed input graph.");
+      // return false;
+    }
+
+    if (amountVertex == 0) { // no graph
+      $('#topo-err').html('没有图表运行此项。请首先选择图表。');
+      return false;
+    }
+
+    // main code
+    var p = {}, stack = [], stackNum = -1;
+    for (var i = 0; i < amountVertex; i ++) p[i] = -1
+    for (var key in iVL) iVL[key]["extratext"] = "";
+
+    for (var i = 0; i < amountVertex; i ++)
+    if (p[i] == -1) {
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge);
+      cs["status"] = '顶点 {i} 还没被访问。'.replace("{i}", i);
+      cs["lineNo"] = 1;
+      stateList.push(cs);
+      p[i]--;
+      Tdfs(i);
+    }
+
+    function Tdfs(u) {
+      if (flag == false) return;
+      vertexTraversing[u] = true;
+      vertexHighlighted[u] = true;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge);
+      cs["status"] = "DFS(" + u + ").";
+      cs["lineNo"] = 2;
+      stateList.push(cs);
+      delete vertexHighlighted[u];
+
+      var neighbors = [];
+      for (var j = 0; j < amountEdge; j++) if (iEL[j]["u"] == u) neighbors.push(j);
+      neighbors.sort(function(a, b) { return iEL[a]["v"]-iEL[b]["v"] });
+
+      while (neighbors.length > 0) {
+        var j = neighbors.shift();
+        var vertexA = iEL[j]["u"], vertexB = iEL[j]["v"];
+        if (u == vertexA) {
+          edgeHighlighted[j] = true;
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge);
+          cs["status"] = '尝试边 {vertexA} → {vertexB}。<br>List = [{stack}]。'.replace("{vertexA}", vertexA).replace("{vertexB}", vertexB).replace("{stack}", stack);
+          cs["lineNo"] = 3;
+          cs["el"][j]["animateHighlighted"] = true;
+          stateList.push(cs);
+
+          if (p[vertexB] == -1) {
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge);
+            cs["status"] = '节点 {vertexB} 还没被访问，继续。<br>List = [{stack}].'.replace("{vertexB}", vertexB).replace("{stack}", stack);
+            cs["lineNo"] = 4;
+            stateList.push(cs);
+
+            p[vertexB] = u;
+            Tdfs(vertexB);
+          }
+          else {
+            var k = u;
+            while (k != -2) {
+              k = p[k];
+              if (k == vertexB) flag = false;
+            }
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge);
+            cs["status"] = '节点 {vertexB} 已经被访问，忽略这条边。<br>List = [{stack}].'.replace("{vertexB}", vertexB).replace("{stack}", stack);
+            cs["lineNo"] = 5;
+            stateList.push(cs);
+          }
+        }
+      }
+      stack.push(u);
+      delete vertexTraversing[u];
+      vertexTraversed[u] = true;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge);
+      cs["status"] = 'DFS({u}) 已完成，将 {u} 添加到列表的后面。<br>List = [{stack}].'.replace("{u}", u).replace("{stack}", stack);
+      cs["lineNo"] = 7;
+      stateList.push(cs);
+    }
+    if (flag == false) { // not DAG
+      $('#topo-err').html('此图不是DAG，无法执行拓扑排序。');
+      return false;
+    }
+    vertexHighlighted = {}, edgeHighlighted = {};
+    vertexTraversed = {}, vertexTraversing = {}, treeEdge = {}, backEdge = {}, forwardEdge = {}, crossEdge = {}, hiddenEdge = {};
+    stack.reverse();
+    for (var key in stack) iVL[stack[key]]["extratext"] = key;
+    cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge);
+    cs["status"] = '在倒转列表后，拓扑排序就完成了。<br>List = [{stack}]，也可以参见上面的 <font color="red">红色 </font>索引。'.replace("{stack}", stack);
+    cs["lineNo"] = 0;
+    stateList.push(cs);
+
+    populatePseudocode(2);
+    gw.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.toposortBfs = function(callback) {
+    var vertexHighlighted = {}, edgeHighlighted = {}, vertexTraversed = {}, vertexTraversing = {}, treeEdge = {}, backEdge = {}, forwardEdge = {}, crossEdge = {}, hiddenEdge = {};
+    var stateList = [];
+    var cs, key;
+
+    // error checks
+    if (amountVertex == 0) { // no graph
+      $('#topo-err').html('没有图表运行此项。请首先选择图表。');
+      return false;
+    }
+
+    if (!DIRECTED_GR) {
+      this.directedChange(); // force change
+      // $('#topo-err').html("Undirected graph clearly has no topological sort. Give a directed input graph.");
+      // return false;
+    }
+
+    var fr = {}, cc = {};
+    for (var i = 0; i < amountVertex; i++)
+      fr[i] = true, cc[i] = 0;
+    for (var j = 0; j < amountEdge; j ++)
+      cc[iEL[j]["v"]]++;
+
+    for (key in iVL)
+      iVL[key]["state"] = VERTEX_DEFAULT, iVL[key]["extratext"] = "";
+
+    var q = [], EdgeProcessed = 0, Lis = [];
+    for (var i = 0; i < amountVertex; i ++)
+      if (cc[i] == 0)
+        q.push(i), vertexHighlighted[i] = vertexTraversing[i] = true;
+    cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge);
+    cs["status"] = 'Queue = [{queue}].'.replace("{queue}", q);
+    cs["lineNo"] = 1;
+    stateList.push(cs);
+    for (var i = 0; i < amountVertex; i ++)
+      if (cc[i] == 0)
+        delete vertexHighlighted[i];
+
+    while (q.length > 0) {
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge);
+      cs["status"] = 'Queue = [{queue}].'.replace("{queue}", q);
+      cs["lineNo"] = 2;
+      stateList.push(cs);
+
+      var u = q.shift(); // front most item
+      Lis.push(u);
+      vertexHighlighted[u] = true;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge);
+      cs["status"] = '从队列中弹出节点 {u} 并将其添加到列表的后面。<br>List = [{Lis}].'.replace("{u}", u).replace("{Lis}", Lis);
+      cs["lineNo"] = 3;
+      stateList.push(cs);
+
+      var neighbors = [];
+      for (var j = 0; j < amountEdge; j++) if (iEL[j]["u"] == u) neighbors.push(j);
+      neighbors.sort(function(a, b) { return iEL[a]["v"]-iEL[b]["v"] });
+
+      while (neighbors.length > 0) {
+        var j = neighbors.shift();
+        var vertexA = iEL[j]["u"], vertexB = iEL[j]["v"];
+        cc[vertexB]--;
+
+        hiddenEdge[j] = true;
+        var thisStatus = 'Queue = [{queue}].<br>删除边 {vertexA} → {vertexB}.'.replace("{queue}", q).replace("{vertexA}", vertexA).replace("{vertexB}", vertexB);
+        cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge);
+        cs["status"] = thisStatus;
+        cs["lineNo"] = [4, 5];
+        cs["el"][j]["animateHighlighted"] = true;
+        stateList.push(cs);
+
+        if (cc[vertexB] == 0) {
+          q.push(vertexB);
+          vertexTraversing[vertexB] = true;
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge);
+          cs["status"] = 'Queue = [{queue}]。<br>顶点{vertexB}现在没有传入边缘，将其添加到队列。'.replace("{queue}", q).replace("vertexB", vertexB);
+          cs["lineNo"] = 6;
+          stateList.push(cs);
+        }
+        else {
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge);
+          cs["status"] ='Queue = [{queue}]<br>顶点{vertexB}仍然有传入边缘，忽略它。<br>'.replace("{queue}", q).replace("vertexB", vertexB);
+          cs["lineNo"] = 6;
+          stateList.push(cs);
+        }
+      }
+      delete vertexHighlighted[u];
+      delete vertexTraversing[u];
+      vertexTraversed[u] = true;
+    }
+
+    var thisStatus = 'Kahn 算法已完成。<br>';
+    var flag = true;
+    for (var j = 0; j < amountEdge; j ++)
+      if (hiddenEdge[j] == null) {
+        flag = false;
+        $('#topo-err').html('此图不是DAG，无法执行拓扑排序。');
+        return false;
+        // thisStatus += "Edge " + iEL[j]["u"] + "->" + iEL[j]["v"] + " has not been visited, the graph has cycle."
+        // break;
+      }
+    if (flag)
+      thisStatus += '拓扑排序 = [{Lis}]'.replace("{Lis}", Lis);
+    for (var key in Lis) iVL[Lis[key]]["extratext"] = key;
+    cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge);
+    cs["lineNo"] = 7;
+    cs["status"] = thisStatus;
+    stateList.push(cs);
+
+    populatePseudocode(3);
+    gw.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.bipartiteDfs = function(callback) {
+    var p = {}, vertexHighlighted = {}, edgeHighlighted = {}, vertexTraversed = {}, vertexTraversing = {};
+    var stateList = [];
+    var key, cs, flag = false;
+
+    // error checks   
+    if (amountVertex == 0) { // no graph
+      $('#bipartite-err').html('没有图表运行此项。请首先选择图表。');
+      return false;
+    }
+
+    if (DIRECTED_GR) {
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+      cs["status"] = "The input graph is not set as 'undirected' graph yet.<br>Bipartite Graph is usually only defined for undirected graphs.";
+      cs["lineNo"] = 0;
+      stateList.push(cs);
+
+      this.directedChange(); // force change
+
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+      cs["status"] = "We add bidirectional edges as necessary and hide the arrows.<br>This action is irreversible (you may have to redraw your graph again).";
+      cs["lineNo"] = 0;
+      stateList.push(cs);
+
+      // $('#bipartite-err').html("Bipartite graph is only defined for undirected graph. Please make the graph undirected.");
+      // return false;
+    }
+
+    for (var key in iVL) {
+      p[key] = -1;
+      iVL[key]["extratext"] = "";
+    }
+    for (var i = 0; i < amountVertex; i++)
+      if (p[i] == -1) {
+        vertexTraversed[i] = true;
+        cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+        cs["status"] = "Vertex " + i + " is unvisited.";
+        cs["lineNo"] = 1;
+        if (vertexTraversed[i] != null) cs["vl"][i]["state"] = VERTEX_HIGHLIGHTED;
+        else                            cs["vl"][i]["state"] = VERTEX_BLUE_FILL;
+        stateList.push(cs);
+        p[i] = -2;
+        dfsRecur(i);
+        if (flag) break;
+      }
+
+    function dfsRecur(u) {
+      if (flag) return;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+      cs["status"] = "DFS(" + u + ").";
+      cs["lineNo"] = 2;
+      if (vertexTraversed[u] != null) cs["vl"][u]["state"] = VERTEX_HIGHLIGHTED;
+      else                            cs["vl"][u]["state"] = VERTEX_BLUE_FILL;
+      stateList.push(cs);
+
+      var neighbors = [];
+      for (var j = 0; j < amountEdge; j++) if (iEL[j]["u"] == u) neighbors.push(j);
+      neighbors.sort(function(a, b) { return iEL[a]["v"]-iEL[b]["v"] });
+
+      while (neighbors.length > 0) {
+        var j = neighbors.shift();
+        var vertexA = iEL[j]["u"], vertexB = iEL[j]["v"];
+        if (edgeHighlighted[j] == null) {
+          if (u == vertexA) {
+            edgeHighlighted[j] = true;
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+            cs["status"] = "Try edge " + u + " &rarr; " + vertexB + ".";
+            cs["lineNo"] = 3;
+            if (vertexTraversed[u] != null) cs["vl"][u]["state"] = VERTEX_HIGHLIGHTED;
+            else                            cs["vl"][u]["state"] = VERTEX_BLUE_FILL;
+            cs["el"][j]["animateHighlighted"] = true;
+            stateList.push(cs);
+
+            if (p[vertexB] == -1) {
+              if (vertexTraversed[u] == null) vertexTraversed[vertexB] = true;
+              else                            vertexTraversing[vertexB] = true;
+              p[vertexB] = u;
+              cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+              cs["status"] = "Try edge " + u + " &rarr; " + vertexB + ".<br>Give vertex " + vertexB + " different color from vertex " + u + ".";
+              cs["lineNo"] = 4;
+              if (vertexTraversed[u] != null) cs["vl"][u]["state"] = VERTEX_HIGHLIGHTED;
+              else                            cs["vl"][u]["state"] = VERTEX_BLUE_FILL;
+              stateList.push(cs);
+              dfsRecur(vertexB);
+            }
+            else {
+              var cu = 0, cv = 0;
+              if (vertexTraversing[u] != null) cu = 1;
+              if (vertexTraversing[vertexB] != null) cv = 1;
+              if (cu == cv) {
+                flag = true;
+                cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+                cs["status"] = "Vertex " + u + " and vertex " + vertexB + " have the same color.";
+                cs["lineNo"] = 5;
+                if (vertexTraversed[u] != null) cs["vl"][u]["state"] = VERTEX_HIGHLIGHTED;
+                else                            cs["vl"][u]["state"] = VERTEX_BLUE_FILL;
+                if (vertexTraversed[vertexB] != null) cs["vl"][vertexB]["state"] = VERTEX_HIGHLIGHTED;
+                else                                  cs["vl"][vertexB]["state"] = VERTEX_BLUE_FILL;
+                stateList.push(cs);
+                break;
+              }
+            }
+            if (flag) break;
+          }
+          if (flag) break;
+        }
+        else {
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+          cs["status"] = "Try edge " + vertexA + " &rarr; " + vertexB + ".<br>Vertex " + vertexA + " and vertex " + vertexB + " (already visited) have different color, continue.";
+          cs["lineNo"] = 5;
+          stateList.push(cs);
+        }
+      }
+      if (flag) return;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+      cs["status"] = "Finish DFS(" + u + ")<br>Back to the parent.";
+      cs["lineNo"] = 2;
+      if (vertexTraversed[u] != null) cs["vl"][u]["state"] = VERTEX_HIGHLIGHTED;
+      else                            cs["vl"][u]["state"] = VERTEX_BLUE_FILL;
+      stateList.push(cs);
+    }
+
+    cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+    if (flag == false) cs["status"] = "This is a bipartite graph!";
+    else               cs["status"] = "This is NOT a bipartite graph!";
+    cs["lineNo"] = 0;
+    if (flag == true) cs["lineNo"] = 6;
+    stateList.push(cs);
+
+    populatePseudocode(4);
+    gw.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.bipartiteBfs = function(callback) {
+    var p = {}, vertexHighlighted = {}, edgeHighlighted = {}, vertexTraversed = {}, vertexTraversing = {};
+    var stateList = [];
+    var key, cs, flag = true;
+
+    // error checks
+    if (amountVertex == 0) { // no graph
+      $('#bipartite-err').html('没有图表运行此项。请首先选择图表。');
+      return false;
+    }
+
+    if (DIRECTED_GR) {
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+      cs["status"] = "The input graph is not set as 'undirected' graph yet.<br>Bipartite Graph is usually only defined for undirected graphs.";
+      cs["lineNo"] = 0;
+      stateList.push(cs);
+
+      this.directedChange(); // force change
+
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+      cs["status"] = "We add bidirectional edges as necessary and hide the arrows.<br>This action is irreversible (you may have to redraw your graph again).";
+      cs["lineNo"] = 0;
+      stateList.push(cs);
+
+      // $('#bipartite-err').html("Bipartite graph is only defined for undirected graph. Please make the graph undirected.");
+      // return false;
+    }
+
+    for (key in iVL) {
+      p[key] = -1;
+      iVL[key]["state"] = VERTEX_DEFAULT;
+      iVL[key]["extratext"] = "";
+    }
+
+    for (var s = 0; s < amountVertex; s++)
+      if (p[s] == -1) {
+        p[s] = -2;
+        vertexTraversed[s] = true;
+        cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+        cs["status"] = 'Vertex ' + s + ' is unvisited.';
+        cs["lineNo"] = 1;
+        if (vertexTraversed[s] != null) cs["vl"][s]["state"] = VERTEX_HIGHLIGHTED;
+        else                            cs["vl"][s]["state"] = VERTEX_BLUE_FILL;
+        stateList.push(cs);
+
+        var q = [];
+        q.push(s);
+        cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+        cs["status"] = "Queue = [" + q + "].";
+        cs["lineNo"] = 2;
+        stateList.push(cs);
+
+        while (q.length > 0) {
+          var u = q.shift();
+
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+          cs["status"] = "Extract " + u + " from queue.";
+          cs["lineNo"] = 3;
+          if (vertexTraversed[u] != null) cs["vl"][u]["state"] = VERTEX_HIGHLIGHTED;
+          else                            cs["vl"][u]["state"] = VERTEX_BLUE_FILL;
+          stateList.push(cs);
+
+          var neighbors = [];
+          for (var j = 0; j < amountEdge; j++) if (iEL[j]["u"] == u) neighbors.push(j);
+          neighbors.sort(function(a, b) { return iEL[a]["v"]-iEL[b]["v"] });
+
+          while (neighbors.length > 0) {
+            var j = neighbors.shift();
+            var vertexA = iEL[j]["u"], vertexB = iEL[j]["v"];
+            if (edgeHighlighted[j] == null) {
+              if (u == vertexA) {
+                edgeHighlighted[j] = true;
+                cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+                cs["status"] = "Queue = [" + q + "].<br>Try edge " + vertexA + " &rarr; " + vertexB + ".";
+                cs["lineNo"] = 4;
+                if (vertexTraversed[u] != null) cs["vl"][u]["state"] = VERTEX_HIGHLIGHTED;
+                else                            cs["vl"][u]["state"] = VERTEX_BLUE_FILL;
+                cs["el"][j]["animateHighlighted"] = true;
+                stateList.push(cs);
+
+                if (p[vertexB] == -1) {
+                  p[vertexB] = vertexA;
+                  q.push(vertexB);
+                  if (vertexTraversed[u] != null) vertexTraversing[vertexB] = true;
+                  else                            vertexTraversed[vertexB] = true;
+
+                  cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+                  cs["status"] = "Queue = [" + q + "].<br>Vertex " + vertexB + " is free, assign another color and push it to queue.";
+                  cs["lineNo"] = 6;
+                  if (vertexTraversed[u] != null) cs["vl"][u]["state"] = VERTEX_HIGHLIGHTED;
+                  else                            cs["vl"][u]["state"] = VERTEX_BLUE_FILL;
+                  stateList.push(cs);
+                }
+                else {
+                  var cu = 0, cv = 0;
+                  if (vertexTraversing[u] != null) cu = 1;
+                  if (vertexTraversing[vertexB] != null) cv = 1;
+                  if (cu == cv) {
+                    flag = false;
+                    cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+                    cs["status"] = "Vertex " + u + " and vertex " + vertexB + " have the same color.<br>This is NOT a bipartite graph!";
+                    cs["lineNo"] = 5;
+                    if (vertexTraversed[u] != null) cs["vl"][u]["state"] = VERTEX_HIGHLIGHTED;
+                    else                            cs["vl"][u]["state"] = VERTEX_BLUE_FILL;
+                    if (vertexTraversed[vertexB] != null) cs["vl"][vertexB]["state"] = VERTEX_HIGHLIGHTED;
+                    else                                  cs["vl"][vertexB]["state"] = VERTEX_BLUE_FILL;
+                    stateList.push(cs);
+                    break;
+                  }
+                }
+                if (flag == false) break;
+              }
+              if (flag == false) break;
+            }
+            else {
+              cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+              cs["status"] = "Try edge " + vertexA + " &rarr; " + vertexB + ".<br>Vertex " + vertexA + " and vertex " + vertexB + " (already visited) have different color, continue.";
+              cs["lineNo"] = 5;
+              stateList.push(cs);
+            }
+            if (flag == false) break;
+          }
+          if (flag == false) break;
+        }
+        if (flag == false) break;
+      }
+
+    if (flag) {
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing);
+      cs["status"] = "This is a bipartite graph!";
+      cs["lineNo"] = 0;
+      stateList.push(cs);
+    }
+
+    populatePseudocode(5);
+    gw.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.bridge = function(callback) {
+    var vertexHighlighted = {}, edgeHighlighted = {}, vertexTraversed = {}, vertexTraversing = {}, bridge = {}, articulationPoint = {};
+    var stateList = [];
+    var cs;
+
+    // check error
+    if (amountVertex == 0) { // no graph
+      $('#bridge-err').html('没有图表运行此项。请首先选择图表。');
+      return false;
+    }
+
+    if (DIRECTED_GR) {
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, {});
+      cs["status"] = "The input graph is not set as 'undirected' graph yet.<br>This algorithm only works with undirected graphs.";
+      cs["lineNo"] = 0;
+      stateList.push(cs);
+
+      this.directedChange(); // force change
+
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, {});
+      cs["status"] = "We add bidirectional edges as necessary and hide the arrows.<br>This action is irreversible (you may have to redraw your graph again).";
+      cs["lineNo"] = 0;
+      stateList.push(cs);
+      //$('#bridge-err').html("This algorithm can only work for undirected graph.");
+      //return false;
+    }
+
+    // main code
+    var p = {}, stack = {}, stackNum = -1, Count = -1, low = {}, num = {}, lab = {}, labNum = 0;
+    var ROOT, chilNum = {};
+    for (var i = 0; i < amountVertex; i++) {
+      p[i] = lab[i] = -1, chilNum[i] = 0;
+      iVL[i]["extratext"] = "N/A";
+    }
+
+    function highlightArticulationPointsAndBridges() {
+      for (var key in bridge) {
+        cs["el"][key]["state"] = EDGE_GREEN;
+        for (var z = 0; z < amountEdge; z ++)
+          if (iEL[z]["u"] == iEL[key]["v"] && iEL[z]["v"] == iEL[key]["u"])
+            cs["el"][z]["state"] = EDGE_GREEN;
+      }
+      for (var key in articulationPoint) cs["vl"][key]["state"] = VERTEX_GREEN_OUTLINE;
+    }
+
+    for (var i = 0; i < amountVertex; i++)
+      if (p[i] == -1) {
+        cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, {});
+        cs["status"] = "Vertex " + i + " has not been visited.<br>DFSCount = " + Count + ".";
+        cs["lineNo"] = 1;
+        highlightArticulationPointsAndBridges();
+        stateList.push(cs);
+        p[i]--;
+        ROOT = i;
+        Tdfs(i);
+      }
+
+    function Tdfs(u) {
+      stack[++stackNum] = u;
+      num[u] = low[u] = ++Count;
+      iVL[u]["extratext"] = "" + num[u] + "," + low[u];
+      vertexTraversing[u] = true;
+      vertexHighlighted[u] = true;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, {});
+      cs["status"] = "DFS(" + u + ").<br>DFSCount = " + Count + ".";
+      cs["lineNo"] = 2;
+      highlightArticulationPointsAndBridges();
+      stateList.push(cs);
+      delete vertexHighlighted[u];
+
+      var neighbors = [];
+      for (var j = 0; j < amountEdge; j++) if (iEL[j]["u"] == u) neighbors.push(j);
+      neighbors.sort(function(a, b) { return iEL[a]["v"]-iEL[b]["v"] });
+
+      while (neighbors.length > 0) {
+        var j = neighbors.shift();
+        var vertexA = iEL[j]["u"], vertexB = iEL[j]["v"];
+        if (lab[vertexB] == -1 && u == vertexA) {
+          edgeHighlighted[j] = true;
+          for (var z = 0; z < amountEdge; z ++)
+            if (iEL[z]["u"] == vertexB && iEL[z]["v"] == vertexA)
+              edgeHighlighted[z] = true;
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, {});
+          cs["status"] = "Try edge " + vertexA + " -> " + vertexB + "<br>DFSCount = " + Count + ".";
+          cs["lineNo"] = 3;
+          cs["el"][j]["animateHighlighted"] = true;
+          highlightArticulationPointsAndBridges();
+          stateList.push(cs);
+
+          if (p[vertexB] == -1) {
+            vertexTraversing[vertexB] = true;
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, {});
+            cs["status"] = "" + vertexB + " has not been visited<br>DFSCount = " + Count + ".";
+            cs["lineNo"] = 4;
+            highlightArticulationPointsAndBridges();
+            stateList.push(cs);
+
+            p[vertexB] = u;
+            Tdfs(vertexB);
+            chilNum[u]++;
+            var thisStatus = "low[" + u + "] is unchanged.";
+            if (low[u] > low[vertexB]) {
+              low[u] = low[vertexB];
+              thisStatus = "update low[" + u + "] from low[" + vertexB + "].<br>There is <b>another</b> path to go from vertex " + u + " to vertex with num " + low[u] + ".";
+            }
+            iVL[u]["extratext"] = "" + num[u] + "," + low[u];
+
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, {});
+            cs["status"] = thisStatus;
+            cs["lineNo"] = 5;
+            highlightArticulationPointsAndBridges();
+            stateList.push(cs);
+
+            var thisStatus = "";
+            if (low[vertexB] >= num[u] && u != ROOT) {
+              thisStatus = thisStatus + "low[" + vertexB + "] >= num[" + u + "] and " + u + " is not the root, vertex " + u + " is a cut vertex.<br>";
+              articulationPoint[u] = true;
+            }
+            else if (low[vertexB] >= num[u] && u == ROOT)
+              thisStatus = thisStatus + "low[" + vertexB + "] >= num[" + u + "] but " + u + " is the root, so it is not a cut vertex.<br>";
+            else
+              thisStatus = thisStatus + "low[" + vertexB + "] < num[" + u + "], so " + u + " is not a cut vertex.<br>";
+
+            if (low[vertexB] > num[u]) {
+              thisStatus = thisStatus + "low[" + vertexB + "] > num[" + u + "], so edge (" + u + ", " + vertexB + ") is a bridge.";
+              bridge[j] = true;
+            }
+            else
+              thisStatus = thisStatus + "low[" + vertexB + "] <= num[" + u + "], so edge (" + u + ", " + vertexB + ") is not a bridge.";
+
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, {});
+            cs["status"] = thisStatus;
+            cs["lineNo"] = 6;
+            highlightArticulationPointsAndBridges();
+            stateList.push(cs);
+          }
+          else if (vertexB != p[u]) {
+            var thisStatus = "low[" + u + "] is unchanged.";
+            if (low[u] > num[vertexB]) {
+              low[u] = num[vertexB];
+              thisStatus = "update low[" + u + "] from num[" + vertexB + "].<br>There is <b>another</b> path to go from vertex " + u + " to vertex with num " + low[u] + ".";
+            }
+            iVL[u]["extratext"] = "" + num[u] + "," + low[u];
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, {});
+            cs["status"] = "" + vertexB + " is visited, " + thisStatus; // update low[" + u + "] from num[" + vertexB + "]<br>DFSCount = " + Count + ".";
+            cs["lineNo"] = 7;
+            highlightArticulationPointsAndBridges();
+            stateList.push(cs);
+          }
+          else {
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, {});
+            cs["status"] = "" + vertexB + " is the parent of " + u + ", ignore!<br>DFSCount = " + Count + ".";
+            cs["lineNo"] = 7;
+            highlightArticulationPointsAndBridges();
+            stateList.push(cs);
+          }
+        }
+      }
+
+      delete vertexTraversing[u];
+      vertexHighlighted[u] = true;
+      vertexTraversed[u] = true;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, {});
+      cs["status"] = "Finish DFS(" + u + "), backtrack.<br>DFSCount = " + Count + ".";
+      if (u == ROOT && chilNum[u] >= 2) {
+        cs["status"] = "Finish DFS(" + u + "), " + u + " is the root and u has more than 1 childs<br>Hence " + u + " is an articulation point.";
+        articulationPoint[u] = true;
+      }
+      cs["lineNo"] = 0;
+      highlightArticulationPointsAndBridges();
+      cs["vl"][u]["state"] = VERTEX_HIGHLIGHTED;
+      stateList.push(cs);
+      delete vertexHighlighted[u];
+    }
+
+    cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, {});
+    cs["status"] = "Finished.<br>Green vertices/edges are articulation points/bridges, respectively.";
+    cs["lineNo"] = 0;
+    highlightArticulationPointsAndBridges();
+    stateList.push(cs);
+
+    populatePseudocode(6);
+    gw.startAnimation(stateList, callback);
+    for (var key in iVL) iVL[key]["extratext"] = "";
+    return true;
+  }
+
+  this.kosaraju = function(callback) {
+    var vertexHighlighted = {}, edgeHighlighted = {}, vertexTraversed = {}, vertexTraversing = {}, hiddenEdge = {};
+    var stateList = [];
+    var cs;
+
+    // check error
+    if (amountVertex == 0) { // no graph
+      $('#scc-err').html('没有图表运行此项。请首先选择图表。');
+      return false;
+    }
+
+    if (!DIRECTED_GR) {
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+      cs["status"] = "The input graph is not set as 'directed' graph yet.<br>This algorithm only works with directed graphs.";
+      cs["lineNo"] = 0;
+      stateList.push(cs);
+
+      this.directedChange(); // force change
+
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+      cs["status"] = "We turn on the directed graph mode.<br>This action is irreversible.";
+      cs["lineNo"] = 0;
+      stateList.push(cs);
+
+      // $('#scc-err').html("Please make the graph directed");
+      // return false;
+    }
+
+    // main code
+    var p = {}, stack = {}, stackNum = -1, Count = 0, low = {}, num = {}, lab = {}, labNum = 0;
+    for (var i = 0; i < amountVertex; i++) {
+      p[i] = lab[i] = -1;
+      iVL[i]["extratext"] = "";
+    }
+    for (var i = 0; i < amountVertex; i++)
+      if (p[i] == -1) {
+        cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+        cs["status"] = "Vertex " + i + " has not been visited.";
+        cs["lineNo"] = 1;
+        stateList.push(cs);
+        p[i]--;
+        Tdfs(i);
+      }
+
+    vertexHighlighted = {}, edgeHighlighted = {};
+    vertexTraversed = {}, vertexTraversing = {};
+    for (var j = 0; j < amountEdge; j++) { // reverse edge directions
+      var vertexA = iEL[j]["u"];
+      var vertexB = iEL[j]["v"];
+      iEL[j]["u"] = vertexB;
+      iEL[j]["v"] = vertexA;
+    }
+    cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+    cs["status"] = "Then, we transpose the directed graph.";
+    cs["lineNo"] = 4;
+    stateList.push(cs);
+
+    while (stackNum >= 0) {
+      if (lab[stack[stackNum]] == -1) {
+        labNum++;
+        DFS2(stack[stackNum]);
+        for (var j = 0; j < amountEdge; j++) {
+          var vertexA = iEL[j]["u"], vertexB = iEL[j]["v"];
+          if (lab[vertexA] != lab[vertexB]) hiddenEdge[j] = true;
+        }
+
+        cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+        cs["status"] = getStack() + ".<br>Finish DFS(" + stack[stackNum] + ") and we get 1 Strongly Connected Component.";
+        cs["lineNo"] = 7;
+        stateList.push(cs);
+      }
+      else {
+        cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+        cs["status"] = getStack() + ".<br>" + stack[stackNum] + " is visited, ignore.";
+        cs["lineNo"] = 5;
+        stateList.push(cs);
+      }
+      stackNum--;
+    }
+
+    function getStack() {
+      var status = "List = [";
+      for (var i = stackNum; i > 0; i--) status = status + stack[i] + ",";
+      if (stackNum >= 0) status += stack[0] + "]";
+      else               status += "]";
+      return status;
+    }
+
+    function Tdfs(u) {
+      vertexTraversing[u] = true;
+      vertexHighlighted[u] = true;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+      cs["status"] = getStack() + ".<br>DFS(" + u + ").";
+      cs["lineNo"] = 1;
+      stateList.push(cs);
+      delete vertexHighlighted[u];
+
+      var neighbors = [];
+      for (var j = 0; j < amountEdge; j++) if (iEL[j]["u"] == u) neighbors.push(j);
+      neighbors.sort(function(a, b) { return iEL[a]["v"]-iEL[b]["v"] });
+
+      while (neighbors.length > 0) {
+        var j = neighbors.shift();
+        var vertexA = iEL[j]["u"], vertexB = iEL[j]["v"];
+        if (lab[vertexB] == -1 && u == vertexA) {
+          edgeHighlighted[j] = true;
+          for (var key in iEL) if (iEL[key]["v"] == vertexA && iEL[key]["u"] == vertexB) edgeHighlighted[key] = true;
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+          cs["status"] = getStack() + ".<br>Try edge " + vertexA + " &rarr; " + vertexB + ".";
+          cs["lineNo"] = 2;
+          cs["el"][j]["animateHighlighted"] = true;
+          stateList.push(cs);
+
+          if (p[vertexB] == -1) {
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+            cs["status"] = getStack() + ".<br>Vertex " + vertexB + " has not been visited.";
+            cs["lineNo"] = 2;
+            stateList.push(cs);
+
+            p[vertexB] = u;
+            Tdfs(vertexB);
+          }
+        }
+      }
+
+      stack[++stackNum] = u;
+      delete vertexTraversing[u];
+      vertexTraversed[u] = true;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+      cs["status"] = getStack() + ".<br>DFS(" + u + ") is completed, add " + u + " to the front of the list.";
+      cs["lineNo"] = 3;
+      stateList.push(cs);
+    }
+
+    function DFS2(u) {
+      lab[u] = labNum;
+      vertexTraversing[u] = true;
+      vertexHighlighted[u] = true;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+      cs["status"] = getStack() + "<br>DFS(" + u + ").";
+      cs["lineNo"] = 5;
+      stateList.push(cs);
+      delete vertexHighlighted[u];
+
+      var neighbors = [];
+      for (var j = 0; j < amountEdge; j++) if (iEL[j]["u"] == u) neighbors.push(j);
+      neighbors.sort(function(a, b) { return iEL[a]["v"]-iEL[b]["v"] });
+
+      while (neighbors.length > 0) {
+        var j = neighbors.shift();
+        var vertexA = iEL[j]["u"], vertexB = iEL[j]["v"];
+        if (hiddenEdge[j] == null) {
+          edgeHighlighted[j] = true;
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+          cs["status"] = getStack() + ".<br>Try edge " + vertexA + " &rarr; " + vertexB + ".";
+          cs["lineNo"] = 6;
+          cs["el"][j]["animateHighlighted"] = true;
+          stateList.push(cs);
+
+          if (lab[vertexB] == -1) {
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+            cs["status"] = getStack() + "<br>Vertex " + vertexB + " has not been visited.";
+            cs["lineNo"] = 6;
+            stateList.push(cs);
+
+            DFS2(vertexB);
+          }
+          else {
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+            cs["status"] = getStack() + "<br>" + vertexB + " is visited";
+            cs["lineNo"] = 6;
+            stateList.push(cs);
+          }
+        }
+      }
+
+      delete vertexTraversing[u];
+      vertexTraversed[u] = true;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+      cs["status"] = getStack() + "<br>DFS from " + u + " is completed, back to the parent";
+      cs["lineNo"] = 5;
+      stateList.push(cs);
+    }
+
+    for (var i = 0; i < amountEdge; i++) {
+      var vertexA = iEL[i]["u"];
+      var vertexB = iEL[i]["v"];
+      iEL[i]["u"] = vertexB;
+      iEL[i]["v"] = vertexA;
+    }
+    cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+    cs["status"] = "We transpose the directed graph again.<br>In total, we have " + labNum + " Strongly Connected Component(s) as seen above.";
+    cs["lineNo"] = 0;
+    stateList.push(cs);
+
+    populatePseudocode(7);
+    gw.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.tarjan = function(callback) {
+    var vertexHighlighted = {}, edgeHighlighted = {}, vertexTraversed = {}, vertexTraversing = {}, hiddenEdge = {};
+    var stateList = [];
+    var cs;
+
+    //check error
+    if (amountVertex == 0) { // no graph
+      $('#scc-err').html('没有图表运行此项。请首先选择图表。');
+      return false;
+    }
+
+    if (!DIRECTED_GR) {
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+      cs["status"] = "The input graph is not set as 'directed' graph yet.<br>This algorithm only works with directed graphs.";
+      cs["lineNo"] = 0;
+      stateList.push(cs);
+
+      this.directedChange(); // force change
+
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+      cs["status"] = "We turn on the directed graph mode.<br>This action is irreversible.";
+      cs["lineNo"] = 0;
+      stateList.push(cs);
+
+      // $('#scc-err').html("Please make the graph directed");
+      // return false;
+    }
+
+    // main code
+    var p = {}, stack = {}, stackNum = -1, Count = -1, low = {}, num = {}, lab = {}, labNum = 0;
+    for (var i = 0; i < amountVertex; i++) {
+      p[i] = lab[i] = -1
+      iVL[i]["extratext"] = "N/A";
+    }
+    for (var i = 0; i < amountVertex; i ++)
+      if (p[i] == -1) {
+        cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+        cs["status"] = "Vertex " + i + " has not been visited.";
+        cs["lineNo"] = 1;
+        stateList.push(cs);
+        p[i]--;
+        Tdfs(i);
+      }
+
+    function getStack() {
+      var status = "Stack = [";
+      for (var i = 0; i < stackNum; i ++) status = status + stack[i] + ",";
+      if (stackNum >= 0) status += stack[stackNum] + "]";
+      else               status += "]";
+      return status;
+    }
+
+    function Tdfs(u) {
+      stack[++stackNum] = u;
+      num[u] = low[u] = ++Count;
+      iVL[u]["extratext"] = "" + num[u] + "," + low[u];
+      vertexTraversing[u] = true;
+      vertexHighlighted[u] = true;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+      cs["status"] = getStack() + ".<br>DFS(" + u + ").";
+      cs["lineNo"] = 2;
+      stateList.push(cs);
+      delete vertexHighlighted[u];
+
+      var neighbors = [];
+      for (var j = 0; j < amountEdge; j++) if (iEL[j]["u"] == u) neighbors.push(j);
+      neighbors.sort(function(a, b) { return iEL[a]["v"]-iEL[b]["v"] });
+
+      while (neighbors.length > 0) {
+        var j = neighbors.shift();
+        var vertexA = iEL[j]["u"], vertexB = iEL[j]["v"];
+        if (lab[vertexB] == -1 && u == vertexA) {
+          edgeHighlighted[j] = true;
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+          cs["status"] = getStack() + "<br>Try edge " + vertexA + " &rarr; " + vertexB + ".";
+          cs["lineNo"] = 3;
+          cs["el"][j]["animateHighlighted"] = true;
+          stateList.push(cs);
+
+          if (p[vertexB] == -1) {
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+            cs["status"] = getStack() + "<br>Vertex " + vertexB + " has not been visited.";
+            cs["lineNo"] = 4;
+            stateList.push(cs);
+
+            p[vertexB] = u;
+            Tdfs(vertexB);
+            if (low[u] > low[vertexB]) low[u] = low[vertexB];
+          }
+          else {
+            if (low[u] > num[vertexB]) low[u] = num[vertexB];
+          }
+          iVL[u]["extratext"] = "" + num[u] + "," + low[u];
+          cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+          cs["status"] = getStack() + "<br>Update low[" + u + "]."; // ambiguous for now " = min(num[" + vertexB + "], low[" + vertexB + "]).";
+          cs["lineNo"] = 5;
+          stateList.push(cs);
+        }
+      }
+
+      delete vertexTraversing[u];
+      vertexTraversed[u] = true;
+      vertexHighlighted[u] = true;
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+      cs["status"] = getStack() + "<br>DFS(" + u + ") is completed, check if vertex " + u + " is the root of this SCC.";
+      cs["lineNo"] = 6;
+      stateList.push(cs);
+      if (low[u] == num[u]) {
+        cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+        cs["status"] = getStack() + "<br>low[" + u + "] == num[" + u + "], that means this vertex " + u + " is the root of this SCC.";
+        cs["lineNo"] = 6;
+        stateList.push(cs);
+        var oldPos = stackNum;
+        labNum++;
+        while (stack[stackNum] != u)
+          lab[stack[stackNum--]] = labNum;
+        lab[stack[stackNum--]] = labNum;
+
+        for (var i = stackNum+1; i <= oldPos; i++)
+          vertexHighlighted[stack[i]] = true;
+        cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+        cs["status"] = getStack() + "<br>We pop the stack until we get vertex " + u + ".";
+        cs["lineNo"] = 7;
+        stateList.push(cs);
+        for (var i = stackNum+1; i <= oldPos; i++)
+          delete vertexHighlighted[stack[i]];
+
+        for (var j = 0; j < amountEdge; j++) {
+          var vertexA = iEL[j]["u"], vertexB = iEL[j]["v"];
+          if (lab[vertexA] != lab[vertexB]) hiddenEdge[j] = true;
+        }
+        cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+        cs["status"] = getStack() + "<br>We get 1 Strongly Connected Component.";
+        cs["lineNo"] = 7;
+        stateList.push(cs);
+      }
+      delete vertexHighlighted[u];
+    }
+
+    cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+    cs["status"] = "In total, we have " + labNum + " Strongly Connected Component(s) as seen above.";
+    cs["lineNo"] = 1;
+    stateList.push(cs);
+    for (var key in iVL) iVL[key]["extratext"] = "";
+
+    populatePseudocode(8);
+    gw.startAnimation(stateList, callback);
+    return true;
+  }
+
+  this.twosat = function(numOfRows, numOfColumns) {
+    var vertexHighlighted = {}, edgeHighlighted = {};
+    var stateList = [];
+    var cs;
+    var currentX = 0, currentY = -170, centerX = 200, centerY = 200;
+
+    DIRECTED_GR = true;
+    numOfColumns *= 2;
+    var blocked = new Array(numOfRows+1);
+    for (var i = 0; i <= numOfRows; i++) {
+      blocked[i] = new Array(numOfColumns+1);
+      for (var j = 0; j <= numOfColumns; j++)
+        blocked[i][j] = false;
+    }
+
+    if (numOfRows < 1 || numOfRows > 5) {
+      $('#twosat-err').html("The number of clauses must be [1..5].");
+      return false;
+    }
+
+    if (numOfColumns < 1 || numOfColumns > 10) {
+      $('#twosat-err').html("The number of variables must be [1..5].");
+      return false;
+    }
+
+    $('#twosat-err').html("");
+
+    this.checkInputt = function(XX) {
+      var cc = 0;
+      for (var j = 1; j <= numOfColumns; j ++)
+        if (blocked[XX][j])
+          cc++;
+      return cc;
+    }
+
+    this.checkInput = function() { // each clause can only have two variables
+      for (var i = 1; i <= numOfRows; i++) {
+        var cc = 0;
+        for (var j = 1; j <= numOfColumns; j ++) if (blocked[i][j]) cc++;
+        if (cc != 2) return false;
+      }
+      return true;
+    }
+
+    this.changeState = function(rowIndex, columnIndex) {
+      var temp = '#cell' + rowIndex + columnIndex;
+      if (blocked[rowIndex][columnIndex]) {
+        $(temp).attr("bgcolor", "white");
+        blocked[rowIndex][columnIndex] = false;
+      }
+      else {
+        $(temp).attr("bgcolor", "black");
+        blocked[rowIndex][columnIndex] = true;
+      }
+      if (this.checkInputt(rowIndex) > 2) {
+        $('#twosat-board-err').html("Row " + rowIndex + " has more than 2 black cells.")
+          .delay(1000)
+          .queue(function(n) {
+            $(this).html("");
+          });
+      }
+    }
+
+    this.createGraph = function() {
+      iVL = {};
+      iEL = {};
+      amountEdge = 0;
+      amountVertex = numOfColumns;
+
+      getvar = function(i) { return i%2 == 0 ? "-x" + (i/2+1) : "x" + (i+1)/2; }
+      getOpp = function(i) { return i%2 == 0 ? i+1 : i-1; }
+
+      for (var i = 1; i <= numOfColumns; ++i) {
+        var angle = Math.acos(-1)*2/amountVertex;
+        var x1 = currentX * Math.cos(angle) - currentY*Math.sin(angle);
+        var y1 = currentX * Math.sin(angle) + currentY*Math.cos(angle);
+        currentX = x1, currentY = y1;
+        iVL[i-1] = {
+          "x": currentX+centerX,
+          "y": currentY+centerY,
+          "extratext": i%2 == 0 ? "x" + i/2 : "-x" + (i+1)/2
+        }
+      }
+
+      cs = createState(iVL, iEL);
+      cs["status"] = "Create 2 vertices for each variable.<br>One for xi, the other for -xi.";
+      cs["lineNo"] = 1;
+      stateList.push(cs);
+
+      for (var i = 1; i <= numOfRows; ++i) { // clauses
+        var a, b;
+        for (var j = 0; j < numOfColumns; j++) if (blocked[i][j+1]) a = j; // a
+        for (var j = numOfColumns-1; j >= 0; j--) if (blocked[i][j+1]) b = j; // b
+        // clause = (a v b)
+        var pos1 = -1, pos2 = -1;
+        var flag = true;
+        for (var j = 0; j < amountEdge; j++)
+          if (iEL[j]["u"] == getOpp(a) && iEL[j]["v"] == b)
+            flag = false, pos1 = j;
+        if (flag && getOpp(a) !== b) {
+          iEL[amountEdge++] = {
+            "u": getOpp(a),
+            "v": b,
+            "w": 1
+          }
+          pos1 = amountEdge-1;
+        }
+
+        flag = true;
+        for (var j = 0; j < amountEdge; j++)
+          if (iEL[j]["u"] == getOpp(b) && iEL[j]["v"] == a)
+            flag = false, pos2 = j;
+        if (flag && getOpp(b) !== a) {
+          iEL[amountEdge++] = {
+            "u": getOpp(b),
+            "v": a,
+            "w": 1
+          }
+          pos2 = amountEdge-1;
+        }
+
+        cs = createState(iVL, iEL);
+        cs["status"] = "Clause = (" + getvar(a) + " or " + getvar(b) + ").<br>" +
+                       "Create edge " + getvar(getOpp(a)) + " &rarr; " + getvar(b) + " (" + getOpp(a) + " &rarr; " + b + ") and " + getvar(getOpp(b)) + " &rarr; " + getvar(a) + " (" + getOpp(b) + " &rarr; " + a + ").";
+        cs["lineNo"] = [2, 3];
+        if (pos1 != -1) cs["el"][pos1]["animateHighlighted"] = true;
+        if (pos2 != -1) cs["el"][pos2]["animateHighlighted"] = true;
+        stateList.push(cs);
+      }
+      return true;
+    }
+
+    this.runAlgo = function() {
+      var vertexHighlighted = {}, edgeHighlighted = {}, vertexTraversed = {}, vertexTraversing = {}, hiddenEdge = {};
+      var cs;
+
+      cs = createState(iVL, iEL);
+      cs["status"] = "We run an SCC finding algorithm (either Kosaraju's or Tarjan's) to see if there is a conflict (a variable and its negation in the same SCC).";
+      cs["lineNo"] = 4;
+      stateList.push(cs);
+
+      // main code
+      var p = {}, stack = {}, stackNum = -1, Count = 0, low = {}, num = {}, lab = {}, labNum = 0;
+      for (var i = 0; i < amountVertex; i ++)
+        p[i] = lab[i] = -1;
+      for (var i = 0; i < amountVertex; i ++)
+        if (p[i] == -1) {
+          p[i]--;
+          Tdfs(i);
+        }
+
+      for (var j = 0; j < amountEdge; j++) {
+        var vertexA = iEL[j]["u"];
+        var vertexB = iEL[j]["v"];
+        iEL[j]["u"] = vertexB;
+        iEL[j]["v"] = vertexA;
+      }
+
+      while (stackNum >= 0) {
+        if (lab[stack[stackNum]] == -1) {
+          labNum++;
+          DFS2(stack[stackNum]);
+          var flag = -1;
+          for (var z = 0; z < amountVertex; z += 2)
+            if ((lab[z] == lab[z+1]) && (lab[z] == labNum))
+              flag = z;
+
+          if (flag != -1) {
+            for (var key in iVL)
+              if (lab[key] == lab[flag])
+                vertexTraversed[key] = true;
+            vertexHighlighted[flag] = vertexHighlighted[flag+1] = true;
+            cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+            cs["status"] = "" + getvar(flag) + " (vertex " + flag + ") and " + getvar(flag+1) + " (vertex " + (flag+1) + ") are in the same SCC.<br>The 2-SAT instance is not satisfiable!";
+            cs["lineNo"] = 7;
+            stateList.push(cs);
+            return true;
+          }
+        }
+        stackNum--;
+      }
+
+      function Tdfs(u) {
+        var neighbors = [];
+        for (var j = 0; j < amountEdge; j++) if (iEL[j]["u"] == u) neighbors.push(j);
+        neighbors.sort(function(a, b) { return iEL[a]["v"]-iEL[b]["v"] });
+
+        while (neighbors.length > 0) {
+          var j = neighbors.shift();
+          var vertexA = iEL[j]["u"], vertexB = iEL[j]["v"];
+          if (lab[vertexB] == -1 && u == vertexA)
+            if (p[vertexB] == -1) {
+              p[vertexB] = u;
+              Tdfs(vertexB);
+            }
+        }
+
+        stack[++stackNum] = u;
+      }
+
+      function DFS2(u) {
+        lab[u] = labNum;
+
+        var neighbors = [];
+        for (var j = 0; j < amountEdge; j++) if (iEL[j]["u"] == u) neighbors.push(j);
+        neighbors.sort(function(a, b) { return iEL[a]["v"]-iEL[b]["v"] });
+
+        while (neighbors.length > 0) {
+          var j = neighbors.shift();
+          var vertexA = iEL[j]["u"], vertexB = iEL[j]["v"];
+          if (hiddenEdge[j] == null)
+            if (lab[vertexB] == -1)
+              DFS2(vertexB);
+        }
+      }
+
+      for (var i = 0; i < amountEdge; i++) {
+        var vertexA = iEL[i]["u"];
+        var vertexB = iEL[i]["v"];
+        iEL[i]["u"] = vertexB;
+        iEL[i]["v"] = vertexA;
+      }
+
+      cs = createState(iVL, iEL, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, {}, {}, {}, {}, hiddenEdge);
+      cs["status"] = "SCC algorithm is completed without any conflict.<br>So the 2-SAT instance is satisfiable!";
+      cs["lineNo"] = 5;
+      stateList.push(cs);
+    }
+
+    this.CloseBox = function() {
+      $('.overlays').hide("slow");
+      $('#dark-overlay').hide("slow");
+      $('#rookattack-board').hide("slow");
+    }
+
+    this.inputExample1 = function() {
+      numOfRows = 2;
+      numOfColumns = 4;
+      blocked = new Array(numOfRows+1);
+      for (var i = 0; i <= numOfRows; i++) {
+        blocked[i] = new Array(numOfColumns+1);
+        for (var j = 0; j <= numOfColumns; j++)
+          blocked[i][j] = false;
+      }
+      var toWrite = '<html>\n';
+      toWrite += '<br>Click on any cell to toggle between black/white cell</br>\n';
+      toWrite += '<br>Each black cell presents a clause. Each row should have exactly 2 black cells.</br>\n';
+      toWrite += '<table border="1" id="board">'
+      for (var j = 0; j <= numOfColumns; ++j)
+        toWrite += '<col width="50">';
+
+      toWrite += '<tr><td height="50" bgcolor="white" id="cell00"></td>';
+      for (var j = 1; j <= numOfColumns; j++)
+        if (j % 2 == 1)
+          toWrite += '<td height="50" bgcolor="white" id="cell' + 0 + j + '">-x' + (j + 1) / 2 + '</td>';
+        else
+          toWrite += '<td height="50" bgcolor="white" id="cell' + 0 + j + '">x' + j / 2 + '</td>';
+      toWrite += "</tr>"
+
+      for (var i = 1; i <= numOfRows; ++i) {
+        toWrite += '<tr>';
+        toWrite += '<td height="50" bgcolor="white" id="cell00">' + i + '</td>';
+        for (var j = 1; j <= numOfColumns; ++j)
+          toWrite += '<td height="50" bgcolor="white" id="cell' + i + j + '" onclick=gtw.changeState(' + i + ',' + j + ')></td>';
+        toWrite += '</tr>';
+      }
+
+      toWrite += '</table>\n';
+      toWrite += '<button onclick=gtw.inputRandomized()>Randomized</button>';
+      toWrite += '<button onclick=gtw.inputFinished()>Done</button>';
+      toWrite += '<button onclick=gtw.inputExample1()>Example 1</button>';
+      toWrite += '<button onclick=gtw.inputExample2()>Example 2</button>';
+      toWrite += '<button onclick=gtw.CloseBox()>Close</button>';
+      toWrite += '<div id="twosat-board-err" class="err"></div>';
+      toWrite += '</html>\n';
+      $('#twosat-board').html(toWrite);
+
+      this.changeState(1, 1);
+      this.changeState(1, 3);
+      this.changeState(2, 2);
+      this.changeState(2, 4);
+    }
+
+    this.inputExample2 = function() {
+      numOfRows = 4;
+      numOfColumns = 6;
+      blocked = new Array(numOfRows+1);
+      for (var i = 0; i <= numOfRows; i++) {
+        blocked[i] = new Array(numOfColumns+1);
+        for (var j = 0; j <= numOfColumns; j++)
+          blocked[i][j] = false;
+      }
+      var toWrite = '<html>\n';
+      toWrite += '<br>Click on any cell to toggle between black/white cell</br>\n';
+      toWrite += '<br>Each black cell presents a clause. Each row should have exactly 2 black cells.</br>\n';
+      toWrite += '<table border="1" id="board">'
+      for (var j = 0; j <= numOfColumns; ++j)
+        toWrite += '<col width="50">';
+
+      toWrite += '<tr><td height="50" bgcolor="white" id="cell00"></td>';
+      for (var j = 1; j <= numOfColumns; j++)
+        if (j % 2 == 1)
+          toWrite += '<td height="50" bgcolor="white" id="cell' + 0 + j + '">-x' + (j + 1) / 2 + '</td>';
+        else
+          toWrite += '<td height="50" bgcolor="white" id="cell' + 0 + j + '">x' + j / 2 + '</td>';
+      toWrite += "</tr>"
+
+      for (var i = 1; i <= numOfRows; ++i) {
+        toWrite += '<tr>';
+        toWrite += '<td height="50" bgcolor="white" id="cell00">' + i + '</td>';
+        for (var j = 1; j <= numOfColumns; ++j)
+          toWrite += '<td height="50" bgcolor="white" id="cell' + i + j + '" onclick=gtw.changeState(' + i + ',' + j + ')></td>';
+        toWrite += '</tr>';
+      }
+
+      toWrite += '</table>\n';
+      toWrite += '<button onclick=gtw.inputRandomized()>Randomized</button>';
+      toWrite += '<button onclick=gtw.inputFinished()>Done</button>';
+      toWrite += '<button onclick=gtw.inputExample1()>Example 1</button>';
+      toWrite += '<button onclick=gtw.inputExample2()>Example 2</button>';
+      toWrite += '<button onclick=gtw.CloseBox()>Close</button>';
+      toWrite += '<div id="twosat-board-err" class="err"></div>';
+      toWrite += '</html>\n';
+      $('#twosat-board').html(toWrite);
+
+      this.changeState(1, 2);
+      this.changeState(1, 4);
+      this.changeState(2, 1);
+      this.changeState(2, 4);
+      this.changeState(3, 3);
+      this.changeState(3, 6);
+      this.changeState(4, 3);
+      this.changeState(4, 5);
+    }
+
+    this.inputFinished = function() {
+      if (!this.checkInput()) {
+        $('#twosat-board-err').html("Each row should have exactly 2 black cells.")
+          .delay(1000)
+          .queue(function(n) {
+            $(this).html("");
+          });
+        return false;
+      }
+
+      $('.overlays').hide("slow");
+      $('#dark-overlay').hide("slow");
+      $('#rookattack-board').hide("slow");
+      this.createGraph();
+      this.runAlgo();
+      gw.startAnimation(stateList);
+      $('#current-action').show();
+      $('#current-action p').html("2-SAT Modeling");
+      $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+      triggerRightPanels();
+      populatePseudocode(9);
+      isPlaying = true;
+      return true;
+    }
+
+    this.inputRandomized = function() {
+      var randNumMin = 1;
+      var randNumMax = numOfColumns;
+      for (var i = 1; i <= numOfRows; i++) {
+        for (var j = 1; j <= numOfColumns; j++)
+          if (blocked[i][j])
+            this.changeState(i, j);
+        var a = (Math.floor(Math.random() * (randNumMax-randNumMin+1)) + randNumMin);
+        var b = (Math.floor(Math.random() * (randNumMax-randNumMin+1)) + randNumMin);
+        while (a == b)
+          b = (Math.floor(Math.random() * (randNumMax-randNumMin+1)) + randNumMin);
+        this.changeState(i, a);
+        this.changeState(i, b);
+      }
+    }
+
+    $('#dark-overlay').show("slow");
+    var toWrite = '<html>\n';
+    toWrite += '<br>Click on any cell to toggle between black/white cell</br>\n';
+    toWrite += '<br>Each black cell presents a clause. Each row should have exactly 2 black cells.</br>\n';
+    toWrite += '<table border="1" id="board">'
+    for (var j = 0; j <= numOfColumns; ++j)
+      toWrite += '<col width="50">';
+
+    toWrite += '<tr><td height="50" bgcolor="white" id="cell00"></td>';
+    for (var j = 1; j <= numOfColumns; j++)
+      if (j % 2 == 1)
+        toWrite += '<td height="50" bgcolor="white" id="cell' + 0 + j + '">-x' + (j+1)/2 + '</td>';
+      else
+        toWrite += '<td height="50" bgcolor="white" id="cell' + 0 + j + '">x' + j/2 + '</td>';
+    toWrite += "</tr>"
+
+    for (var i = 1; i <= numOfRows; ++i) {
+      toWrite += '<tr>';
+      toWrite += '<td height="50" bgcolor="white" id="cell00">' + i + '</td>';
+      for (var j = 1; j <= numOfColumns; ++j)
+        toWrite += '<td height="50" bgcolor="white" id="cell' + i + j + '" onclick=gtw.changeState(' + i + ',' + j + ')></td>';
+      toWrite += '</tr>';
+    }
+
+    toWrite += '</table>\n';
+    toWrite += '<button onclick=gtw.inputRandomized()>Randomized</button>';
+    toWrite += '<button onclick=gtw.inputFinished()>Done</button>';
+    toWrite += '<button onclick=gtw.inputExample1()>Example 1</button>';
+    toWrite += '<button onclick=gtw.inputExample2()>Example 2</button>';
+    toWrite += '<button onclick=gtw.CloseBox()>Close</button>';
+    toWrite += '<div id="twosat-board-err" class="err"></div>';
+    toWrite += '</html>\n';
+    $('#twosat-board').html(toWrite);
+    $('#twosat-board').show("slow");
+  }
+
+  this.examples = function(id) {
+    iVL = getExampleGraph(id, VL);
+    iEL = getExampleGraph(id, EL);
+    amountVertex = 0;
+    amountEdge = 0;
+    for (var key in iVL) amountVertex++;
+    for (var key in iEL) amountEdge++;
+
+    DIRECTED_GR = true;
+    OLD_POSITION = amountEdge;
+
+    var newState = createState(iVL, iEL);
+    gw.updateGraph(newState, 500);
+    return true;
+  }
+
+  this.loadGraph = function(vertexList, edgeList) {
+    iVL = vertexList;
+    iEL = edgeList;
+    fixJSON();
+    var newState = createState(iVL, iEL);
+    gw.updateGraph(newState, 500);
+  }
+
+  function createState(iVLObject, iELObject, vertexHighlighted, edgeHighlighted, vertexTraversed, vertexTraversing, treeEdge, backEdge, crossEdge, forwardEdge, hiddenEdge) {
+    if (vertexHighlighted == null) vertexHighlighted = {};
+    if (edgeHighlighted == null) edgeHighlighted = {};
+    if (vertexTraversed == null) vertexTraversed = {};
+    if (vertexTraversing == null) vertexTraversing = {};
+    if (treeEdge == null) treeEdge = {};
+    if (backEdge == null) backEdge = {};
+    if (crossEdge == null) crossEdge = {};
+    if (forwardEdge == null) forwardEdge = {};
+    if (hiddenEdge == null) hiddenEdge = {};
+
+    var key, state = {
+      "vl": {},
+      "el": {}
+    };
+
+    for (key in iVLObject) {
+      state["vl"][key] = {};
+      state["vl"][key]["cx"] = iVLObject[key]["x"];
+      state["vl"][key]["cy"] = iVLObject[key]["y"];
+      state["vl"][key]["text"] = key;
+      state["vl"][key]["extratext"] = iVLObject[key]["extratext"];
+      if (iVLObject[key]["state"] == OBJ_HIDDEN)
+        state["vl"][key]["state"] = OBJ_HIDDEN;
+      else
+        state["vl"][key]["state"] = VERTEX_DEFAULT;
+    }
+
+    for (key in iELObject) {
+      state["el"][key] = {};
+      state["el"][key]["vertexA"] = iELObject[key]["u"];
+      state["el"][key]["vertexB"] = iELObject[key]["v"];
+      if (DIRECTED_GR == false)
+        state["el"][key]["type"] = EDGE_TYPE_UDE;
+      else
+        state["el"][key]["type"] = EDGE_TYPE_DE;
+      state["el"][key]["weight"] = iELObject[key]["w"];
+      if (iELObject[key]["state"] == OBJ_HIDDEN)
+        state["el"][key]["state"] = OBJ_HIDDEN;
+      else
+        state["el"][key]["state"] = EDGE_DEFAULT;
+      state["el"][key]["displayWeight"] = false;
+      state["el"][key]["animateHighlighted"] = false;
+    }
+
+    for (key in vertexTraversed) state["vl"][key]["state"] = VERTEX_TRAVERSED;
+    for (key in vertexTraversing) state["vl"][key]["state"] = VERTEX_BLUE_OUTLINE;
+    for (key in treeEdge) state["el"][key]["state"] = EDGE_RED;
+    for (key in backEdge) state["el"][key]["state"] = EDGE_BLUE;
+    for (key in crossEdge) state["el"][key]["state"] = EDGE_GREEN;
+    for (key in forwardEdge) state["el"][key]["state"] = EDGE_GREY;
+
+    for (key in vertexHighlighted) state["vl"][key]["state"] = VERTEX_HIGHLIGHTED;
+    for (key in edgeHighlighted) {
+      state["el"][key]["state"] = EDGE_HIGHLIGHTED;
+      for (var keyR in iEL) if ((iEL[key]["u"] == iEL[keyR]["v"]) && (iEL[key]["v"] == iEL[keyR]["u"])) edgeHighlighted[keyR] = true;
+    }
+
+    for (key in hiddenEdge) state["el"][key]["state"] = EDGE_GREY;
+
+    return state;
+  }
+
+  function populatePseudocode(act) {
+    switch (act) {
+      case 0: // DFS
+        $('#code1').html('DFS(u)');
+        $('#code2').html('for each neighbor v of u');
+        $('#code3').html('&nbsp;&nbsp;if v is unvisited, tree edge, DFS(v)');
+        $('#code4').html('&nbsp;&nbsp;else if v is explored, bidirectional/back edge');
+        $('#code5').html('&nbsp;&nbsp;else if v is visited, forward/cross edge');
+        $('#code6').html('// <b><a href="http://cpbook.net/#downloads" target="_blank">ch4_01_dfs.cpp/java, ch4, CP3</a></b>');
+        $('#code7').html('');
+        break
+      case 1: // BFS
+        $('#code1').html('BFS(u), Q = {u}');
+        $('#code2').html('while !Q.empty // Q is a normal queue');
+        $('#code3').html('&nbsp;&nbsp;for each neighbor v of u = Q.front, Q.pop');
+        $('#code4').html('&nbsp;&nbsp;&nbsp;&nbsp;if v is unvisited, tree edge, Q.push(v)');
+        $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;else if v is visited, we ignore this edge'); // bidirectional/back edge
+        $('#code6').html('// <b><a href="http://cpbook.net/#downloads" target="_blank">ch4_04_bfs.cpp/java, ch4, CP3</a></b>');
+        $('#code7').html('');
+        break;
+      case 2: // Topological Sort using DFS
+        $('#code1').html('for each unvisited vertex u');
+        $('#code2').html('&nbsp;&nbsp;DFS(u)');
+        $('#code3').html('&nbsp;&nbsp;&nbsp;&nbsp;for each neighbor v of u');
+        $('#code4').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if v is unvisited, DFS(v)');
+        $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;else skip v;');
+        $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;finish DFS(u), add u to the back of list');
+        $('#code7').html('reverse list // <b><a href="http://cpbook.net/#downloads" target="_blank">ch4_01_dfs.cpp/java, ch4, CP3</a></b>');
+        break
+      case 3: // Topological Sort using BFS
+        $('#code1').html('add vertices with no incoming edge to queue Q');
+        $('#code2').html('while !Q.empty // Q is a normal queue');
+        $('#code3').html('&nbsp;&nbsp;u = Q.front, Q.pop, add u to the back of list');
+        $('#code4').html('&nbsp;&nbsp;for each neighbor v of u');
+        $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;delete edge u &rarr; v');
+        $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;if v has no incoming edge, add v to queue');
+        $('#code7').html('// done'); // not in CP3, only as exercise at the moment?
+        break;
+      case 4: // bipartite DFS
+        $('#code1').html('for each unvisited vertex u');
+        $('#code2').html('&nbsp;&nbsp;DFS(u)');
+        $('#code3').html('&nbsp;&nbsp;&nbsp;&nbsp;for each neighbor v of u');
+        $('#code4').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if v is unvisited, different color, DFS(v)');
+        $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;else if u and v have the same color');
+        $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not bipartite graph, exit.');
+        $('#code7').html(''); // not in CP3, only as exercise at the moment? // <b><a href="http://cpbook.net/#downloads" target="_blank">ch4_01_dfs.cpp/java, ch4, CP3</a></b>');
+        break
+      case 5: // bipartite BFS
+        $('#code1').html('for each unvisited vertex u');
+        $('#code2').html('&nbsp;&nbsp;push u to the queue');
+        $('#code3').html('&nbsp;&nbsp;while !Q.empty // Q is a normal queue');
+        $('#code4').html('&nbsp;&nbsp;&nbsp;&nbsp;for each neighbor v of u = Q.front, Q.pop');
+        $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if u and v have the same color &rarr; exit');
+        $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assign another color to v, push v to queue');
+        $('#code7').html('// <b><a href="http://cpbook.net/#downloads" target="_blank">ch4_01_dfs.cpp/java, ch4, CP3</a></b>');
+        break
+      case 6: // articulation points and bridges
+        $('#code1').html('try all vertex u, if u hasnt been visited, DFS(u)');
+        $('#code2').html('DFS(u), initiate num[u] = low[u] = DFSCount');
+        $('#code3').html('&nbsp;&nbsp;try all neighbor v of u');
+        $('#code4').html('&nbsp;&nbsp;&nbsp;&nbsp;if v is free, DFS(v)');
+        $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;low[u] = min(low[u], low[v])');
+        $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;check the condition');
+        $('#code7').html('&nbsp;&nbsp;&nbsp;&nbsp;else low[u] = min(low[u], num[v])');
+        break;
+      case 7: // Kosaraju's algorithm
+        $('#code1').html('for each unvisited vertex u, DFS(u)');
+        $('#code2').html('&nbsp;&nbsp;try all free neighbor v of u, DFS(v)');
+        $('#code3').html('&nbsp;&nbsp;finish DFS(u), add u to the front of list');
+        $('#code4').html('transpose the graph');
+        $('#code5').html('DFS in order of the list, DFS(u)');
+        $('#code6').html('&nbsp;&nbsp;try all free neighbor v of u, DFS(v)');
+        $('#code7').html('each time we complete a DFS, we get an SCC');
+        break;
+      case 8: // Tarjan's algorithm
+        $('#code1').html('for each unvisited vertex u');
+        $('#code2').html('&nbsp;&nbsp;DFS(u), s.push(u), num[u] = low[u] = DFSCount');
+        $('#code3').html('&nbsp;&nbsp;&nbsp;&nbsp;for each neighbor v of u');
+        $('#code4').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if v is unvisited, DFS(v)');
+        $('#code5').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;low[u] = min(low[u], low[v])');
+        $('#code6').html('&nbsp;&nbsp;&nbsp;&nbsp;if low[u] == num[u] // root of an SCC');
+        $('#code7').html('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pop from stack s until we get u');
+        break;
+      case 9: // two-sat
+        $('#code1').html('create graph, each variable creates 2 vertices');
+        $('#code2').html('for clause (a or b)');
+        $('#code3').html('&nbsp;&nbsp;create edge -a &rarr; b and -b &rarr; a');
+        $('#code4').html('run scc algorithm');
+        $('#code5').html('if no conflict, the 2-SAT instance is satisfiable');
+        $('#code6').html('if a variable and its negation are in the same SCC');
+        $('#code7').html('&nbsp;&nbsp;the 2-SAT instance is not satisfiable');
+        break;
+    }
+  }
+}
+
+
+
+// Graph Traversal action
+var actionsWidth = 150;
+var statusCodetraceWidth = 410;
+var isExamplesOpen = false, isBFSOpen = false, isDFSOpen = false, isTopoOpen = false, isBipartiteOpen = false, isBridgeOpen = false, isSCCOpen = false, is2SATOpen = false;
+
+function openExamples() {
+  if (!isExamplesOpen) {
+    $('.examples').fadeIn('fast');
+    isExamplesOpen = true;
+  }
+}
+
+function closeExamples() {
+  if (isExamplesOpen) {
+    $('.examples').fadeOut('fast');
+    isExamplesOpen = false;
+  }
+}
+
+function openDFS() {
+  if (!isDFSOpen) {
+    $('.dfs').fadeIn('fast');
+    isDFSOpen = true;
+  }
+}
+
+function closeDFS() {
+  if (isDFSOpen) {
+    $('.dfs').fadeOut('fast');
+    $('#dfs-err').html("");
+    isDFSOpen = false;
+  }
+}
+
+function openBFS() {
+  if (!isBFSOpen) {
+    $('.bfs').fadeIn('fast');
+    isBFSOpen = true;
+  }
+}
+
+function closeBFS() {
+  if (isBFSOpen) {
+    $('.bfs').fadeOut('fast');
+    $('#bfs-err').html("");
+    isBFSOpen = false;
+  }
+}
+
+function openTopo() {
+  if (!isTopoOpen) {
+    $('.topo').fadeIn('fast');
+    isTopoOpen = true;
+  }
+}
+
+function closeTopo() {
+  if (isTopoOpen) {
+    $('.topo').fadeOut('fast');
+    $('#topo-err').html("");
+    isTopoOpen = false;
+  }
+}
+
+function openBipartite() {
+  if (!isBipartiteOpen) {
+    $('.bipartite').fadeIn('fast');
+    isBipartiteOpen = true;
+  }
+}
+
+function closeBipartite() {
+  if (isBipartiteOpen) {
+    $('.bipartite').fadeOut('fast');
+    $('#bipartite-err').html("");
+    isBipartiteOpen = false;
+  }
+}
+
+function openBridge() {
+  if (!isBridgeOpen) {
+    $('.bridge').fadeIn('fast');
+    isBridgeOpen = true;
+  }
+}
+
+function closeBridge() {
+  if (isBridgeOpen) {
+    $('.bridge').fadeOut('fast');
+    $('#bridge-err').html("");
+    isBridgeOpen = false;
+  }
+}
+
+function openScc() {
+  if (!isSCCOpen) {
+    $('.scc').fadeIn('fast');
+    isSCCOpen = true;
+  }
+}
+
+function closeScc() {
+  if (isSCCOpen) {
+    $('.scc').fadeOut('fast');
+    $('#scc-err').html("");
+    isSCCOpen = false;
+  }
+}
+
+function open2sat() {
+  $('#twosat-v1').val(3);
+  $('#twosat-v2').val(3);
+  if (!is2SATOpen) {
+    $('.twosat').fadeIn('fast');
+    is2SATOpen = true;
+  }
+}
+
+function close2sat() {
+  if (is2SATOpen) {
+    $('.twosat').fadeOut('fast');
+    $('#twosat-err').html("");
+    is2SATOpen = false;
+  }
+}
+
+function hideEntireActionsPanel() {
+  closeExamples();
+  closeDFS();
+  closeBFS();
+  closeTopo();
+  closeBipartite();
+  closeBridge();
+  closeScc();
+  close2sat();
+  hideActionsPanel();
+}
+
+
+
+// local
+write(false, true);
+var gtw, gw, randomGraphID;
+
+$(function() {
+  $('#play').hide();
+  gtw = new GraphTraversal();
+  gw = gtw.getGraphWidget();
+  var options = [CP3_4_1, CP3_4_3, CP3_4_4, CP3_4_9, CP3_4_17, CP3_4_18, CP3_4_19];
+  gtw.examples(options[Math.floor(Math.random()*7)]);
+  randomGraphID = -1;
+  var graphJSON = getQueryVariable("create");
+  if (graphJSON.length > 0) {
+    importjson(graphJSON);
+    window.history.pushState("object or string", "Title", window.location.href.split('?')[0]);
+  }
+  // var directed = getQueryVariable("directed");
+  // if (directed.length > 0) {
+  //   directed = parseInt(directed);
+  //   if (directed === 0)
+  //     directedChange();
+  // }
+
+  $('#examples').click(function() {
+    openExamples();
+    closeDFS();
+    closeBFS();
+    closeTopo();
+    closeBipartite();
+    closeBridge();
+    closeScc();
+    close2sat();
+  });
+
+  $('#directedChange').click(function() {
+    closeExamples();
+    closeDFS();
+    closeBFS();
+    closeTopo();
+    closeBipartite();
+    closeBridge();
+    closeScc();
+    close2sat();
+  });
+
+  $('#dfs').click(function() {
+    closeExamples();
+    openDFS();
+    closeBFS();
+    closeTopo();
+    closeBipartite();
+    closeBridge();
+    closeScc();
+    close2sat();
+  });
+
+  $('#bfs').click(function() {
+    closeExamples();
+    closeDFS();
+    openBFS();
+    closeTopo();
+    closeBipartite();
+    closeBridge();
+    closeScc();
+    close2sat();
+  });
+
+  $('#topo').click(function() {
+    closeExamples();
+    closeDFS();
+    closeBFS();
+    openTopo();
+    closeBipartite();
+    closeBridge();
+    closeScc();
+    close2sat();
+  });
+
+  $('#bipartite').click(function() {
+    closeExamples();
+    closeDFS();
+    closeBFS();
+    closeTopo();
+    openBipartite();
+    closeBridge();
+    closeScc();
+    close2sat();
+  });
+
+  $('#bridge').click(function() {
+    closeExamples();
+    closeDFS();
+    closeBFS();
+    closeTopo();
+    closeBipartite();
+    openBridge();
+    closeScc();
+    close2sat();
+  });
+
+  $('#scc').click(function() {
+    closeExamples();
+    closeDFS();
+    closeBFS();
+    closeTopo();
+    closeBipartite();
+    closeBridge();
+    openScc();
+    close2sat();
+  });
+
+  $('#twosat').click(function() {
+    closeExamples();
+    closeDFS();
+    closeBFS();
+    closeTopo();
+    closeBipartite();
+    closeBridge();
+    closeScc();
+    open2sat();
+  });
+});
+
+function importjson(text) {
+  if (isPlaying) stop();
+  if (mode == "exploration") {
+    gtw.importjson(text);
+    closeExamples();
+    isPlaying = false;
+  }
+}
+
+function drawGraph() {
+  if (isPlaying) stop();
+  if (mode == "exploration") {
+    $('#dark-overlay').fadeIn(function() {
+      $('#drawgraph').fadeIn();
+    });
+    gtw.startLoop();
+    isPlaying = false;
+  }
+}
+
+function drawDone() {
+  if (!gtw.draw()) return false;
+  gtw.stopLoop();
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+function drawCancel() {
+  gtw.stopLoop();
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+// function createRandom() {
+//   if (isPlaying) stop();
+//   if (mode == "exploration") {
+//     var n = Math.floor(Math.random()*6 + 5);
+//     $.ajax({
+//       url: PHP_DOMAIN + "/php/Graph.php?mode=" + MODE_GET_RANDOM_SUBMITTED_GRAPH + "&directed=" + 1 + "&connected=" + 1
+//     }).done(function(data) {
+//       data = JSON.parse(data);
+//       var graph = extractQnGraph(data.graph);
+//       if (data.graphID == randomGraphID) // to ensure we get different graph per click (make sure #graph > 1 in the database)
+//         createRandom();
+//       randomGraphID = data.graphID;
+//       gtw.initRandom(graph);
+//       $('#rate-sample-graph').show();
+//     })
+//     $('#progress-bar').slider("option", "max", 0);
+//     closeExamples();
+//     isPlaying = false;
+//   }
+// }
+
+function example(id) {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if (gtw.examples(id)) { // (mode == "exploration") && 
+      $('#progress-bar').slider("option", "max", 0);
+      closeExamples();
+      isPlaying = false;
+    }
+  }, 500);
+}
+
+function directedChange() {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if ((mode == "exploration") && gtw.directedChange()) {
+      $('#progress-bar').slider("option", "max", 0);
+      isPlaying = false;
+    }
+  }, 500);
+}
+
+function dfs(callback) {
+  if (isPlaying) stop();
+  var input = parseInt($('#dfs-v').val());
+  commonAction(gtw.dfs(input, callback), "DFS(" + input + ")");
+  setTimeout(function() { $("#dfs-v").val(1 + Math.floor(Math.random()*gtw.getV())); }, 500); // randomized for next click between [0..V-1]
+}
+
+function bfs(callback) {
+  if (isPlaying) stop();
+  var input = parseInt($('#bfs-v').val());
+  commonAction(gtw.bfs(input, callback), "BFS(" + input + ")");
+  setTimeout(function() { $("#bfs-v").val(1 + Math.floor(Math.random()*gtw.getV())); }, 500);
+}
+
+function toposortDfs(callback) {
+  if (isPlaying) stop();
+  commonAction(gtw.toposortDfs(callback), "Topological Sort (DFS)");
+}
+
+function toposortBfs(callback) {
+  if (isPlaying) stop();
+  commonAction(gtw.toposortBfs(callback), "Topological Sort (BFS)");
+}
+
+function bipartiteDfs(callback) {
+  if (isPlaying) stop();
+  commonAction(gtw.bipartiteDfs(callback), "Bipartite Graph Checker (DFS)");
+}
+
+function bipartiteBfs(callback) {
+  if (isPlaying) stop();
+  commonAction(gtw.bipartiteBfs(callback), "Bipartite Graph Checker (BFS)");
+}
+
+function bridge(callback) {
+  if (isPlaying) stop();
+  commonAction(gtw.bridge(callback), "Articulation Points and Bridges Checker");
+}
+
+function kosaraju(callback) {
+  if (isPlaying) stop();
+  commonAction(gtw.kosaraju(callback), "Kosaraju's Algorithm");
+}
+
+function tarjan(callback) {
+  if (isPlaying) stop();
+  commonAction(gtw.tarjan(callback), "Tarjan's Algorithm");
+}
+
+function twosat() {
+  if (isPlaying) stop();
+  var input1 = parseInt($('#twosat-v1').val()), input2 = parseInt($('#twosat-v2').val());
+  commonAction(gtw.twosat(input1, input2), "2-SAT Checker");
+}
+
+function loadGraph(graph) {
+  if (gtw) {
+    gtw.loadGraph(graph['vl'], graph['el']);
+  }
+}
+
+// Implement these functions in each visualisation
+var userGraph = {
+  'vl': {},
+  'el': {},
+};
+
+// This function will be called before entering E-Lecture Mode
+function ENTER_LECTURE_MODE() {
+  if (gtw) userGraph = gtw.getGraph();
+}
+
+// This function will be called before returning to Explore Mode
+function ENTER_EXPLORE_MODE() {
+  loadGraph(userGraph);
+}
+
+// Lecture action functions
+function CUSTOM_ACTION(action, data, mode) {
+  if (action == 'dfs') {
+    hideSlide(function() {
+      $('#dfs-v').val(0); // force
+      dfs(showSlide);
+    });
+  }
+  else if (action == 'bfs') {
+    hideSlide(function() {
+      $('#bfs-v').val(5); // force
+      bfs(showSlide);
+    });
+  }
+  else if (action == 'toposort_dfs') {
+    hideSlide(function() {
+      toposortDfs(showSlide);
+    });
+  }
+  else if (action == 'toposort_bfs') {
+    hideSlide(function() {
+      toposortBfs(showSlide);
+    });
+  }
+  else if (action == 'bipartite_dfs') {
+    hideSlide(function() {
+      bipartiteDfs(showSlide);
+    });
+  }
+  else if (action == 'bipartite_bfs') {
+    hideSlide(function() {
+      bipartiteBfs(showSlide);
+    });
+  }
+  else if (action == 'bridge') {
+    hideSlide(function() {
+      bridge(showSlide);
+    });
+  }
+  else if (action == 'kosaraju') {
+    hideSlide(function() {
+      kosaraju(showSlide);
+    });
+  }
+  else if (action == 'tarjan') {
+    hideSlide(function() {
+      tarjan(showSlide);
+    });
+  }
+}
+</script>
+</body>
+</html>

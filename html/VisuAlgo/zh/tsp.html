@@ -1,0 +1,2102 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="旅行推销员问题（TSP）：求解访问每座城市一次的最低花费路线。在此可视化中，假定基础图是一个完整的图，使用两点距离的最接近整数作为其度量距离（满足三角不等式的一个距离函数）。">
+<meta name="keywords" content="approximation, greedy, DP">
+ 
+<meta name="csrf-token" content="kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<meta property="og:image" content="../img/png/tsp.png">
+<title>VisuAlgo - Metric No Repeat Traveling Salesman Problem</title>
+<link rel="icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="114x114" href="../img/favicon.png">
+<link rel="stylesheet" type="text/css" href="../fonts/silkscreen/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="../css/common.css">
+<link rel="stylesheet" href="../css/viz-1.0.1.css">
+<link rel="stylesheet" href="../css/visual.css">
+<link rel="stylesheet" href="../css/drawgraph.css">
+<style>
+      #e-lecture {
+        top: 45px;
+        right: 130px;
+        width: 400px;
+        display: block;
+        background: none;
+        /*overflow: normal;*/
+        white-space: normal;
+        text-align: right;
+        color: black; font-weight: bold; font-size: 20px;
+      }
+      .electure-prev, .electure-next { /* force update, copied from viz.css */
+        position: absolute;
+        /* bottom: -12px; */
+        top: -20px;
+        /*bottom: '';*/
+        padding: 3px 8px;
+        background: #999;
+        color: white;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .electure-prev {
+        left: -10px;
+        /* right: 30px; */
+      }
+      .electure-next {
+        right: -10px;
+        color: white;
+      }
+    </style>
+<style>
+.draw { bottom: 200px; }
+
+.random { bottom: 173px; }
+  #random-err { padding: 5px 8px; }
+
+.examples { bottom: 146px; }
+  .examples p { padding: 5px 8px; }
+
+.bruteforce { bottom: 119px; }
+  #bruteforce-err { padding: 5px 8px; }
+
+.dp { bottom: 92px; }
+  #dp-err { padding: 5px 8px; }
+
+.approximation { bottom: 65px; }
+  #two_approximation-go p { padding: 5px 8px; }
+  #one_half_approximation-go p { padding: 5px 8px; }
+  #approximation-err { padding: 5px 8px; }
+</style>
+<script>
+      function changeURL() {
+        var URL = window.location.href.split('/');
+        var val = document.getElementById("Language").value;
+        URL[3] = val;
+        window.location.assign(URL.join('/'));
+      }
+    </script>
+</head>
+<body>
+<div id="top-bar">
+<a id="home" href="/">Visu<span class="colour">Algo</span><span style="font-size: 40%">.net</span></a>
+/
+<select id="Language" onchange="changeURL()">
+<option value="zh" selected>zh</option>
+</select>
+/tsp
+<span id="title">
+<a id='title-tsp' class='selected-viz'>Metric No Repeat Traveling Salesman Problem</a>
+</span>
+<div id="mode-menu">
+<div id='mode-button' title='exploration'>示例模式 &#9663;</div>
+<div id='other-modes'>
+<a title='e-Lecture'>电子讲座模式</a>
+</div>
+</div>
+</div>
+<div id="dark-overlay"></div>
+<div id="status" class="panel"><p></p></div>
+<div id="status-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide status panel" /></div>
+<div id="codetrace" class="panel">
+<p id="code1" style="padding-top: 10px;"></p>
+<p id="code2"></p>
+<p id="code3"></p>
+<p id="code4"></p>
+<p id="code5"></p>
+<p id="code6"></p>
+<p id="code7" style="padding-bottom: 10px;"></p>
+</div>
+<div id="codetrace-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide codetrace panel" /></div>
+<div id="left-bar"></div>
+<div id="right-bar"></div>
+<div id="media-controls">
+<div id='speed-control'>减速<div id='speed-input'></div>加速</div>
+<span id="go-to-beginning" class="media-control-button" title="go to beginning" onclick=goToBeginning()><img src="../img/goToBeginning.png" alt="go to beginning"></span>
+<span id="previous" class="media-control-button" title="step backward" onclick=stepBackward()><img src="../img/prevFrame.png" alt="previous frame"></span>
+<span id="pause" class="media-control-button" title="pause" onclick=pause()><img src="../img/pause.png" alt="pause"></span>
+<span id="play" class="media-control-button" title="play" onclick=play()><img src="../img/play.png" alt="play"></span>
+<span id="next" class="media-control-button" title="step forward" onclick=stepForward()><img src="../img/nextFrame.png" alt="next frame"></span>
+<span id="go-to-end" class="media-control-button" title="go to end" onclick=goToEnd()><img src="../img/goToEnd.png" alt="go to end"></span>
+<div id="progress-bar" class="media-control-button"></div>
+</div>
+<div id='viz'></div>
+<div id='current-action' class='panel'></div>
+<div id='e-lecture' class='panel'></div>
+<div id="overlay" hidden></div>
+<div id="dropdown-temp-holder" hidden></div>
+<div id="electure-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<b>旅行推销员问题（TSP）</b>：求解访问每座城市一次的最低花费路线。在此可视化中，假定基础图是一个完整的图，使用两点距离的最接近整数作为其度量距离（满足三角不等式的一个距离函数）。
+<hr>
+<p><b>Remarks</b>: By default, we show e-Lecture Mode for first time (or non logged-in) visitor.<br>
+Please <a href="login"><u>login</u></a> if you are a repeated visitor or <a href="login"><u>register</u></a> for an (optional) free account first.</p>
+<div id='electure-dropdown'>
+<select class="lecture-dropdown" style="width:100%">
+<option value="1">1. 旅行推销员问题</option>
+<option value="2">2. 可视化</option>
+<option value="3">3. Input</option>
+<option value="4">4. 简单模式匹配算法（Bruteforce）</option>
+<option value="5">5. 动态编程</option>
+<option value="6">6. 近似</option>
+<option value="99">99. 状态面板</option>
+<option value="99-1">&nbsp;&nbsp;&nbsp;99-1. 代码追踪面板</option>
+<option value="99-2">&nbsp;&nbsp;&nbsp;99-2. 媒体控制</option>
+<option value="99-3">&nbsp;&nbsp;&nbsp;99-3. 返回 ”探索模式“</option>
+</select>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-next' data-nextid="2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2" class="electure-dialog" style="top:300px;left:50%;margin-left:-250px;width:500px;">
+在这里查看TSP算法的可视化。<div><br></div><div>最初，图形中的所有边以灰色显示。</div><div><br></div><div>当进行可视化时，被穿过的边会高亮为橙色。</div>
+<hr>
+<p>Pro-tip: Since you are not <a href="login"><u>logged-in</u></a>, you may be a first time visitor who are not aware of the following keyboard shortcuts to navigate this e-Lecture mode: <b>[PageDown]</b> to advance to the next slide, <b>[PageUp]</b> to go back to the previous slide, <b>[Esc]</b> to toggle between this e-Lecture mode and exploration mode.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3" class="electure-dialog" style="bottom:230px;left:60px;width:500px;">
+<p>There are two different sources for specifying an input graph:</p><ol><li><b>Draw Graph</b>: You can put several points on the drawing box, but you must not draw any edge to ensure the (near-)metric property of the graph. After you have finished putting the points, the edges will be drawn automatically for you after.</li><li><b>Example Graphs</b>: You can select from the list of graphs to get you started.</li></ol>
+<hr>
+<p>Another pro-tip: We designed this visualization and this e-Lecture mode to look good on 1366x768 resolution <b>or larger</b> (typical modern laptop resolution in 2017). We recommend using Google Chrome to access VisuAlgo. Go to full screen mode (<b>F11</b>) to enjoy this setup. However, you can use zoom-in (<b>Ctrl +</b>) or zoom-out (<b>Ctrl -</b>) to calibrate this.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4" class="electure-dialog" style="bottom:230px;left:60px;width:500px;">
+<b>Bruteforce</b>: It tries all (V-1)! permutation of vertices (not all V! since it does not matter where we start from). It enumerates all possibilities by doing a dfs search with parameters similar to those of <u><a href="https://en.wikipedia.org/wiki/Held%E2%80%93Karp_algorithm" title="" target="_blank">Held-Karp</a></u> algorithm, that is, the dfs search will return the value of the tour starting from current vertex to all vertices that we have not already visited.<div><br></div><div>Time complexity: O(V * (V - 1)!) = O(V!)</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5" class="electure-dialog" style="bottom:230px;left:60px;width:500px;">
+<b>动态编程</b>：这里使用了著名的Held-Karp算法。在可视化中，它被用作一种深度优先算法，就如同简单模式匹配算法（bruteforce algorithm）一样，但使用memoization技术缓存结果。这样做会使运行时间复杂度极大地下降至O(V^2 * 2^V)。<div><br></div><div>时间复杂度：O(V^2 * 2^V)。</div><div><br></div><div>请注意当N = 10 时，此算法将进行约~(100 * 2^10) = 102K 次操作，相较于简单模式匹配算法约 ~(10!) = 3628800 次操作而言大约快30倍。</div><div><br></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-6" class="electure-dialog" style="bottom:230px;left:60px;width:500px;">
+<b>Approximation</b>: There are two approximation algorithms available, a 2-approximation algorithm and a 1.5-approximation algorithm that is also well known as Christofides Algorithm.
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99" class="electure-dialog" style="right:150px;bottom:335px;width:500px;">
+当操作进行时，状态面板将会有每个步骤的描述。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-1" class="electure-dialog" style="right:170px;bottom:275px;width:180px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-2" class="electure-dialog" style="bottom:70px;left:50%;margin-left:-120px;width:260px;">
+使用用户控件控制动画！可用的快捷键有：<div>空格键：绘制／停止／重绘</div><div>左／右箭头：上一步／下一步</div><div>-／+：减缓／增加速度</div><div><br></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-3" class="electure-dialog" style="top:70px;right:60px;width:300px;">
+<p>Return to &#39;Exploration Mode&#39; to start exploring!</p><br><p>Note that if you notice any bug in this visualization or if you want to request for a new visualization feature, do not hesitate to drop an email to the project leader: Dr Steven Halim via his email address: stevenhalim at gmail dot com.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-2">上一个 <u>PgUp</u></div>
+</div>
+<div id="popup" hidden>
+<div id="popup-content"></div>
+<span id="hide-popup" hidden>X <u>关闭</u></span>
+</div>
+<div id="actions" class="panel">
+<p id="draw" onclick=drawGraph()>绘制图表</p>
+<p id="examples" class="execAction">图示</p>
+<p id="bruteforce" class="execAction" onclick=bruteforce()>简单模式匹配</p>
+<p id="dp" class="execAction" onclick=dp()>动态编程</p>
+<p id="approximation" class="execAction">估计</p>
+</div>
+<div id="actions-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="显示/隐藏 动作面板" /></div>
+<div id="actions-extras">
+<div class="examples action-menu-pullout">
+<div id="example1" class="execAction new-menu-option coloured-menu-option" onclick="example(K4)"><p>K4</p></div>
+<div id="example2" class="execAction new-menu-option coloured-menu-option" onclick="example(K5)"><p>K5</p></div>
+<div id="example3" class="execAction new-menu-option coloured-menu-option" onclick="example(K8)"><p>K8</p></div>
+<div id="example3" class="execAction new-menu-option coloured-menu-option" onclick="example(CS4234_TUTORIAL_THREE)"><p>CS4234 Tutorial Three</p></div>
+</div>
+<div class="bruteforce action-menu-pullout">
+<div id="bruteforce-err" class="err"></div>
+</div>
+<div class="dp action-menu-pullout">
+<div id="bruteforce-err" class="err"></div>
+</div>
+<div class="approximation action-menu-pullout">
+<div id="two_approximation-go" class="execAction coloured-menu-option" onclick=two_approximation()><p>2倍近似TSP</p></div>
+<div id="one_half_approximation-go" class="execAction coloured-menu-option" onclick=one_half_approximation()><p>1.5倍近似TSP</p></div>
+<div id="approximation-err" class="err"></div>
+</div>
+</div>
+<div id="drawgraph" class="overlays"></div>
+<div id="bottom-bar">
+<a id="trigger-about">关于</a>
+</div>
+<div id="about" class="overlays">
+<h4>关于</h4><span class='close-overlay'>&#x2715;</span>
+<div class='content'>
+VisuAlgo在2011年由Steven Halim博士概念化，作为一个工具，帮助他的学生更好地理解数据结构和算法，让他们自己和自己的步伐学习基础。<br>VisuAlgo包含许多高级算法，这些算法在Steven Halim博士的书（“竞争规划”，与他的兄弟Felix Halim博士合作）和其他书中讨论。今天，一些高级算法的可视化/动画只能在VisuAlgo中找到。<br>虽然专门为新加坡国立大学（NUS）学生采取各种数据结构和算法类（例如CS1010，CS1020，CS2010，CS2020，CS3230和CS3230），作为在线学习的倡导者，我们希望世界各地的好奇心发现这些可视化也很有用。<br>VisuAlgo不是从一开始就设计为在小触摸屏（例如智能手机）上工作良好，因为需要满足许多复杂的算法可视化，需要大量的像素和点击并拖动手势进行交互。一个令人尊敬的用户体验的最低屏幕分辨率为1024x768，并且只有着陆页相对适合移动设备。<br>VisuAlgo是一个正在进行的项目，更复杂的可视化仍在开发中。<br>最令人兴奋的发展是自动问题生成器和验证器（在线测验系统），允许学生测试他们的基本数据结构和算法的知识。这些问题是通过一些规则随机生成的，学生的答案会在提交给我们的评分服务器后立即自动分级。这个在线测验系统，当它被更多的世界各地的CS教师采用，应该技术上消除许多大学的典型计算机科学考试手动基本数据结构和算法问题。通过在通过在线测验时设置小（但非零）的重量，CS教练可以（显着地）增加他/她的学生掌握这些基本问题，因为学生具有几乎无限数量的可以立即被验证的训练问题他们参加在线测验。培训模式目前包含12个可视化模块的问题。我们将很快添加剩余的8个可视化模块，以便VisuAlgo中的每个可视化模块都有在线测验组件。<br>另一个积极的发展分支是VisuAlgo的国际化子项目。我们要为VisuAlgo系统中出现的所有英语文本准备一个CS术语的数据库。这是一个很大的任务，需要众包。一旦系统准备就绪，我们将邀请VisuAlgo游客贡献，特别是如果你不是英语母语者。目前，我们还以各种语言写了有关VisuAlgo的公共注释：<br>
+<a href="https://weibo.com/p/230418436e9ee80102v4rk" target='_blank'><u>zh</u></a>, <a href='https://www.facebook.com/notes/steven-halim/httpidvisualgonet-visualisasi-struktur-data-dan-algoritma-dengan-animasi/10153236934439689' target='_blank'><u>id</u></a>, <a href="https://blog.naver.com/visualgo_nus" target='_blank'><u>kr</u></a>, <a href='https://www.facebook.com/groups/163215593699283/permalink/824003417620494/' target='_blank'><u>vn</u></a>, <a href='http://pantip.com/topic/32736343' target='_blank'><u>th</u></a>.</p>
+</div>
+</div>
+
+<script src="../js/jquery-3.3.1.min.js"></script>
+<script>
+      var PHP_DOMAIN = "";
+
+      // surprise colour!
+      // Referenced to in  home.js and viz.js also
+      var colourArray = ["#52bc69", "#d65775"/*"#ed5a7d"*/, "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"]; // green, pink, blue, red, yellow, indigo, orange, lime
+
+      function disableScroll() { $('html').css('overflow', 'hidden'); }
+
+      function enableScroll() { $('html').css('overflow', 'visible'); }
+
+      function replaceAll(find, replace, str) { return str.replace(new RegExp(find, 'g'), replace); }
+
+      function getColours() {
+        var generatedColours = new Array();
+        while (generatedColours.length < 4) {
+          var n = (Math.floor(Math.random() * colourArray.length));
+          if ($.inArray(n, generatedColours) == -1)
+            generatedColours.push(n);
+        }
+        return generatedColours;
+      }
+
+      function isOn(value, position) {
+        return (value>>position) & 1 === 1;
+      }
+
+      function customAlert(msg) {
+        $('#custom-alert p').html(msg);
+        var m = -1 * ($('#custom-alert').outerHeight()/2);
+        $('#custom-alert').css('margin-top', m+'px');
+        $('#dark-overlay').fadeIn(function() {
+          $('#custom-alert').fadeIn(function() {
+            setTimeout(function() {
+              $('#custom-alert').fadeOut(function() {
+                $('#dark-overlay').fadeOut();
+              });
+            }, 1000);
+          });
+        });
+      }
+
+      function showLoadingScreen() {
+        $('#loading-overlay').show();
+        $('#loading-message').show();
+      }
+
+      function hideLoadingScreen() {
+        $('#loading-overlay').hide();
+      }
+
+      function commonAction(retval, msg) {
+        //setTimeout(function() {
+          if (retval) { // mode == "exploration" && // now not only for exploration mode, but check if this opens other problems
+            $('#current-action').show();
+            $('#current-action').html(mode == "exploration" ? msg : ("e-Lecture Example (auto play until done)<br>" + msg));
+            $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+            triggerRightPanels();
+            isPlaying = true;
+          }
+        //}, 500);
+      }
+
+      function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable)
+            return decodeURIComponent(pair[1]);
+        }
+        return "";
+      }
+
+      var generatedColours = getColours();
+      var surpriseColour = colourArray[generatedColours[0]];
+      var colourTheSecond = colourArray[generatedColours[1]];
+      var colourTheThird = colourArray[generatedColours[2]];
+      var colourTheFourth = colourArray[generatedColours[3]];
+
+      $(function() {
+        $('.links').css('background', surpriseColour);
+        $('.right-links').css('background', surpriseColour);
+        $('#login-go').css('background', surpriseColour);
+
+        $('.colour').css("color", surpriseColour); // name
+        $('h4').css("background-color", surpriseColour); // about, contact us etc. button background
+
+        // title
+        $('#title a').click(function() {
+          $('#title a').removeClass('selected-viz');
+          $(this).addClass('selected-viz');
+          // temporary quick fix for Google Chrome Aug 2016 issue...
+          setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 100); // force resize/redraw...
+          setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        });
+
+        // overlays stuffs
+        $('#trigger-about').click(function() {
+          if ($(window).width() > 600) {
+            $('#dark-overlay').fadeIn(function() {
+              $('#about').fadeIn();
+            });
+          }
+          else
+            alert('Sorry, this dialog is too big. Please load it on bigger screen');
+        });
+
+        $('.close-overlay').click(function() {
+          $('.overlays').fadeOut(function() {
+            $('#dark-overlay').fadeOut();
+          });
+        });
+
+        $('#dark-overlay').click(function() {
+          $('.overlays').fadeOut();
+          $('#dark-overlay').fadeOut();
+        });
+      });
+    </script>
+
+<script src="../js/jquery-ui.min.js"></script>
+<script src="../js/d3.min.js"></script>
+<script src="../js/viz-1.0.3.js"></script>
+<script src="../js/visualgo_print.js"></script>
+<script src="../js/graph_library.js"></script>
+<script>
+      function runSlide(slide) {
+        if (slide == '1') {
+          $("#e-lecture").html("slide " + slide + " (" + 10 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2') {
+          $("#e-lecture").html("slide " + slide + " (" + 20 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3') {
+          $("#e-lecture").html("slide " + slide + " (" + 30 + "%)");
+          $("#draw").addClass("menu-highlighted");
+$("#examples").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4') {
+          $("#e-lecture").html("slide " + slide + " (" + 40 + "%)");
+          closeAll();
+$("#bruteforce").addClass("menu-highlighted");
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5') {
+          $("#e-lecture").html("slide " + slide + " (" + 50 + "%)");
+          closeAll();
+$("#dp").addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '6') {
+          $("#e-lecture").html("slide " + slide + " (" + 60 + "%)");
+          closeAll();
+$("#approximation").click();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99') {
+          $("#e-lecture").html("slide " + slide + " (" + 70 + "%)");
+          
+          hideEntireActionsPanel();
+ 
+          showStatusPanel();
+          showCodetracePanel();
+      
+        }
+        if (slide == '99-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 80 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 90 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 100 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+      }
+
+      window.onpopstate = function(event) {
+        var slide = event.state['slide'];
+        openSlide(slide, function() {
+          runSlide(slide);
+        });
+      };
+
+      function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'), sParameterName, i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+          if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+      };
+
+      function pushState(slideValue) {
+        var url = '/zh/tsp';
+        if (typeof slideValue != 'undefined' && slideValue != null) url += '?slide=' + slideValue;
+        window.history.pushState({slide: slideValue}, "slide " + slideValue, url);
+      }
+
+      function showPopup(callback) {
+        $('#popup').fadeIn(100, callback);
+      }
+
+      function hidePopup(callback) {
+        $('#popup').fadeOut(100, callback);
+      }
+
+      function showOverlay() {
+        $('#overlay').css('opacity', 0.5); 
+        $('#overlay').show();
+      }
+
+      function hideOverlay() {
+        $('#overlay').hide();
+        $("#e-lecture").html("");
+      }
+
+      function makeOverlayTransparent() {
+        $('#overlay').css('opacity', 0);
+      }
+
+      function hideSlide(callback) {
+        isPlaying = true;
+        closeSlide(cur_slide, function() {
+          makeOverlayTransparent();
+          setTimeout(callback, 700); // don't immediately run the animation, wait for 500ms+ first
+        });
+      }
+
+      function showSlide() {
+        isPlaying = false;
+        openSlide(cur_slide);
+        showOverlay();
+      }
+
+      $(function() {
+        var slide = getUrlParameter('slide');
+        
+        $.get('/hasvisited' + '/tsp', function(data) {
+          var hasVisited = data['hasvisited'] == '1';
+          if (!hasVisited) {
+            var postData = {
+              '_token': 'kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh',
+              'page': '/tsp'.substring(1),
+            };
+
+            $.post("/visitpage", postData, function(data) {
+              // non critical request...
+            });
+
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+            }
+
+            $("#mode-menu a").trigger("click");
+          }
+          else {
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+              $('#mode-menu a').click();
+            }    
+          }
+        }).fail(function() {
+          if (typeof slide != undefined && slide != null) {
+            cur_slide = slide;
+            $('#mode-menu a').click();
+          }
+        });
+
+        $('.mcq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#mcq-answer-' + questionId).val();
+          var userAnswer = $('input[type=radio][name=mcq-'+questionId+'-choice]:checked').val();
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green"><b>Correct!</b></font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red"><b>Wrong Answer! Try again...</b></font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('.msq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#msq-answer-' + questionId).val();
+
+          var answers = [];
+          $('input[type=checkbox][class=msq-choice]:checked').each(function() {
+            answers.push($(this).attr('id').split('-')[3]);
+          });
+          answers.sort();
+          var userAnswer = answers.join(',');
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green">Correct!</font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red">Wrong Answer! Try again...</font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('select.lecture-dropdown').change(function() {
+          var nextSlide = $(this).val();
+          openSlide(nextSlide, function() {
+            runSlide(nextSlide);
+            pushState(nextSlide);
+          });
+        });
+
+        $('#hide-popup').click(function() {
+          hidePopup();
+        });
+
+        $('#popup').hover(function() {
+          $('#hide-popup').show();
+        }, function() {
+          $('#hide-popup').hide();
+        });
+
+        $('#electure-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+        $('#electure-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('1');
+          pushState('1');
+        });
+      
+        $('#electure-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+        $('#electure-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+        $('#electure-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+      
+        $('#electure-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('6');
+          pushState('6');
+        });
+        $('#electure-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+      
+        $('#electure-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+        $('#electure-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+      
+        $('#electure-99 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+        $('#electure-99 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('6');
+          pushState('6');
+        });
+      
+        $('#electure-99-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+        $('#electure-99-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+      
+        $('#electure-99-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-3');
+          pushState('99-3');
+        });
+        $('#electure-99-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+      
+        $('#electure-99-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+      
+ 
+
+        // temporary quick fix for Google Chrome Aug 2016 issue..., put at last part so that everything else has been loaded
+        // setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 500);
+        // setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        // I turn it off on 14 June 2018, seems 'ok'?
+      });
+
+
+      function adjustPopupToImageSize() {
+        var width = $('#popup-image').prop('width');
+        var height = $('#popup-image').prop('height');
+        $('#popup').width(width + 20);
+        $('#popup').height(height + 20);
+        if (width == 0 && height == 0) {
+          setTimeout(adjustPopupToImageSize, 200);
+        } else {
+          showPopup();  
+        }
+      }
+
+      function POPUP_IMAGE(url) {
+        $('#popup-content').html('<img id="popup-image" src="' + url + '">');
+        adjustPopupToImageSize();
+      }
+
+      function URL(url) {
+        window.open(url, '_blank');
+      }
+
+      // Implement these functions in each visualisation
+      // This function will be called before entering e-Lecture Mode
+      function ENTER_LECTURE_MODE() {}
+
+      // This function will be called before returning to Explore Mode
+      function ENTER_EXPLORE_MODE() {}
+
+      // Lecture action functions
+      function CUSTOM_ACTION(action, data, mode) {}
+    </script>
+<script type="text/javascript">
+// TSP Widget
+// original author: Muhammad Rais Fathin Mudzakir
+
+var TSP = function() {
+  var self = this;
+  var gw = new GraphWidget();
+
+  var iVL = {};
+  var iEL = {};
+  var amountVertex = 0;
+  var amountEdge = 0;
+
+  this.getiVL= function() { return iVL; }
+  this.getiEL = function() { return iEL; } // TODO: REMOVE ME
+
+  this.getGraphWidget = function() { return gw; }
+
+  fixJSON = function() {
+    amountVertex = 0;
+    amountEdge = 0;
+    for (var key in iVL) amountVertex++;
+    for (var key in iEL) amountEdge++;
+  }
+
+  takeJSON = function(graph) {
+    if (graph == null) return;
+    graph = JSON.parse(graph);
+    iVL = graph["vl"];
+    iEL = graph["el"];
+    fixJSON();
+  }
+
+  statusChecking = function() {
+    $("#draw-status p").html("Put several points on the plane. Do not draw any edge as it will be drawn automatically after.");
+  }
+
+  warnChecking = function() {
+    var warn = "";
+    if (amountVertex >= 17) warn += "Too much vertex on screen, consider drawing smaller graph. ";
+    if (warn == "") $("#draw-warn p").html("No Warning");
+    else            $("#draw-warn p").html(warn);
+  }
+
+  errorChecking = function() {
+    var error = "";
+    if (amountVertex == 0) {
+      $("#draw-err p").html("Graph cannot be empty. ");
+      return;
+    }
+
+    if (amountVertex == 1) {
+      $("#draw-err p").html("Graph must contain at least one edge. ");
+      return;
+    }
+
+    if (amountEdge > 0) {
+      $("#draw-err p").html("There should be no edge in the graph");
+      return;
+    }
+
+    if (amountVertex > 8) {
+      $("#draw-err p").html("Too many vertices");
+      return;
+    }
+
+    var hasThreeCollinearPoints = false;
+    for (var i = 0; i < amountVertex; i++) {
+      for (var j = 0; j < amountVertex; j++) if (i != j) {
+        for (var k = 0; k < amountVertex; k++) if (i != k && j != k) {
+          var dy1 = iVL[j]["y"] - iVL[i]["y"], dx1 = iVL[j]["x"] - iVL[i]["x"];
+          var dy2 = iVL[k]["y"] - iVL[j]["y"], dx2 = iVL[k]["x"] - iVL[j]["x"];
+          // collinear if dy1/dx1 == dy2/dx2
+          if (Math.abs(dy1 * dx2 - dx1 * dy2) < 1e-6) {
+            $("#draw-err p").html("There should be no 3 collinear points. " + i + ", " + j + ", and " + k + " are collinear.");
+            return;
+          }
+        }
+      }
+    }
+
+    if (error == "") $("#draw-err p").html("No Error");
+    else             $("#draw-err p").html(error);
+  }
+
+
+  var intervalID;
+
+  this.startLoop = function() {
+    intervalID = setInterval(function() {
+      takeJSON(JSONresult);
+      warnChecking();
+      errorChecking();
+      statusChecking();
+    }, 100);
+  }
+
+  this.stopLoop = function() {
+    clearInterval(intervalID);
+  }
+
+  function createCompleteEdgeList(iVL) {
+    var n = 0;
+    for (var key in iVL) {
+      n++;
+    }
+    var ret = {};
+    var edgeCounter = 0;
+    for (var i = 0; i < n; i++) {
+      for (var j = i + 1; j < n; j++) {
+        var edge = {
+          u: i,
+          v: j,
+          w: Math.round(Math.hypot(iVL[i]['x'] - iVL[j]['x'], iVL[i]['y'] - iVL[j]['y']) / 10)
+        }
+        ret[edgeCounter++] = edge;
+      }
+    }
+    return ret;
+  }
+
+  this.draw = function() {
+    if ($("#draw-err p").html() != "No Error")
+      return false;
+    if ($("#submit").is(':checked'))
+      this.submit(JSONresult);
+    if ($("#copy").is(':checked'))
+      window.prompt("Copy to clipboard:", JSONresult);
+
+    iEL = createCompleteEdgeList(iVL);
+    graph = createState({iVL: iVL, iEL: iEL});
+    gw.updateGraph(graph, 500);
+    return true;
+  }
+
+  this.importjson = function(text) {
+    takeJSON(text);
+    statusChecking();
+    graph = createState(iVL, iEL);
+    gw.updateGraph(graph, 500);
+  }
+
+  this.getV = function() {
+    return amountVertex;
+  }
+
+  this.examples = function(id) {
+    iVL = getExampleGraph(id, VL);
+    iEL = getExampleGraph(id, EL);
+    fixJSON();
+    var newState = createState({iVL, iEL});
+    gw.updateGraph(newState, 500);
+    return true;
+  }
+
+  function nextPermutation(arr) {
+    function swap(i, j) {
+      var temp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = temp;
+    }
+    function reverse(i, j) {
+      while (i < j) {
+        swap(i, j);
+        i++;
+        j--;
+      }
+    }
+
+    var i = arr.length - 1;
+    while (i > 0 && arr[i - 1] >= arr[i]) {
+      i--;
+    }
+    if (i <= 0) return false;
+    var j = arr.length - 1;
+    while (arr[j] <= arr[i - 1]) {
+      j--;
+    }
+    swap(i - 1, j);
+    j = arr.length - 1;
+    reverse(i, j);
+    return true;
+  }
+
+  function bitmaskToString(bitmask) {
+    // safety measure
+    bitmask = parseInt(bitmask);
+    var bits = [];
+    do {
+      bits.push(bitmask % 2);
+      bitmask >>= 1;
+    } while (bitmask > 0);
+    return bits.reverse().join('');
+  }
+
+  // TODO: Preprocess to obtain O(1) query?
+  function getEdgeKey(u, v) {
+    u = parseInt(u); v = parseInt(v);
+    for (var key in iEL) {
+      var eu = iEL[key]['u'];
+      var ev = iEL[key]['v'];
+      if ((eu === u && ev === v) ||
+          (ev === u && eu === v)) {
+            return key;
+      }
+    }
+    return -1;
+  }
+
+  function fixEdgeDirection(edgeKey, u, v) {
+    if (iEL[edgeKey]['u'] !== u) {
+      var t = iEL[edgeKey]['u'];
+      iEL[edgeKey]['u'] = iEL[edgeKey]['v'];
+      iEL[edgeKey]['v'] = t;
+      return true;
+    }
+    return false;
+  }
+
+  this.bruteforce = function() {
+    if (amountVertex > 7) {
+      $('#bruteforce-err').html('这个图形太大了（&gt;7）。请绘制更小的图形');
+      return;
+    }
+    var cs, stateList = [];
+    var permutation = [];
+
+    var parent = [];
+
+    var edgeHighlighted = {};
+    var vertexHighlighted = {0: true};
+    var tour = [];
+    var optimumTour = [];
+    var minimumTourCost = 1000 * 1000 * 1000;
+
+    function dfs(u, bitmask, costSoFar) {
+
+      function updateGlobalMinimum(cost) {
+        if (cost >= minimumTourCost) {
+          return;
+        }
+        minimumTourCost = costSoFar + iEL[edgeKeyToOrigin]['w'];
+        for (var i = 0; i < amountVertex; i++) {
+          iVL[i]['extratext'] = '';
+        }
+        if (cost === 66) {
+          console.log(JSON.stringify(tour));
+        }
+        for (var i = 0; i < amountVertex; i++) {
+          var vertex = tour[i];
+          iVL[vertex]['extratext'] = '' + i;
+        }
+	optimumTour = tour.slice();
+	tourResult = tour.slice()
+      }
+
+      tour.push(u);
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        edgeHighlighted: edgeHighlighted
+      });
+      cs['status'] = 'Position = {position}, bitmask = {bitmask}.'
+        .replace('{position}', u)
+        .replace('{bitmask}', bitmaskToString(bitmask));
+      cs['lineNo'] = 1;
+      stateList.push(cs);
+      if (bitmask === (1 << amountVertex) - 1) {
+        // can only go to the origin
+        var edgeKeyToOrigin = getEdgeKey(u, 0);
+        edgeHighlighted[edgeKeyToOrigin] = true;
+        fixEdgeDirection(edgeKeyToOrigin, u, 0);
+        cs = createState({
+          iVL: iVL,
+          iEL: iEL,
+          vertexHighlighted: vertexHighlighted,
+          edgeHighlighted: edgeHighlighted,
+          edgeAnimated: [edgeKeyToOrigin]
+        });
+        cs['status'] = 'Every node has been visited. Returning the cost between the last and the original vertex. ' +
+                       'The current minimal tour cost is {cost}.'.replace('{cost}', costSoFar + iEL[edgeKeyToOrigin]['w']);
+        cs['lineNo'] = 2;
+        stateList.push(cs);
+        updateGlobalMinimum(costSoFar + iEL[edgeKeyToOrigin]['w']);
+
+        delete edgeHighlighted[edgeKeyToOrigin];
+
+        // backtrack
+        cs = createState({
+          iVL: iVL,
+          iEL: iEL,
+          vertexHighlighted: vertexHighlighted,
+          edgeHighlighted: edgeHighlighted
+        })
+        cs['status'] = 'Backtracking.';
+        cs['lineNo'] = [];
+        stateList.push(cs);
+        tour.pop();
+        return iEL[edgeKeyToOrigin]['w'];
+      }
+      var ret = 1000 * 1000 * 1000;
+      for (var i = 0; i < amountVertex; i++) {
+        if (~bitmask & (1 << i)) {
+          var edgeKey = getEdgeKey(u, i);
+          vertexHighlighted[i] = true;
+          edgeHighlighted[getEdgeKey(u, i)] = true;
+          var unused_needSwap = fixEdgeDirection(edgeKey, u, i);
+          cs = createState({
+            iVL: iVL,
+            iEL: iEL,
+            vertexHighlighted: vertexHighlighted,
+            edgeHighlighted: edgeHighlighted,
+            edgeAnimated: [edgeKey]
+          });
+          cs['status'] = 'Going from {u} to {v}.'.replace('{u}', u).replace('{v}', i);
+          cs['lineNo'] = [4, 5];
+          stateList.push(cs);
+          ret = Math.min(ret, dfs(i, bitmask | (1 << i), costSoFar + iEL[edgeKey]['w']) + iEL[edgeKey]['w']);
+          delete vertexHighlighted[i];
+          delete edgeHighlighted[getEdgeKey(u, i)];
+          cs = createState({
+            iVL: iVL,
+            iEL: iEL,
+            vertexHighlighted: vertexHighlighted,
+            edgeHighlighted: edgeHighlighted
+          });
+          cs['status'] = 'Backtracking';
+          cs['lineNo'] = [];
+          stateList.push(cs);
+        }
+      }
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        edgeHighlighted: edgeHighlighted
+      });
+      cs['status'] = 'With the current state ({position}, {bitmask}), '.replace('{position}', u).replace('{bitmask}', bitmaskToString(bitmask)) +
+                     'The cost to complete the tour out of the remaining graph is {cost}, '.replace('{cost}', ret) + 
+                     'The current minimal tour cost is {cost}.'.replace('{cost}', ret + costSoFar);
+      cs['lineNo'] = 6;
+      stateList.push(cs);
+      tour.pop();
+      return ret;
+    }
+
+    var result = dfs(0, 1, 0);
+
+    edgeHighlighted = {};
+    for (var i = 0; i < amountVertex; i++) {
+      var u = optimumTour[i];
+      var v = optimumTour[(i + 1) % amountVertex];
+      for (var key in iEL) {
+	if ((iEL[key]['u'] === u && iEL[key]['v'] === v) ||
+	    (iEL[key]['u'] === v && iEL[key]['v'] === u)) {
+	  edgeHighlighted[key] = true;
+	  break;
+	}
+      }
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      edgeHighlighted: edgeHighlighted,
+    });
+    cs['status'] = 'The optimum tour cost for this graph is {cost}.'.replace('{cost}', result);
+    stateList.push(cs);
+
+    for (var i = 0; i < amountVertex; i++) iVL[i]['extratext'] = '';
+
+    populatePseudocode('bruteforce');
+    gw.startAnimation(stateList);
+    return true;
+  }
+
+  // TODO(raisfathin): Implement algo reuse in the future.
+  function calculateOptimalValue() {
+    var memo = {};
+
+    function dfs(u, bitmask) {
+      if (bitmask == (1 << amountVertex) - 1) {
+	var edgeKeyToOrigin = getEdgeKey(u, 0);
+	return iEL[edgeKeyToOrigin]['w'];
+      }
+      var state = JSON.stringify([u, bitmask]);
+      if (memo[state] !== undefined) {
+	return memo[state];
+      }
+      var ret = 1000 * 1000 * 1000;
+      for (var i = 0; i < amountVertex; i++) {
+	if ((bitmask & (1 << i)) === 0) {
+	  var edgeKey = getEdgeKey(u, i);
+	  var cost = iEL[edgeKey]['w'] + dfs(i, bitmask | (1 << i));
+	  if (cost < ret) {
+	    ret = cost;
+	  }
+	}
+      }
+      return memo[state] = ret;
+    }
+
+    return dfs(0, 1);
+  }
+
+  this.dp = function() {
+    if (amountVertex > 7) {
+      $('#bruteforce-err').html('这个图形太大了（&gt;7）。请绘制更小的图形');
+      return;
+    }
+    var cs, stateList = [];
+    var permutation = [];
+
+    var parent = [];
+
+    var vertexHighlighted = {};
+    var vertexCovered = {};
+    var edgeHighlighted = {};
+    var tour = [];
+
+    // this stores the value and the ids in iEL that form an optimal path
+    // { "value": value, "edgeIds": [i, ..., j] }
+    var memo = {};
+
+    function dfs(u, bitmask) {
+      function makeCurrentVertexCovered() {
+        delete vertexHighlighted[u];
+        vertexCovered[u] = true;
+      }
+
+      // should be called before exiting
+      // ...scope (exit) { revertCoveredChange() }
+      function revertCoveredChange() {
+        delete vertexCovered[u];
+        vertexHighlighted[u] = true;
+      }
+
+      makeCurrentVertexCovered();
+
+      var state = JSON.stringify([u, bitmask]);
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        vertexCovered: vertexCovered,
+        edgeHighlighted: edgeHighlighted
+      });
+      cs['status'] = 'Position = {position}, bitmask = {bitmask}.'
+        .replace('{position}', u)
+        .replace('{bitmask}', bitmaskToString(bitmask));
+      cs['lineNo'] = 1;
+      stateList.push(cs);
+      if (bitmask === (1 << amountVertex) - 1) {
+        // can only go to the origin
+        var edgeKeyToOrigin = getEdgeKey(u, 0);
+        edgeHighlighted[edgeKeyToOrigin] = true;
+        fixEdgeDirection(edgeKeyToOrigin, u, 0);
+        cs = createState({
+          iVL: iVL,
+          iEL: iEL,
+          vertexHighlighted: vertexHighlighted,
+          vertexCovered: vertexCovered,
+          edgeHighlighted: edgeHighlighted,
+          edgeAnimated: [edgeKeyToOrigin],
+        });
+        cs['status'] = 'Every node has been visited. Returning the cost between the last and the original vertex';
+        cs['lineNo'] = 2;
+        stateList.push(cs);
+
+        delete edgeHighlighted[edgeKeyToOrigin];
+        // backtrack
+        cs = createState({
+          iVL: iVL,
+          iEL: iEL,
+          vertexHighlighted: vertexHighlighted,
+          vertexCovered: vertexCovered,
+          edgeHighlighted: edgeHighlighted
+        });
+        cs['status'] = 'Backtracking.';
+        cs['lineNo'] = [];
+        stateList.push(cs);
+        revertCoveredChange();
+        var tmp = {};
+        tmp[edgeKeyToOrigin] = true;
+        return {'value': iEL[edgeKeyToOrigin]['w'], 'edgeIds': tmp};
+      }
+      // check memo
+      if (memo[state] !== undefined) {
+        cs = createState({
+          iVL: iVL,
+          iEL: iEL,
+          vertexHighlighted: vertexHighlighted,
+          vertexCovered: vertexCovered,
+          edgeCovered: memo[state]['edgeIds'],
+          edgeHighlighted: edgeHighlighted
+        });
+        cs['status'] = 'The current state ({u}, {bitmask}) has been computed before; its value is {cost}.'
+          .replace('{u}', u)
+          .replace('{bitmask}', bitmaskToString(bitmask))
+          .replace('{cost}', memo[state]['value']);
+        cs['lineNo'] = [3, 4];
+        stateList.push(cs);
+        revertCoveredChange();
+        return memo[state];
+      } else {
+        cs = createState({
+          iVL: iVL,
+          iEL: iEL,
+          vertexHighlighted: vertexHighlighted,
+          vertexCovered: vertexCovered,
+          edgeHighlighted: edgeHighlighted
+        });
+        cs['status'] = 'The current state ({u}, {bitmask}) has not been computed before.'
+          .replace('{u}', u)
+          .replace('{bitmask}', bitmaskToString(bitmask));
+        cs['lineNo'] = 3;
+        stateList.push(cs);
+      }
+      var ret = 1000 * 1000 * 1000;
+      var edgeIds = {};
+      for (var i = 0; i < amountVertex; i++) {
+        if (~bitmask & (1 << i)) {
+          var edgeKey = getEdgeKey(u, i);
+          vertexCovered[i] = true;
+          revertCoveredChange();
+          edgeHighlighted[edgeKey] = true;
+          fixEdgeDirection(edgeKey, u, i);
+          cs = createState({
+            iVL: iVL,
+            iEL: iEL,
+            vertexHighlighted: vertexHighlighted,
+            vertexCovered: vertexCovered,
+            edgeHighlighted: edgeHighlighted,
+            edgeAnimated: [edgeKey],
+          });
+          cs['status'] = 'Going from {u} to {v}.'.replace('{u}', u).replace('{v}', i);
+          cs['lineNo'] = [5, 6];
+          stateList.push(cs);
+          var result = dfs(i, bitmask | (1 << i));
+          if (result['value'] + iEL[edgeKey]['w'] < ret) {
+            ret = result['value'] + iEL[edgeKey]['w'];
+            edgeIds = JSON.parse(JSON.stringify(result['edgeIds']));
+            edgeIds[edgeKey] = true;
+          }
+          delete vertexHighlighted[i];
+          delete edgeHighlighted[edgeKey];
+          makeCurrentVertexCovered();
+          cs = createState({
+            iVL: iVL,
+            iEL: iEL,
+            vertexHighlighted: vertexHighlighted,
+            vertexCovered: vertexCovered,
+            edgeHighlighted: edgeHighlighted
+          });
+          cs['status'] = 'Backtracking.';
+          cs['lineNo'] = [];
+          stateList.push(cs);
+        }
+      }
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        vertexCovered: vertexCovered,
+        edgeCovered: edgeIds,
+        edgeHighlighted: edgeHighlighted
+      });
+      cs['status'] = 'With the current state ({position}, {bitmask}), '.replace('{position}', u).replace('{bitmask}', bitmaskToString(bitmask)) +
+                     'The cost to complete the tour out of the remaining graph is {cost}.'.replace('{cost}', ret);
+      cs['lineNo'] = 7;
+      stateList.push(cs);
+      revertCoveredChange();
+      memo[state] = {'value': ret, 'edgeIds': edgeIds};
+      return memo[state];
+    }
+
+    var result = dfs(0, 1);
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL
+    });
+    cs['status'] = 'The optimum tour cost for this graph is {cost}.'.replace('{cost}', result['value']);
+    stateList.push(cs);
+
+    for (var i = 0; i < amountVertex; i++) iVL[i]['extratext'] = '';
+
+    populatePseudocode('dp');
+    gw.startAnimation(stateList);
+    return true;
+  }
+
+  this.two_approximation = function() {
+    var cs, stateList = [];
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL
+    });
+    cs['status'] = '';
+    cs['lineNo'] = [];
+    stateList.push(cs);
+
+    // returns the id of edges used in MST
+    function getMSTEdges() {
+      var edgeIds = [];
+      var ufds = new UfdsHelper();
+      for (var key in iVL) {
+        ufds.insert(key);
+      }
+      var edges = [];
+      for (var key in iEL) {
+        edges.push(new ObjectPair(iEL[key]['w'], parseInt(key)));
+      }
+      edges.sort(ObjectPair.compare);
+      for (var i in edges) {
+        var edgeKey = edges[i].getSecond();
+        var u = iEL[edgeKey]['u'], v = iEL[edgeKey]['v'];
+        if (!ufds.isSameSet(u, v)) {
+          edgeIds.push(edgeKey);
+          ufds.unionSet(u, v);
+        }
+      }
+      return edgeIds;
+    }
+
+    var mstEdges = getMSTEdges();
+
+    var edgeHighlighted = {};
+    for (var key in mstEdges) {
+      edgeHighlighted[mstEdges[key]] = true;
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      edgeHighlighted: edgeHighlighted
+    });
+    var jsonForMST = JSON.stringify({'vl': iVL, 'el': iEL});
+    cs['status'] = '点击 <b><u>这里</u></b> 查看MST的可视化.'.replace('{json}', encodeURIComponent(jsonForMST));
+    cs['lineNo'] = 1;
+    stateList.push(cs);
+
+    var adjList = [];
+    for (var key in iVL) {
+      adjList[key] = [];
+    }
+    for (var key in mstEdges) {
+      var edgeKey = mstEdges[key];
+      var u = iEL[edgeKey]['u'], v = iEL[edgeKey]['v'];
+      adjList[u].push([v, edgeKey]);
+      adjList[v].push([u, edgeKey]);
+    }
+
+    var visited = {};
+    var eulerTour = [];
+    
+    function dfs(u) {
+      visited[u] = true;
+      eulerTour.push(u);
+      for (var key in adjList[u]) {
+        var adj = adjList[u][key];
+        if (visited[adj[0]] === undefined) {
+          dfs(adj[0]);
+          eulerTour.push(u);
+        }
+      }
+    }
+
+    dfs(0);
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      edgeHighlighted: edgeHighlighted
+    });
+    cs['status'] = 'The euler tour of the MST is {euler_tour}.'.replace('{euler_tour}', JSON.stringify(eulerTour));
+    cs['lineNo'] = 2;
+    stateList.push(cs);
+
+    visited = {};
+
+    var underlinedRepeatedEulerTour = eulerTour;
+    var tspTour = [];
+    for (var key in underlinedRepeatedEulerTour) {
+      var vertex = underlinedRepeatedEulerTour[key];
+      var shouldBeUnderlineded = visited[vertex] !== undefined;
+      if (shouldBeUnderlineded) {
+        underlinedRepeatedEulerTour[key] = '<u>' + vertex + '</u>'
+      } else {
+        tspTour.push(vertex);
+        underlinedRepeatedEulerTour[key] = '' + vertex;
+      }
+      visited[vertex] = true;
+    }
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      edgeHighlighted: edgeHighlighted
+    });
+    cs['status'] = 'Euler tour with underlined repeated vertices is {euler_tour}.'
+      .replace('{euler_tour}', JSON.stringify(underlinedRepeatedEulerTour).replace(/\"/g, ''));
+    cs['lineNo'] = [3, 4];
+    stateList.push(cs);
+
+    if (tspTour.length !== amountVertex) {
+      alert("WUT " + tspTour.length);
+    }
+    var tspCost = 0;
+    edgeHighlighted = {};
+    for (var i = 0; i < amountVertex; i++) {
+      var cur = tspTour[i];
+      var next = tspTour[(i + 1) % amountVertex];
+      var edgeKey = getEdgeKey(cur, next);
+      tspCost += iEL[edgeKey]['w'];
+      edgeHighlighted[edgeKey] = true;
+    }
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      edgeHighlighted: edgeHighlighted
+    });
+    // TODO(raisfathin): Update the database.
+    cs['status'] = 'Found 2-approximation TSP tour {tour} with cost = {cost}. While the cost of the optimal solution = {optimal_cost}.'.replace('{tour}', JSON.stringify(tspTour)).replace('{cost}', tspCost).replace('{optimal_cost}', calculateOptimalValue());
+    cs['lineNo'] = [3, 4];
+    stateList.push(cs);
+
+    populatePseudocode('two_approximation');
+    gw.startAnimation(stateList);
+    return true;
+  }
+
+  this.one_half_approximation = function() {
+    var cs, stateList = [];
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL
+    });
+    var jsonForMST = JSON.stringify({'vl': iVL, 'el': iEL});
+    cs['status'] = '点击 <b><u>这里</u></b> 查看MST的可视化.'.replace('{json}', encodeURIComponent(jsonForMST));
+    cs['lineNo'] = [];
+    stateList.push(cs);
+
+    // returns the id of edges used in MST
+    function getMSTEdges() {
+      var edgeIds = [];
+      var ufds = new UfdsHelper();
+      for (var key in iVL) {
+        ufds.insert(key);
+      }
+      var edges = [];
+      for (var key in iEL) {
+        edges.push(new ObjectPair(iEL[key]['w'], parseInt(key)));
+      }
+      edges.sort(ObjectPair.compare);
+      for (var i in edges) {
+        var edgeKey = edges[i].getSecond();
+        var u = iEL[edgeKey]['u'], v = iEL[edgeKey]['v'];
+        if (!ufds.isSameSet(u, v)) {
+          edgeIds.push(edgeKey);
+          ufds.unionSet(u, v);
+        }
+      }
+      return edgeIds;
+    }
+
+    var mstEdges = getMSTEdges();
+
+    var edgeHighlighted = {};
+    for (var key in mstEdges) {
+      edgeHighlighted[mstEdges[key]] = true;
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      edgeHighlighted: edgeHighlighted
+    });
+    cs['status'] = ''
+    cs['lineNo'] = 1;
+    stateList.push(cs);
+
+    var adjList = [];
+    for (var key in iVL) adjList.push([]);
+    for (var key in mstEdges) {
+      var edgeKey = mstEdges[key];
+      var u = iEL[edgeKey]['u'], v = iEL[edgeKey]['v'];
+      adjList[u].push([v, edgeKey]);
+      adjList[v].push([u, edgeKey]);
+    }
+
+    // obtain a perfect matching on the graph, return the edge ids
+    function getMinCostMatchingEdges(vertexIds) {
+      var n = 0;
+      for (var key in vertexIds) n++;
+      if (n % 2 === 1) {
+        alert("ODD NUMBER OF ODD DEGREE VERTEX?");
+        return [];
+      }
+      var memo = {};
+      var what = {};
+
+      console.log("N = " + n);
+
+      function match(pos, mask) {
+        if (mask === (1 << n) - 1) {
+          return 0;
+        }
+        if (pos >= n) {
+          return 1000 * 1000 * 1000;
+        }
+        if (memo[mask] !== undefined) {
+          return memo[mask];
+        }
+        var ret = match(pos + 1, mask);
+        var cur = vertexIds[pos];
+        if ((mask & (1 << pos)) === 0) {
+          for (var i = 0; i < n; i++) {
+            var next = vertexIds[i];
+            if ((mask & (1 << i)) !== 0 || i === pos) {
+              continue;
+            }
+            var edgeKey = getEdgeKey(cur, next);
+            if (edgeKey === -1) {
+              alert("PANIC: KOK -1?");
+              console.log(cur + " " + next);
+              console.log(JSON.stringify(iEL));
+              continue;
+            }
+            var cost = iEL[edgeKey]['w'];
+            if (match(pos + 1, mask | (1 << pos) | (1 << i)) + cost < ret) {
+              ret = match(pos + 1, mask | (1 << pos) | (1 << i)) + cost;
+              what[mask] = [pos, i];
+            }
+          }
+        }
+        memo[mask] = ret;
+        return ret;
+      }
+
+      var cost = match(0, 0);
+
+      var matchingEdgeIds = [];
+      for (var mask = 0; mask !== (1 << n) - 1; ) {
+        if (what[mask] === undefined) {
+          alert("PANIC: WHAT = EMPTY???");
+          return matchingEdgeIds;
+        }
+        var a = what[mask][0];
+        var b = what[mask][1];
+        matchingEdgeIds.push(getEdgeKey(vertexIds[a], vertexIds[b]));
+        mask |= (1 << a) | (1 << b);
+      }
+      return matchingEdgeIds;
+    }
+
+    var oddDegreeVertices = [];
+    var vertexHighlighted = {};
+    for (var i = 0; i < amountVertex; i++) {
+      if (adjList[i].length % 2 === 1) {
+        oddDegreeVertices.push(i);
+        vertexHighlighted[i] = true;
+      }
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      edgeHighlighted: edgeHighlighted,
+      vertexHighlighted: vertexHighlighted
+    });
+    cs['status'] = 'Obtaining odd degree vertices in the MST. They are {vertices}.'.replace('{vertices}', JSON.stringify(oddDegreeVertices));
+    cs['lineNo'] = 2;
+    stateList.push(cs);
+
+    var matchingEdges = getMinCostMatchingEdges(oddDegreeVertices);
+    
+    var matchingCost = 0;
+    edgeHighlighted = {};
+
+    for (var key in matchingEdges) {
+      var edgeKey = matchingEdges[key];
+      edgeHighlighted[edgeKey] = true;
+      var u = iEL[edgeKey]['u'], v = iEL[edgeKey]['v'];
+      matchingCost += iEL[edgeKey]['w'];
+      adjList[u].push([v, edgeKey]);
+      adjList[v].push([u, edgeKey]);
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      vertexHighlighted: vertexHighlighted,
+      edgeHighlighted: edgeHighlighted
+    });
+    cs['status'] = 'Found a min cost matching with cost = {cost}.'.replace('{cost}', matchingCost);
+    cs['lineNo'] = 3;
+    stateList.push(cs);
+
+    // sanity check
+    for (var i = 0; i < amountVertex; i++) {
+      if (adjList[i].length % 2 === 1) {
+	alert('Degree of all vertices must be even after matching.');
+	return false;
+      }
+    }
+
+    var eulerTour = function() {
+      var stack = [];
+      var ptr = new Array(amountVertex);
+      var visit = new Array(amountVertex);
+      for (var i = 0; i < amountVertex; i++) {
+	ptr[i] = 0;
+	visit[i] = false;
+      }
+      stack.push(0);
+      var eulerTour = [];
+      while (stack.length > 0) {
+	var u = stack[stack.length - 1];
+	visit[u] = true;
+	if (ptr[u] == adjList[u].length) {
+	  eulerTour.push(u);
+	  stack.pop();
+	} else {
+	  stack.push(adjList[u][ptr[u]][0]);
+	  ptr[u]++;
+	}
+      }
+      for (var i = 0; i < amountVertex; i++) {
+	if (visit[i] === false) {
+	  alert("Disconnected?");
+	}
+      }
+      return eulerTour;
+    }();
+
+    edgeHighlighted = {};
+
+    for (var i = 0; i + 1 < eulerTour.length; i++) {
+      var cur = eulerTour[i];
+      var next = eulerTour[i + 1];
+      var edgeKey = getEdgeKey(cur, next);
+      edgeHighlighted[edgeKey] = true;
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      edgeHighlighted: edgeHighlighted
+    });
+    cs['status'] = 'The euler tour of the MST is {euler_tour}.'.replace('{euler_tour}', JSON.stringify(eulerTour));
+    cs['lineNo'] = 4;
+    stateList.push(cs);
+
+    visited = {};
+
+    var underlinedRepeatedEulerTour = eulerTour;
+    var tspTour = [];
+    for (var key in underlinedRepeatedEulerTour) {
+      var vertex = underlinedRepeatedEulerTour[key];
+      var shouldBeUnderlineded = visited[vertex] !== undefined;
+      if (shouldBeUnderlineded) {
+        underlinedRepeatedEulerTour[key] = '<u>' + vertex + '</u>'
+      } else {
+        tspTour.push(vertex);
+        underlinedRepeatedEulerTour[key] = '' + vertex;
+      }
+      visited[vertex] = true;
+    }
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      edgeHighlighted: edgeHighlighted
+    });
+    cs['status'] = 'Euler tour with underlined repeated vertices is {euler_tour}.'
+      .replace('{euler_tour}', JSON.stringify(underlinedRepeatedEulerTour).replace(/\"/g, ''));
+    cs['lineNo'] = [5, 6];
+    stateList.push(cs);
+
+    if (tspTour.length !== amountVertex) {
+      alert("WUT " + tspTour.length);
+    }
+    var tspCost = 0;
+    edgeHighlighted = {};
+    for (var i = 0; i < amountVertex; i++) {
+      var cur = tspTour[i];
+      var next = tspTour[(i + 1) % amountVertex];
+      var edgeKey = getEdgeKey(cur, next);
+      tspCost += iEL[edgeKey]['w'];
+      edgeHighlighted[edgeKey] = true;
+    }
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      edgeHighlighted: edgeHighlighted
+    });
+    // TODO(raisfathin): Update the database.
+    cs['status'] = 'Found 1.5-approximation TSP tour {tour} with cost = {cost}. While the cost of the optimal solution = {optimal_cost}'.replace('{tour}', JSON.stringify(tspTour)).replace('{cost}', tspCost).replace('{optimal_cost}', calculateOptimalValue());
+    cs['lineNo'] = [5, 6];
+    stateList.push(cs);
+
+    populatePseudocode('one_half_approximation');
+    gw.startAnimation(stateList);
+    return true;
+  }
+
+  function createState(options) {
+    var iVLObject = options["iVL"];
+    var iELObject = options["iEL"];
+    var vertexHighlighted = options["vertexHighlighted"];
+    var edgeHighlighted = options["edgeHighlighted"];
+    var vertexTraversed = options["vertexTraversed"];
+    var edgeTraversed = options["edgeTraversed"];
+    var edgeQueued = options["edgeQueued"];
+    var edgeCovered = options["edgeCovered"];
+    var vertexCovered = options["vertexCovered"];
+    var vertexGreyed = options["vertexGreyed"];
+    var edgeAnimated = options["edgeAnimated"];
+
+    var isDefaultGrey = true;
+    if ((vertexHighlighted == null) && (edgeHighlighted == null) && (vertexTraversed == null) && (edgeTraversed == null) && (edgeQueued == null) && (vertexGreyed == null))
+      isDefaultGrey = false;
+    if (vertexHighlighted == null) vertexHighlighted = {};
+    if (edgeHighlighted == null) edgeHighlighted = {};
+    if (vertexTraversed == null) vertexTraversed = {};
+    if (edgeTraversed == null) edgeTraversed = {};
+    if (edgeQueued == null) edgeQueued = {};
+    if (vertexGreyed == null) vertexGreyed = {};
+    if (edgeAnimated == null) edgeAnimated = [];
+
+    var key;
+    var state = {
+      "vl": {},
+      "el": {}
+    };
+
+    if (isDefaultGrey) {
+      for (key in iVLObject) {
+        state["vl"][key] = {};
+        state["vl"][key]["cx"] = iVLObject[key]["x"];
+        state["vl"][key]["cy"] = iVLObject[key]["y"];
+        state["vl"][key]["text"] = key;
+        state["vl"][key]["state"] = VERTEX_GREY_OUTLINE;
+        state["vl"][key]["extratext"] = iVLObject[key]["extratext"];
+      }
+      for (key in iELObject) {
+        state["el"][key] = {};
+        state["el"][key]["vertexA"] = iELObject[key]["u"];
+        state["el"][key]["vertexB"] = iELObject[key]["v"];
+        state["el"][key]["type"] = EDGE_TYPE_UDE;
+        state["el"][key]["weight"] = iELObject[key]["w"];
+        state["el"][key]["state"] = EDGE_GREY;
+        state["el"][key]["displayWeight"] = true;
+        state["el"][key]["animateHighlighted"] = false;
+      }
+    }
+    else {
+      for (key in iVLObject) {
+        state["vl"][key] = {};
+        state["vl"][key]["cx"] = iVLObject[key]["x"];
+        state["vl"][key]["cy"] = iVLObject[key]["y"];
+        state["vl"][key]["text"] = key;
+        state["vl"][key]["state"] = VERTEX_DEFAULT;
+        state["vl"][key]["extratext"] = iVLObject[key]["extratext"];
+      }
+      for (key in iELObject) {
+        state["el"][key] = {};
+        state["el"][key]["vertexA"] = iELObject[key]["u"];
+        state["el"][key]["vertexB"] = iELObject[key]["v"];
+        state["el"][key]["type"] = EDGE_TYPE_UDE;
+        state["el"][key]["weight"] = iELObject[key]["w"];
+        state["el"][key]["state"] = EDGE_DEFAULT;
+        state["el"][key]["displayWeight"] = true;
+        state["el"][key]["animateHighlighted"] = false;
+      }
+    }
+
+    for (key in edgeAnimated) {
+      var edgeKey = edgeAnimated[key];
+      state["el"][edgeKey]["animateHighlighted"] = true;
+    }
+
+    for (key in edgeQueued) {
+      key1 = state["el"][key]["vertexA"];
+      key2 = state["el"][key]["vertexB"]
+      state["vl"][key1]["state"] = VERTEX_DEFAULT;
+      state["vl"][key2]["state"] = VERTEX_DEFAULT;
+      state["el"][key]["state"] = EDGE_DEFAULT;
+    }
+
+    for (key in iVL) {
+      if (vertexGreyed[key] === undefined) {
+        state["vl"][key]["state"] = VERTEX_DEFAULT;
+      }
+    }
+
+    for (key in edgeCovered) state["el"][key]["state"] = EDGE_BLUE;
+    for (key in vertexCovered) state["vl"][key]["state"] = VERTEX_BLUE_FILL;
+    for (key in vertexHighlighted) state["vl"][key]["state"] = VERTEX_HIGHLIGHTED; // VERTEX_BLUE_FILL;
+    for (key in edgeHighlighted) state["el"][key]["state"] = EDGE_HIGHLIGHTED; // EDGE_BLUE;
+    for (key in vertexTraversed) state["vl"][key]["state"] = VERTEX_TRAVERSED; // VERTEX_GREEN_FILL;
+    for (key in edgeTraversed) state["el"][key]["state"] = EDGE_TRAVERSED; // EDGE_GREEN;
+
+    return state;
+  }
+
+  function populatePseudocode(act) {
+    var codes = [];
+    switch (act) {
+      case 'bruteforce':
+        codes.push('function findTour(pos, mask)');
+        codes.push('&nbsp;if every node has been visited: return cost[pos][0]');
+        codes.push('&nbsp;min_cost = ∞');
+        codes.push('&nbsp;for every unvisited node V');
+        codes.push('&nbsp;&nbsp;min_cost &lt;?= findTour(v,mask|(1&lt;&lt;V))+cost[pos][v]');
+        codes.push('&nbsp;return min_cost');
+        codes.push('');
+        break;
+      case 'dp':
+        codes.push('function findTour(pos, mask)');
+        codes.push('&nbsp;if every node has been visited: return cost[pos][0]');
+        codes.push('&nbsp;if (pos, mask) in memo: return memo[(pos, mask)]');
+        codes.push('&nbsp;min_cost = ∞');
+        codes.push('&nbsp;for every unvisited node V');
+        codes.push('&nbsp;&nbsp;min_cost &lt;?= findTour(v,mask|(1&lt;&lt;V))+cost[pos][v]');
+        codes.push('&nbsp;return memo[(pos, mask)] = min_cost');
+        break;
+      case 'two_approximation':
+        codes.push('Get the MST of the (complete) graph');
+        codes.push('Duplicate each edge in the MST and obtain a eulerian tour');
+        codes.push('从取得的欧拉路径中取得一个TSP路径，并');
+        codes.push('  skip repeated vertices');
+        codes.push('');
+        codes.push('');
+        codes.push('');
+        break;
+      case 'one_half_approximation':
+        codes.push('Get the MST of the (complete) graph');
+        codes.push('Find odd degree vertices in the MST');
+        codes.push('在这些顶点中寻找最少花费的匹配');
+        codes.push('Obtain a eulerian tour using edges used in MST + matching');
+        codes.push('Obtain a TSP tour from the obtained eulerian tour and');
+        codes.push('  skip repeated vertices');
+        codes.push('');
+        break;
+      default:
+        alert("WRONG POPULATE PSEUDOCODE");
+    }
+    for (var i = 0; i < 7; i++) {
+      $('#code' + (i + 1)).html(codes[i]);
+    }
+  }
+}
+
+
+
+// TSP Actions
+var actionsWidth = 150;
+var statusCodetraceWidth = 430;
+
+var isExamplesOpen = false, isBruteforceOpen = false, isDPOpen = false, isApproximationOpen = false;
+
+function openExamples() {
+  if (!isExamplesOpen) {
+    $('.examples').fadeIn('fast');
+    isExamplesOpen = true;
+  }
+}
+
+function closeExamples() {
+  if (isExamplesOpen) {
+    $('.examples').fadeOut('fast');
+    isExamplesOpen = false;
+  }
+}
+
+function openBruteforce() {
+  if (!isBruteforceOpen) {
+    $('.prims').fadeIn('fast');
+    isBruteforceOpen = true;
+  }
+}
+
+function closeBruteforce() {
+  if (isBruteforceOpen) {
+    $('.bruteforce').fadeOut('fast');
+    $('#bruteforce-err').html("");
+    isBruteforceOpen = false;
+  }
+}
+
+function openDP() {
+  if (!isDPOpen) {
+    $('.dp').fadeIn('fast');
+    isDPOpen = true;
+  }
+}
+
+function closeDP() {
+  if (isDPOpen) {
+    $('.dp').fadeOut('fast');
+    $('#dp-err').html('');
+    isDPOpen = false;
+  }
+}
+
+function openApproximation() {
+  if (!isApproximationOpen) {
+    $('.approximation').fadeIn('fast');
+    isApproximationOpen = true;
+  }
+}
+
+function closeApproximation() {
+  if (isApproximationOpen) {
+    $('.approximation').fadeOut('fast');
+    $('#approximation-err').html('');
+    isApproximationOpen = false;
+  }
+}
+
+function closeAll() {
+  closeExamples();
+  closeBruteforce();
+  closeDP();
+  closeApproximation();
+}
+
+function hideEntireActionsPanel() {
+  closeAll();
+  hideActionsPanel();
+}
+
+
+
+// local
+write(true, false);
+var mw, gw, randomGraphID;
+
+$(function() {
+  $('#play').hide();
+  mw = new TSP();
+  gw = mw.getGraphWidget();
+  var options = [K4, K5, K8, CS4234_TUTORIAL_THREE];
+  mw.examples(options[Math.floor(Math.random()*4)]);
+  randomGraphID = -1;
+
+  var graphJSON = getQueryVariable("create");
+  if (graphJSON.length > 0) {
+    importjson(graphJSON);
+    window.history.pushState("object or string", "Title", window.location.href.split('?')[0]);
+  }
+
+  $('#draw').click(function() {
+    closeAll();
+  });
+
+  $('#examples').click(function() {
+    closeAll();
+    openExamples();
+  })
+
+  $('#bruteforce').click(function() {
+    closeAll();
+    openBruteforce();
+  });
+
+  $('#approximation').click(function() {
+    closeAll();
+    openApproximation();
+  });
+});
+
+function importjson(text) {
+  if (isPlaying) stop();
+  if (mode == "exploration") {
+    mw.importjson(text);
+    closeExamples();
+    isPlaying = false;
+  }
+}
+
+function drawGraph() {
+  if (isPlaying) stop();
+  if (mode == "exploration") {
+    $('#dark-overlay').fadeIn(function() {
+      $('#drawgraph').fadeIn();
+    });
+    mw.startLoop();
+    isPlaying = false;
+  }
+}
+
+function drawDone() {
+  if (!mw.draw()) return false;
+  mw.stopLoop();
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+function drawCancel() {
+  mw.stopLoop();
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+function example(id) {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if ((mode == "exploration") && mw.examples(id)) {
+      $('#progress-bar').slider("option", "max", 0);
+      closeExamples();
+      isPlaying = false;
+    }
+  }, 500);
+}
+
+function bruteforce() {
+  if (isPlaying) stop();
+  commonAction(mw.bruteforce(), '简单模式匹配');
+}
+
+function dp() {
+  if (isPlaying) stop();
+  commonAction(mw.dp(), '动态编程');
+}
+
+function two_approximation() {
+  if (isPlaying) stop();
+  commonAction(mw.two_approximation(), '2倍近似TSP');
+}
+
+function one_half_approximation() {
+  if (isPlaying) stop();
+  commonAction(mw.one_half_approximation(), '1.5倍近似TSP');
+}
+</script>
+</body>
+</html>

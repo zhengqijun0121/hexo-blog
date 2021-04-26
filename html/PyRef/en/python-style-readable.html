@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+
+<link rel="stylesheet" href="../css/book.css" />
+<script src="../js/book.js"></script>
+
+<style>
+pre.reveal { }  /* mark pre that should get this setup */
+span.phide { display:none; }
+span.pshow { color:darkgreen;} /* display:inline; */
+</style>
+
+</head>
+<body>
+
+<nav><div id="toc"></div></nav>
+
+<main>
+
+<h1>Python Style Readable</h1>
+
+<h2>Readable Code</h2>
+
+<p>What is the best code? Different situations call for different goals, but an excellent all purpose goal for code is that it is <b>readable</b>. When someone looks at the code, what it does is apparent. The code "reads", as the combination of function names and variable narrate what it's doing.</p>
+
+<p>Readable code tends to be less buggy, since a bug is a case where what the code says literally diverges from what the author had in mind.</p>
+
+<h2>Readable 1.0 - Good Function Names</h2>
+
+<p>Good function names are perhaps the first step in readable code. Function names often use verbs indicating what calling the function will accomplish. Look at how the function names below make the surrounding code read nicely.</p>
+
+<pre>
+delete_files(files)
+
+
+if is_url_sketchy(url):
+  ...
+
+
+s = remove_digits(s)
+
+
+count = count_duplicates(coordinates)
+
+
+canvas.draw_line(0, 0, 10, 10)
+</pre>
+
+<p>The name of a function does not need to spell out everything that's true about a function. In Python, the sweet spot is probably one to three words, as the underbar <code>_</code> is not the easiest to type, although it is easy to look at.</p>
+
+<h2>compute_ ?</h2>
+
+<p>Is it a good idea for a function to start with a word like <code>compute_</code>? There is no fixed answer about that. On the one hand, this is often quite accurate! The function does compute and return something when called, so the verb is fair. On the other hand, computing things is what most functions do, so we could say it's kind of implied. A good way to judge is imagine what the code calling this function will look like. Below are a couple functions that compute distance. What do you think of the naming?</p>
+
+<pre>
+if distance(loc1, loc2) < 1.0:
+  ...
+
+
+# Is "compute_distance" a better name?
+if compute_distance(loc1, loc2) < 1.0:
+  ...
+</pre>
+
+<p>In this case, the word "distance" has a clear meaning, so the <code>compute_</code> does not add much.</p>
+
+<!-- compute_lox -->
+
+<h2>Principle Of Least Surprise</h2>
+
+<p>The Principle of Least Surprise - when designing a function, e.g. <code>is_url_sketchy(url)</code>, imagine that another programmer writes code to call this function, and all they know is its name since they don't bother to read the documentation. Therefore, the function should only take actions that one might expect given its name. So <code>is_url_sketchy()</code> should not, say, delete a bunch of files.</p>
+
+<h2>Readability 2.0 - Good Variable Names</h2>
+
+<p>The code in a function is a story, a narrative, and the variable and function names help you keep straight the parts of the story. A variable name provides a short label for that bit of data in the story.</p>
+
+<p>Many bugs result from the programmer mixing up two data values just in the two minutes they are working on those lines, resulting in a round of debugging. Therefor the payoff for good variable names is <b>right now</b>. It's more efficient to keep things straight the whole time, and good variable names are a great start.</p>
+
+<h2>brackets() - Good Var Names</h2>
+
+<p>Previous lecture example - "left" is a fine variable name in there. "x" or "i" would not be good choices.</p>
+
+<p>brackets(s): Look for a pair of brackets '[...]' within s, and return the text between the brackets, so the string 'cat[dog]bird' returns 'dog'. If there are no brackets, return the empty string. If the brackets are present, there will be only one of each, and the right bracket will come after the left bracket.</p>
+
+<pre>
+def brackets(s):
+    left = s.find('[')
+    if left == -1:
+        return ''
+    right = s.find(']')
+    return s[left + 1: right]
+</pre>
+
+<h2>Good Variable Names</h2>
+
+<p>For example, the variables <code>left</code> and <code>right</code> are fine variable names, holding the indexes of the left and right brackets. Short variable names are good, easy to type and easy to read. A longer name is needed if there are more details that need to be spelled out. In this case just <code>left</code> and <code>right</code> capture the main idea with one word. The variable name does not need to capture every detail of the data value, just the most important details and enough distinguish from the other values flowing through the function.</p>
+
+<p>Possible variable names for <code>left</code>, longer and shorter:</p>
+
+<pre>
+left                  # fine
+left_index            # fine
+
+int_index_of_left_paren   # too long
+                          # Don't need to spell out
+                          # every detail
+
+index_of_left_paren       # too long
+
+li                    # too short/cryptic
+l                     # too short, and don't use "l"
+</pre>
+
+<h2>Sometimes Need More Words</h2>
+
+<p>Suppose the algorithm stored both the index and the character at that index - two values it would be easy to mix up. In that case, the code would need two distinct variable names to keep the two values straight:</p>
+
+<pre>
+left_index       # index of left char
+left_ch          # char at that index
+</pre>
+
+<h2>brackets() - Bad Var Names</h2>
+
+<p>Here is a buggy version of brackets() with bad variables names. Look at the last line. Is that line correct? For each var, you have to look up to remind yourself what value it is. That's the sign of bad variable naming! The name of the variable should tell the story <i>right there</i>, not constantly scrolling up to remind yourself what it holds.</p>
+
+<pre>
+def brackets(x):
+    z = x.find('[')
+    if z == -1:
+        return ''
+    y = x.find(']')
+    return x[y + 1: z]  # buggy?
+</pre>
+
+<h2>Idiomatic Short Variable Names</h2>
+
+<p>There are some circumstances that are so common and idiomatic, that there are standard, idiomatic short variable names tuned for that situation.</p>
+
+<ul class=slide>
+<li><code>s</code> - idiomatic generic string
+<li><code>ch</code> or <code>char</code> - character from a string
+<li><code>i, j</code> - idiomatic index loop: 0, 1, 2, ... max-1
+<li><code>n</code> - idiomatic generic int value
+<li><code>x, y</code> - idiomatic x, y 2-d coordinates
+<li><code>f</code> - idiomatic opened file
+<li><code>lst</code> - idiomatic list variable
+<br />No 1-letter variable for lists, since lowercase 'l' should be avoided
+<li><code>d</code> - idiomatic dict variable
+</ul>
+
+<p>Never name a variable lowercase L or O - these look too much like the digits 1 and 0.</p>
+
+<p>Using a generic variable like the string <code>s</code> in <code>brackets(s):</code> means the function should work with any string and we are not making any more specific claim about the input string. If we were writing a function that took a url string or an email string, we would name the parameter <code>url</code> or <code>email</code>.</p>
+
+<h2>switcheroo(s) Example</h2>
+
+<p>Here is a kind of difficult string logic problem. Getting this perfect is not so easy, but the variable names can help</p>
+
+<p class=inset>switcheroo(s): Given a string s of even length, if the string length is 2 or less,
+return it unchanged.
+Otherwise take off the first  and last chars.
+Consider the remaining middle piece.
+Split the middle into front and back halves.
+Swap the order of these two halves, and return
+the whole thing with the first and last chars
+restored.
+So 'x1234y' returns 'x3412y'.</p>
+
+<h2>switcheroo(s) - Good Var Names</h2>
+
+<p>The variable names here help us keep the various parts clear through the narrative, even at the moment we are working out each line. The variable
+names are naturally similar to those in the specification.</p>
+
+<pre>
+def switcheroo(s):
+    if len(s) <= 2:
+        return s
+    first = s[0]
+    last = s[len(s) - 1]
+    middle = s[1:len(s) - 1]
+    halfway = len(middle) // 2
+    return first + middle[halfway:] + middle[:halfway] + last
+</pre>
+
+<p>The variable names don't have to be super detailed. Just enough to label the concepts through this narrative. Note that the one letter "s" is fine - there is nothing semantic about s that we need to keep track of beyond it's a string. In contrast, "first" "last" etc. have specific roles in the algorithm, and each one-word variable names tries to capture that role.</p>
+
+<h2>Decomp By Var Strategy</h2>
+
+<p>Look at the variables "first = .." "last = .." above. One variable at a time, they are picking off parts of the problem, making little progress steps. This is a nice strategy to keep in mind. If you are staring at the blank screen with the whole problem to do, think of some sub-part of the problem you could compute and store in a local variable. Keep going this way, picking off and naming bits of the solution. This is just the old divide-and-conquer strategy, but applied to these smaller steps within a function.</p>
+
+<h2>switcheroo(s) - Bad Var Names</h2>
+
+<p>Here is the above function written without any good variables, and without the benefit of spacing the steps of the algorithm out over several lines. Just because something is 1 line, does not make it better. I believe it's correct, but it' hard to tell!</p>
+
+<pre>
+def switcheroo(s):
+    if len(s) <= 2:
+        return s
+    return (s[0] + s[1:len(s) - 1][(len(s) - 2) // 2:] +
+            s[1:len(s) - 1][:(len(s) - 2) // 2] + s[len(s) - 1])
+</pre>
+
+<p>This is a good example of <b>not readable</b>.</p>
+
+<p>The bad code also repeats computations, like <code>(len(s) - 2) // 2</code>. The good solution computes that value once and stores it in the variable <code>halfway</code> for use by later lines.</p>
+
+<h2>Avoid Re-Computation - Store in Var</h2>
+
+<p>Suppose we have this loop - n copies of the lowercase form of s. This code is fine, we will just point out a slight improvement.</p>
+
+<pre>
+def n_copies(s, n):
+    result = ''
+    for i in range(n):
+        result += s.lower()
+    return result
+</pre>
+
+<p>Notice that <code>s.lower()</code> computes the lowercase form of s <b>in the loop</b>. The readability is fine, but the code computes that lowercase form again and again and again. The lowercase of <code>'Hello'</code> is  the same <code>'hello'</code> every time through the loop. This is a little wasteful. Could compute it once, store in a variable, use the variable in the loop:</p>
+
+<pre>
+def n_copies(s, n):
+    result = ''
+    low = s.lower()
+    for i in range(n):
+        result += low
+    return result
+</pre>
+
+<p>This is a slight improvement. It would be especially important if the <code>s.lower()</code> computation was slow. The most important requirement of a function is calling its helpers correctly to compute the correct result. Here we are looking at a secondar goal - is there unnecessary re-computation we could eliminate.</p>
+
+&nbsp;
+
+<p>&nbsp;</p>
+
+<p class="small">Copyright 2020 Nick Parlante</p>
+
+</main>
+
+</body>
+</html>

@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="A Segment Tree (ST) is a binary tree that is build on top of an (usually integer) array so that we can solve the Range Min/Max/Sum Query as well as any Range Update Query of this array in O(log N) time instead of the naive O(N) time. Given an array A of N (usually integer) elements, we can build the corresponding RMinQ/RMaxQ/RSumQ Segment Tree in O(N) time.">
+<meta name="keywords" content="Segment Tree ST Range Min Max Sum Query RMQ RSQ">
+ 
+<meta name="csrf-token" content="kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<meta property="og:image" content="../img/png/segmenttree.png">
+<title>VisuAlgo - Segment Tree</title>
+<link rel="icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="114x114" href="../img/favicon.png">
+<link rel="stylesheet" type="text/css" href="../fonts/silkscreen/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="../css/common.css">
+<link rel="stylesheet" href="../css/viz-1.0.1.css">
+<link rel="stylesheet" href="../css/visual.css">
+<link rel="stylesheet" href="../css/drawgraph.css">
+<style>
+      #e-lecture {
+        top: 45px;
+        right: 130px;
+        width: 400px;
+        display: block;
+        background: none;
+        /*overflow: normal;*/
+        white-space: normal;
+        text-align: right;
+        color: black; font-weight: bold; font-size: 20px;
+      }
+      .electure-prev, .electure-next { /* force update, copied from viz.css */
+        position: absolute;
+        /* bottom: -12px; */
+        top: -20px;
+        /*bottom: '';*/
+        padding: 3px 8px;
+        background: #999;
+        color: white;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .electure-prev {
+        left: -10px;
+        /* right: 30px; */
+      }
+      .electure-next {
+        right: -10px;
+        color: white;
+      }
+    </style>
+<style>
+.create { bottom: 119px; }
+  #create-input input {
+    width: 175px;
+    height: 22px;
+    padding: 5px 8px 5px;
+  }
+  #create-random p { padding: 5px 10px 10px; }
+  #create-random-sorted p { padding: 5px 10px 10px; }
+  #create-random-fixed-size p { padding: 5px 10px 10px; }
+  #create-go p { padding: 5px 10px 10px; }
+  #create-go p { padding: 5px 10px 10px; }
+  #create-err { padding: 5px 0px; }
+
+.rmq { bottom: 90px; }
+  #rmq-input-l input {
+    width: 25px;
+    height: 22px;
+    padding: 5px 8px 5px;
+  }
+  #rmq-input-r input {
+    width: 25px;
+    height: 22px;
+    padding: 5px 8px 5px;
+  }
+  #rmq-go p { padding: 5px 10px 10px; }
+  #rmq-err { padding: 5px 0px; }
+
+.update { bottom: 60px; }
+  .remind { padding: 7px 10px 8px 5px; float: left; }
+  #update-input-l input {
+    width: 25px;
+    height: 22px;
+    padding: 5px 8px 5px;
+  }
+  #update-input-r input {
+    width: 25px;
+    height: 22px;
+    padding: 5px 8px 5px;
+  }
+  #update-input-value input {
+    width: 25px;
+    height: 22px;
+    padding: 5px 8px 5px;
+  }
+  #update-go p { padding: 5px 10px 10px; }
+  #update-err { padding: 5px 0px; }
+</style>
+<script>
+      function changeURL() {
+        var URL = window.location.href.split('/');
+        var val = document.getElementById("Language").value;
+        URL[3] = val;
+        window.location.assign(URL.join('/'));
+      }
+    </script>
+</head>
+<body>
+<div id="top-bar">
+<a id="home" href="/">Visu<span class="colour">Algo</span><span style="font-size: 40%">.net</span></a>
+/
+<select id="Language" onchange="changeURL()">
+<option value="zh" selected>zh</option>
+</select>
+/segmenttree
+<span id="title">
+<a id='title-Min' class='selected-viz'>Min Segment Tree</a>
+<a id='title-Max'>Max ST</a>
+<a id='title-Sum'>Sum ST</a>
+</span>
+<div id="mode-menu">
+<div id='mode-button' title='exploration'>示例模式 &#9663;</div>
+<div id='other-modes'>
+<a title='e-Lecture'>电子讲座模式</a>
+</div>
+</div>
+</div>
+<div id="dark-overlay"></div>
+<div id="status" class="panel"><p></p></div>
+<div id="status-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide status panel" /></div>
+<div id="codetrace" class="panel">
+<p id="code1" style="padding-top: 10px;"></p>
+<p id="code2"></p>
+<p id="code3"></p>
+<p id="code4"></p>
+<p id="code5"></p>
+<p id="code6"></p>
+<p id="code7" style="padding-bottom: 10px;"></p>
+</div>
+<div id="codetrace-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide codetrace panel" /></div>
+<div id="left-bar"></div>
+<div id="right-bar"></div>
+<div id="media-controls">
+<div id='speed-control'>减速<div id='speed-input'></div>加速</div>
+<span id="go-to-beginning" class="media-control-button" title="go to beginning" onclick=goToBeginning()><img src="../img/goToBeginning.png" alt="go to beginning"></span>
+<span id="previous" class="media-control-button" title="step backward" onclick=stepBackward()><img src="../img/prevFrame.png" alt="previous frame"></span>
+<span id="pause" class="media-control-button" title="pause" onclick=pause()><img src="../img/pause.png" alt="pause"></span>
+<span id="play" class="media-control-button" title="play" onclick=play()><img src="../img/play.png" alt="play"></span>
+<span id="next" class="media-control-button" title="step forward" onclick=stepForward()><img src="../img/nextFrame.png" alt="next frame"></span>
+<span id="go-to-end" class="media-control-button" title="go to end" onclick=goToEnd()><img src="../img/goToEnd.png" alt="go to end"></span>
+<div id="progress-bar" class="media-control-button"></div>
+</div>
+<div id='viz'></div>
+<div id='current-action' class='panel'></div>
+<div id='e-lecture' class='panel'></div>
+<div id="overlay" hidden></div>
+<div id="dropdown-temp-holder" hidden></div>
+<div id="electure-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<span style="white-space: pre-wrap;">A Segment Tree (ST) is a binary tree that is build on top of an (usually integer) array so that we can solve the Range Min/Max/Sum Query as well as any Range Update Query of this array in O(log </span><b style="white-space: pre-wrap;">N</b><span style="white-space: pre-wrap;">) time instead of the naive O(</span><b style="white-space: pre-wrap;">N</b><span style="white-space: pre-wrap;">) time. Given an array A of </span><b style="white-space: pre-wrap;">N</b><span style="white-space: pre-wrap;"> (usually integer) elements, we can build the corresponding RMinQ/RMaxQ/RSumQ Segment Tree in O(</span><b style="white-space: pre-wrap;">N</b><span style="white-space: pre-wrap;">) time.</span>
+<hr>
+<p><b>Remarks</b>: By default, we show e-Lecture Mode for first time (or non logged-in) visitor.<br>
+Please <a href="login"><u>login</u></a> if you are a repeated visitor or <a href="login"><u>register</u></a> for an (optional) free account first.</p>
+<div id='electure-dropdown'>
+<select class="lecture-dropdown" style="width:100%">
+<option value="1">1. Segment Tree</option>
+<option value="2">2. Modes</option>
+<option value="3">3. Visualisation </option>
+<option value="4">4. Operations</option>
+<option value="5">5. Implementation</option>
+<option value="99">99. 状态面板</option>
+<option value="99-1">&nbsp;&nbsp;&nbsp;99-1. 代码追踪面板</option>
+<option value="99-2">&nbsp;&nbsp;&nbsp;99-2. 媒体控制</option>
+<option value="99-3">&nbsp;&nbsp;&nbsp;99-3. 返回 ”探索模式“</option>
+</select>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-next' data-nextid="2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2" class="electure-dialog" style="top:60px;left:230px;width:350px;">
+<p>To toggle between the RMinQ/RMaxQ/RSumQ Segment Tree, select the respective header.</p>
+<hr>
+<p>Pro-tip: Since you are not <a href="login"><u>logged-in</u></a>, you may be a first time visitor who are not aware of the following keyboard shortcuts to navigate this e-Lecture mode: <b>[PageDown]</b> to advance to the next slide, <b>[PageUp]</b> to go back to the previous slide, <b>[Esc]</b> to toggle between this e-Lecture mode and exploration mode.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3" class="electure-dialog" style="top:500px;left:50%;margin-left:-200px;width:400px;">
+<p>View the visualisation of Segment Tree here!<br>The top side shows the Segment Tree structure where each vertex shows the Min/Max/Sum value of the corresponding range (<font color="red">red colored with this format [L,R]</font>).<br>The bottom row shows the original array A content (<font color="yellow">yellow colored</font>) from which the Segment Tree structure is built.<br>Vertices that are lazily updated will have this <font color="purple">purple ring highlight</font>.<br>Each leaf vertex in the Segment Tree corresponds to an individual index in the corresponding array A.</p>
+<hr>
+<p>Another pro-tip: We designed this visualization and this e-Lecture mode to look good on 1366x768 resolution <b>or larger</b> (typical modern laptop resolution in 2017). We recommend using Google Chrome to access VisuAlgo. Go to full screen mode (<b>F11</b>) to enjoy this setup. However, you can use zoom-in (<b>Ctrl +</b>) or zoom-out (<b>Ctrl -</b>) to calibrate this.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4" class="electure-dialog" style="bottom:175px;left:60px;width:500px;">
+<p>There are three basic operations that are available in Segment Tree data structure visualization (for all 3 modes: RMinQ/RMaxQ/RSumQ):<br>1. You can create RMinQ/RMaxQ/RSumQ Segment Tree from either a user-defined array of integers (maximum of 16 two-digits integer), or let the system provide a small random integer array or a small random but sorted integer array.<br>2. You can do RMinQ/RMaxQ/RSumQ by specifying a left (L) and a right (R) indices.<br>3. You can do Range Update by specifying a left (L) index, a right (R) index, and a new VALUE for this range [L,R]. We employ lazy update strategy for fast performance.<br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>Unfortunately, this data structure is not yet available in C++ STL, Java API, Python or OCaml Standard Library as of 2020. Therefore, we have to write our own implementation.</p><br><p>Please look at the following C++/Java/Python/OCaml implementations of this Segment Tree data structure in Object-Oriented Programming (OOP) fashion:<br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch2/ourown/segmenttree_ds.cpp" target="_blank"><u>segmenttree_ds.cpp</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch2/ourown/segmenttree_ds.java" target="_blank"><u>segmenttree_ds.java</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch2/ourown/segmenttree_ds.py" target="_blank"><u>segmenttree_ds.py</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch2/ourown/segmenttree_ds.ml" target="_blank"><u>segmenttree_ds.ml</u></a><br></p><br><p>Again, you are free to customize this custom library implementation to suit your needs.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99" class="electure-dialog" style="right:150px;bottom:335px;width:500px;">
+当操作进行时，状态面板将会有每个步骤的描述。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-1" class="electure-dialog" style="right:170px;bottom:275px;width:180px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-2" class="electure-dialog" style="bottom:70px;left:50%;margin-left:-120px;width:260px;">
+使用用户控件控制动画！可用的快捷键有：<div>空格键：绘制／停止／重绘</div><div>左／右箭头：上一步／下一步</div><div>-／+：减缓／增加速度</div><div><br></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-3" class="electure-dialog" style="top:70px;right:60px;width:300px;">
+<p>Return to &#39;Exploration Mode&#39; to start exploring!</p><br><p>Note that if you notice any bug in this visualization or if you want to request for a new visualization feature, do not hesitate to drop an email to the project leader: Dr Steven Halim via his email address: stevenhalim at gmail dot com.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-2">上一个 <u>PgUp</u></div>
+</div>
+<div id="popup" hidden>
+<div id="popup-content"></div>
+<span id="hide-popup" hidden>X <u>关闭</u></span>
+</div>
+<div id="actions" class="panel">
+<p id="create" class="execAction">创建</p>
+<p id="rmq" class="execAction">Range Query</p>
+<p id="update" class="execAction">Range Update</p>
+</div>
+<div id="actions-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide actions panel" /></div>
+<div id="actions-extras">
+<div class="create action-menu-pullout">
+<div id="create-input" class="new-menu-option"><input type="text" id="v-create" title="Enter comma-separated integers" placeholder="Comma-separated integers" autocomplete="off" value="18,17,13,19,15,11,20" /></div>
+<div id="create-go" class="execAction coloured-menu-option" onclick=create()><p>执行</p></div>
+<div id="create-random" class="execAction coloured-menu-option" onClick=randomm()><p>随机</p></div>
+<div id="create-random-sorted" class="execAction coloured-menu-option" onClick=randomLL()><p>随机排序</p></div>
+<div id="create-err" class="err"></div>
+</div>
+<div class="rmq action-menu-pullout">
+<div id="rmq-input-l" class="new-menu-option">
+<div class="remind coloured-menu-option">Enter L:</div>
+<input type="text" id="v-rmq-l" title="Enter an integer L" placeholder="L" autocomplete="off" value=0 />
+</div>
+<div id="rmq-input-r" class="new-menu-option">
+<div class="remind coloured-menu-option">Enter R:</div>
+<input type="text" id="v-rmq-r" title="Enter an integer R" placeholder="R" autocomplete="off" value=6 />
+</div>
+<div id="rmq-go" class="execAction coloured-menu-option" onclick=rmq()><p>执行</p></div>
+<div id="rmq-err" class="err"></div>
+</div>
+<div class="update action-menu-pullout">
+<div id="update-input-l" class="new-menu-option">
+<div class="remind coloured-menu-option">Enter L:</div>
+<input type="text" id="v-update-l" title="Enter an integer L" placeholder="L" autocomplete="off" value=0 />
+</div>
+<div id="update-input-r" class="new-menu-option">
+<div class="remind coloured-menu-option">Enter R:</div>
+<input type="text" id="v-update-r" title="Enter an integer R" placeholder="R" autocomplete="off" value=6 />
+</div>
+<div id="update-input-value" class="new-menu-option">
+<div class="remind coloured-menu-option">Enter VALUE:</div>
+<input type="text" id="v-update-value" title="Enter an integer VALUE" placeholder="V" autocomplete="off" value=6 />
+</div>
+<div id="update-go" class="execAction coloured-menu-option" onclick=update()><p>执行</p></div>
+<div id="update-err" class="err"></div>
+</div>
+</div>
+<div id="bottom-bar">
+<a id="trigger-about">关于</a>
+</div>
+<div id="about" class="overlays">
+<h4>关于</h4><span class='close-overlay'>&#x2715;</span>
+<div class='content'>
+VisuAlgo在2011年由Steven Halim博士概念化，作为一个工具，帮助他的学生更好地理解数据结构和算法，让他们自己和自己的步伐学习基础。<br>VisuAlgo包含许多高级算法，这些算法在Steven Halim博士的书（“竞争规划”，与他的兄弟Felix Halim博士合作）和其他书中讨论。今天，一些高级算法的可视化/动画只能在VisuAlgo中找到。<br>虽然专门为新加坡国立大学（NUS）学生采取各种数据结构和算法类（例如CS1010，CS1020，CS2010，CS2020，CS3230和CS3230），作为在线学习的倡导者，我们希望世界各地的好奇心发现这些可视化也很有用。<br>VisuAlgo不是从一开始就设计为在小触摸屏（例如智能手机）上工作良好，因为需要满足许多复杂的算法可视化，需要大量的像素和点击并拖动手势进行交互。一个令人尊敬的用户体验的最低屏幕分辨率为1024x768，并且只有着陆页相对适合移动设备。<br>VisuAlgo是一个正在进行的项目，更复杂的可视化仍在开发中。<br>最令人兴奋的发展是自动问题生成器和验证器（在线测验系统），允许学生测试他们的基本数据结构和算法的知识。这些问题是通过一些规则随机生成的，学生的答案会在提交给我们的评分服务器后立即自动分级。这个在线测验系统，当它被更多的世界各地的CS教师采用，应该技术上消除许多大学的典型计算机科学考试手动基本数据结构和算法问题。通过在通过在线测验时设置小（但非零）的重量，CS教练可以（显着地）增加他/她的学生掌握这些基本问题，因为学生具有几乎无限数量的可以立即被验证的训练问题他们参加在线测验。培训模式目前包含12个可视化模块的问题。我们将很快添加剩余的8个可视化模块，以便VisuAlgo中的每个可视化模块都有在线测验组件。<br>另一个积极的发展分支是VisuAlgo的国际化子项目。我们要为VisuAlgo系统中出现的所有英语文本准备一个CS术语的数据库。这是一个很大的任务，需要众包。一旦系统准备就绪，我们将邀请VisuAlgo游客贡献，特别是如果你不是英语母语者。目前，我们还以各种语言写了有关VisuAlgo的公共注释：<br>
+<a href="https://weibo.com/p/230418436e9ee80102v4rk" target='_blank'><u>zh</u></a>, <a href='https://www.facebook.com/notes/steven-halim/httpidvisualgonet-visualisasi-struktur-data-dan-algoritma-dengan-animasi/10153236934439689' target='_blank'><u>id</u></a>, <a href="https://blog.naver.com/visualgo_nus" target='_blank'><u>kr</u></a>, <a href='https://www.facebook.com/groups/163215593699283/permalink/824003417620494/' target='_blank'><u>vn</u></a>, <a href='http://pantip.com/topic/32736343' target='_blank'><u>th</u></a>.</p>
+</div>
+</div>
+
+<script src="../js/jquery-3.3.1.min.js"></script>
+<script>
+      var PHP_DOMAIN = "";
+
+      // surprise colour!
+      // Referenced to in  home.js and viz.js also
+      var colourArray = ["#52bc69", "#d65775"/*"#ed5a7d"*/, "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"]; // green, pink, blue, red, yellow, indigo, orange, lime
+
+      function disableScroll() { $('html').css('overflow', 'hidden'); }
+
+      function enableScroll() { $('html').css('overflow', 'visible'); }
+
+      function replaceAll(find, replace, str) { return str.replace(new RegExp(find, 'g'), replace); }
+
+      function getColours() {
+        var generatedColours = new Array();
+        while (generatedColours.length < 4) {
+          var n = (Math.floor(Math.random() * colourArray.length));
+          if ($.inArray(n, generatedColours) == -1)
+            generatedColours.push(n);
+        }
+        return generatedColours;
+      }
+
+      function isOn(value, position) {
+        return (value>>position) & 1 === 1;
+      }
+
+      function customAlert(msg) {
+        $('#custom-alert p').html(msg);
+        var m = -1 * ($('#custom-alert').outerHeight()/2);
+        $('#custom-alert').css('margin-top', m+'px');
+        $('#dark-overlay').fadeIn(function() {
+          $('#custom-alert').fadeIn(function() {
+            setTimeout(function() {
+              $('#custom-alert').fadeOut(function() {
+                $('#dark-overlay').fadeOut();
+              });
+            }, 1000);
+          });
+        });
+      }
+
+      function showLoadingScreen() {
+        $('#loading-overlay').show();
+        $('#loading-message').show();
+      }
+
+      function hideLoadingScreen() {
+        $('#loading-overlay').hide();
+      }
+
+      function commonAction(retval, msg) {
+        //setTimeout(function() {
+          if (retval) { // mode == "exploration" && // now not only for exploration mode, but check if this opens other problems
+            $('#current-action').show();
+            $('#current-action').html(mode == "exploration" ? msg : ("e-Lecture Example (auto play until done)<br>" + msg));
+            $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+            triggerRightPanels();
+            isPlaying = true;
+          }
+        //}, 500);
+      }
+
+      function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable)
+            return decodeURIComponent(pair[1]);
+        }
+        return "";
+      }
+
+      var generatedColours = getColours();
+      var surpriseColour = colourArray[generatedColours[0]];
+      var colourTheSecond = colourArray[generatedColours[1]];
+      var colourTheThird = colourArray[generatedColours[2]];
+      var colourTheFourth = colourArray[generatedColours[3]];
+
+      $(function() {
+        $('.links').css('background', surpriseColour);
+        $('.right-links').css('background', surpriseColour);
+        $('#login-go').css('background', surpriseColour);
+
+        $('.colour').css("color", surpriseColour); // name
+        $('h4').css("background-color", surpriseColour); // about, contact us etc. button background
+
+        // title
+        $('#title a').click(function() {
+          $('#title a').removeClass('selected-viz');
+          $(this).addClass('selected-viz');
+          // temporary quick fix for Google Chrome Aug 2016 issue...
+          setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 100); // force resize/redraw...
+          setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        });
+
+        // overlays stuffs
+        $('#trigger-about').click(function() {
+          if ($(window).width() > 600) {
+            $('#dark-overlay').fadeIn(function() {
+              $('#about').fadeIn();
+            });
+          }
+          else
+            alert('Sorry, this dialog is too big. Please load it on bigger screen');
+        });
+
+        $('.close-overlay').click(function() {
+          $('.overlays').fadeOut(function() {
+            $('#dark-overlay').fadeOut();
+          });
+        });
+
+        $('#dark-overlay').click(function() {
+          $('.overlays').fadeOut();
+          $('#dark-overlay').fadeOut();
+        });
+      });
+    </script>
+
+<script src="../js/jquery-ui.min.js"></script>
+<script src="../js/d3.min.js"></script>
+<script src="../js/viz-1.0.3.js"></script>
+<script src="../js/visualgo_print.js"></script>
+<script src="../js/graph_library.js"></script>
+<script>
+      function runSlide(slide) {
+        if (slide == '1') {
+          $("#e-lecture").html("slide " + slide + " (" + 11 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2') {
+          $("#e-lecture").html("slide " + slide + " (" + 22 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3') {
+          $("#e-lecture").html("slide " + slide + " (" + 33 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4') {
+          $("#e-lecture").html("slide " + slide + " (" + 44 + "%)");
+          
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5') {
+          $("#e-lecture").html("slide " + slide + " (" + 55 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99') {
+          $("#e-lecture").html("slide " + slide + " (" + 66 + "%)");
+          
+          hideEntireActionsPanel();
+ 
+          showStatusPanel();
+          showCodetracePanel();
+      
+        }
+        if (slide == '99-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 77 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 88 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 100 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+      }
+
+      window.onpopstate = function(event) {
+        var slide = event.state['slide'];
+        openSlide(slide, function() {
+          runSlide(slide);
+        });
+      };
+
+      function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'), sParameterName, i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+          if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+      };
+
+      function pushState(slideValue) {
+        var url = '/zh/segmenttree';
+        if (typeof slideValue != 'undefined' && slideValue != null) url += '?slide=' + slideValue;
+        window.history.pushState({slide: slideValue}, "slide " + slideValue, url);
+      }
+
+      function showPopup(callback) {
+        $('#popup').fadeIn(100, callback);
+      }
+
+      function hidePopup(callback) {
+        $('#popup').fadeOut(100, callback);
+      }
+
+      function showOverlay() {
+        $('#overlay').css('opacity', 0.5); 
+        $('#overlay').show();
+      }
+
+      function hideOverlay() {
+        $('#overlay').hide();
+        $("#e-lecture").html("");
+      }
+
+      function makeOverlayTransparent() {
+        $('#overlay').css('opacity', 0);
+      }
+
+      function hideSlide(callback) {
+        isPlaying = true;
+        closeSlide(cur_slide, function() {
+          makeOverlayTransparent();
+          setTimeout(callback, 700); // don't immediately run the animation, wait for 500ms+ first
+        });
+      }
+
+      function showSlide() {
+        isPlaying = false;
+        openSlide(cur_slide);
+        showOverlay();
+      }
+
+      $(function() {
+        var slide = getUrlParameter('slide');
+        
+        $.get('/hasvisited' + '/segmenttree', function(data) {
+          var hasVisited = data['hasvisited'] == '1';
+          if (!hasVisited) {
+            var postData = {
+              '_token': 'kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh',
+              'page': '/segmenttree'.substring(1),
+            };
+
+            $.post("/visitpage", postData, function(data) {
+              // non critical request...
+            });
+
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+            }
+
+            $("#mode-menu a").trigger("click");
+          }
+          else {
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+              $('#mode-menu a').click();
+            }    
+          }
+        }).fail(function() {
+          if (typeof slide != undefined && slide != null) {
+            cur_slide = slide;
+            $('#mode-menu a').click();
+          }
+        });
+
+        $('.mcq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#mcq-answer-' + questionId).val();
+          var userAnswer = $('input[type=radio][name=mcq-'+questionId+'-choice]:checked').val();
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green"><b>Correct!</b></font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red"><b>Wrong Answer! Try again...</b></font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('.msq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#msq-answer-' + questionId).val();
+
+          var answers = [];
+          $('input[type=checkbox][class=msq-choice]:checked').each(function() {
+            answers.push($(this).attr('id').split('-')[3]);
+          });
+          answers.sort();
+          var userAnswer = answers.join(',');
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green">Correct!</font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red">Wrong Answer! Try again...</font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('select.lecture-dropdown').change(function() {
+          var nextSlide = $(this).val();
+          openSlide(nextSlide, function() {
+            runSlide(nextSlide);
+            pushState(nextSlide);
+          });
+        });
+
+        $('#hide-popup').click(function() {
+          hidePopup();
+        });
+
+        $('#popup').hover(function() {
+          $('#hide-popup').show();
+        }, function() {
+          $('#hide-popup').hide();
+        });
+
+        $('#electure-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+        $('#electure-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('1');
+          pushState('1');
+        });
+      
+        $('#electure-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+        $('#electure-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+        $('#electure-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+      
+        $('#electure-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+        $('#electure-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+      
+        $('#electure-99 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+        $('#electure-99 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+      
+        $('#electure-99-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+        $('#electure-99-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+      
+        $('#electure-99-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-3');
+          pushState('99-3');
+        });
+        $('#electure-99-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+      
+        $('#electure-99-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+      
+ 
+
+        // temporary quick fix for Google Chrome Aug 2016 issue..., put at last part so that everything else has been loaded
+        // setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 500);
+        // setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        // I turn it off on 14 June 2018, seems 'ok'?
+      });
+
+
+      function adjustPopupToImageSize() {
+        var width = $('#popup-image').prop('width');
+        var height = $('#popup-image').prop('height');
+        $('#popup').width(width + 20);
+        $('#popup').height(height + 20);
+        if (width == 0 && height == 0) {
+          setTimeout(adjustPopupToImageSize, 200);
+        } else {
+          showPopup();  
+        }
+      }
+
+      function POPUP_IMAGE(url) {
+        $('#popup-content').html('<img id="popup-image" src="' + url + '">');
+        adjustPopupToImageSize();
+      }
+
+      function URL(url) {
+        window.open(url, '_blank');
+      }
+
+      // Implement these functions in each visualisation
+      // This function will be called before entering e-Lecture Mode
+      function ENTER_LECTURE_MODE() {}
+
+      // This function will be called before returning to Explore Mode
+      function ENTER_EXPLORE_MODE() {}
+
+      // Lecture action functions
+      function CUSTOM_ACTION(action, data, mode) {}
+    </script>
+<script type="text/javascript">
+// Segment Tree Widget
+// original author: Cao Shengze
+
+var ST = function() {
+  var self = this;
+  var graphWidget = new GraphWidget();
+
+  var maxValueAllowed = 99; // Range of valid allowed values
+  var maxVertexAllowed = 16;
+  this.maxVertexAllowed = maxVertexAllowed;
+  this.maxValueAllowed = maxValueAllowed;
+
+  //var initialArray = [15, 6, 23, 4, 8, 19, 7, 9, 3, 71];
+  var initialArray = [18, 17, 13, 19, 15, 11, 20, 99];
+  var curnodes;
+  var funcname = ["min", "max", "sum"];
+  var func = [
+    function (x, y) {
+      if (x == null)
+        return y;
+      else if (y == null)
+        return x;
+      else
+        return internalSt[vertexMax+x]["value"] < internalSt[vertexMax+y]["value"] ? x : y;
+    },
+    function (x, y) {
+      if (x == null)
+        return y;
+      else if (y == null)
+        return x;
+      else
+        return internalSt[vertexMax+x]["value"] > internalSt[vertexMax+y]["value"] ? x : y;
+    },
+    function (x, y) {
+      if (x == null)
+        return y;
+      else if (y == null)
+        return x;
+      else
+        return x + y;
+    }];
+
+  //function min(x, y) { return x < y ? x : y; }
+  //function max(x,y) { return x > y ? x : y; }
+  /*
+   * internalSt: Internal representation of BST in this object
+   * The keys are the text of the nodes, and the value is the attributes of the corresponding node encapsulated in a JS object, which are:
+   * - "parent": text of the parent node. If the node is root node, the value is null.
+   * - "leftChild": text of the left child. No child -> null
+   * - "rightChild": text of the right child. No child -> null
+   * - "cx": X-coordinate of center of the node
+   * - "cy": Y-coordinate of center of the node
+   * - "height": height of the node. Height of root is 0
+   * - "vertexClassNumber": Vertex class number of the corresponding node
+   *
+   * In addition, there is a key called "root" in internalSt, containing the text of the root node.
+   * If BST is empty, root is null.
+   */
+
+  var internalSt = {};
+  var amountVertex = 0;
+  var vertexAmt = 0;
+  var vertexMax = 0;
+  var treetype = 0;
+  var treefuncname = "";
+  var treefunc = null;
+  this.getGraphWidget = function(){
+    return graphWidget;
+  }
+  this.init = function(nodes, type) {
+    curnodes = nodes;
+    vertexAmt = nodes.length;
+    vertexMax = Math.pow(2,Math.ceil(Math.log(nodes.length)/Math.log(2))+1);
+    treetype = type;
+    treefunc = func[type];
+    treefuncname = funcname[type];
+    create_empty_tree(nodes);
+    function build(root, L, R, animate) {
+      if (L == R) {
+        switch (treetype) {
+        case 0:
+        case 1:
+          internalSt[root]["value"] = L;
+          break;
+        case 2:
+          internalSt[root]["value"] = nodes[L];
+        }
+      } else {
+        build(root*2, L, Math.floor((L+R)/2), animate);
+        build(root*2+1, Math.floor((L+R)/2)+1, R, animate);
+        internalSt[root]["value"] = treefunc(internalSt[root*2]["value"], internalSt[root*2+1]["value"]);
+      }
+    }
+    build(1, 0, vertexAmt-1, false);
+    display_tree(vertexAmt);
+
+    var stateList = [];
+    var cs = null;
+    cs = createState(internalSt, {}, {});
+    stateList.push(cs);
+    graphWidget.startAnimation(stateList);
+    graphWidget.stop();
+    return true;
+  }
+
+  this.create = function(nodes){
+    curnodes = nodes;
+    console.log(nodes + "    " + nodes.length);
+    if (nodes.length > 16) {
+      $("#create-err").html('Sorry, this visualization is only designed to handle up to 16 integers');
+      return false;
+    }
+    for (var i = 0; i < nodes.length; i++)
+      if (nodes[i] < -99 || nodes[i] > 99) {
+        $("#create-err").html('Sorry, this visualization can only handle 2 digit integers, you have ' + nodes[i]);
+        return false;
+      }
+
+    vertexAmt = nodes.length;
+    create_empty_tree(nodes);
+    display_tree(vertexAmt);
+
+    var stateList = [];
+    var vertexTraversed = {};
+    var edgeTraversed = {};
+
+    function build(root, L, R) {
+      vertexTraversed[root] = true;
+      if (L == R) {
+        switch (treetype) {
+        case 0:
+        case 1:
+          internalSt[root]["value"] = L;
+          break;
+        case 2:
+          internalSt[root]["value"] = nodes[L];
+        }
+        cs = createState(internalSt, vertexTraversed, edgeTraversed);
+        cs["lineNo"] = 1;
+        cs["status"] = 'Set this to {val}'.replace("{val}", internalSt[root]["value"]);
+        cs["vl"][root]["state"] = VERTEX_HIGHLIGHTED;
+        stateList.push(cs);
+      } else {
+        vertexTraversed[root*2] = true;
+        edgeTraversed[root*2] = true;
+        cs = createState(internalSt, vertexTraversed, edgeTraversed);
+        cs["el"][root*2]["animateHighlighted"] = true;
+        cs["el"][root*2]["state"] = EDGE_TRAVERSED;
+        cs["lineNo"] = 3;
+        cs["status"] = 'Build left tree';
+        stateList.push(cs);
+        build(root*2, L, Math.floor((L+R)/2));
+        delete vertexTraversed[root*2];
+        delete edgeTraversed[root*2];
+        vertexTraversed[root*2+1] = true;
+        edgeTraversed[root*2+1] = true;
+        cs = createState(internalSt, vertexTraversed, edgeTraversed);
+        cs["el"][root*2+1]["animateHighlighted"] = true;
+        cs["el"][root*2+1]["state"] = EDGE_TRAVERSED;
+        cs["lineNo"] = 4;
+        cs["status"] = 'Build right tree';
+        stateList.push(cs);
+        build(root*2+1, Math.floor((L+R)/2)+1, R);
+        delete vertexTraversed[root*2+1];
+        delete edgeTraversed[root*2+1];
+        internalSt[root]["value"] = treefunc(internalSt[root*2]["value"], internalSt[root*2+1]["value"]);
+        cs = createState(internalSt, vertexTraversed, edgeTraversed);
+        cs["lineNo"] = 5;
+        switch (treetype){
+        case 0:
+          cs["status"] = 'if value[{val1}]{sign}value[{val2}] this = {val1} else this = {val2}'.replace("{val1}", internalSt[root*2]["value"]).replace("{sign}", "&lt;").replace("{val2}", internalSt[root*2+1]["value"]);
+          break;
+        case 1:
+          cs["status"] = 'if value[{val1}]{sign}value[{val2}] this = {val1} else this = {val2}'.replace("{val1}", internalSt[root*2]["value"]).replace("{sign}", "&gt;").replace("{val2}", internalSt[root*2+1]["value"]);
+          break;
+        case 2:
+          cs["status"] = 'Set this to {val}'.replace("{val}", (treefuncname + "(" + internalSt[root*2]["value"] + ", " + internalSt[root*2+1]["value"] + ") = " + internalSt[root]["value"]));
+        }
+        cs["vl"][root]["state"] = VERTEX_HIGHLIGHTED;
+        if (treetype != 2) {
+          cs["vl"][vertexMax+internalSt[root*2]["value"]]["state"] = VERTEX_HIGHLIGHTED;
+          cs["vl"][vertexMax+internalSt[root*2+1]["value"]]["state"] = VERTEX_HIGHLIGHTED;
+        }
+        stateList.push(cs);
+      }
+      delete vertexTraversed[root];
+    }
+
+    var cs = createState(internalSt);
+    cs["status"] = 'Init with empty value tree';
+    cs["lineNo"] = 0;
+    stateList.push(cs);
+
+    build(1, 0, vertexAmt-1, true);
+
+    cs = createState(internalSt);
+    cs["status"] = 'Finish';
+    stateList.push(cs);
+    graphWidget.startAnimation(stateList);
+    populatePseudocode(0);
+    return true;
+  }
+
+  this.rmq = function(L, R) {
+    if (isNaN(L) || !Number.isInteger(L) || L < 0 || L >= vertexAmt) {
+      $("#rmq-err").html('Invalid input, {pos}} must be an integer between [0..{limit}]'.replace("{pos}", "L").replace("{limit}", (vertexAmt-1)));
+      return false;
+    }
+    if (isNaN(R) || !Number.isInteger(R) || R < 0 || R >= vertexAmt) {
+      $("#rmq-err").html('Invalid input, {pos}} must be an integer between [0..{limit}]'.replace("{pos}", "R").replace("{limit}", (vertexAmt-1)));
+      return false;
+    }
+    if (R < L) {
+      $("#rmq-err").html('Invalid input, R must be ≥ L');
+      return false;
+    }
+    var stateList = [];
+    var vertexTraversed = {};
+    var edgeTraversed = {};
+    var cs = createState(internalSt);
+    if (treetype==0){
+      cs["status"] = 'Look for the smallest element between L-R';
+    } else if (treetype==1) {
+      cs["status"] = 'Look for the largest element between L-R';
+    } else if (treetype==2) {
+      cs["status"] = 'Look for the sum between L-R';
+    }
+    cs["lineNo"] = 0;
+    stateList.push(cs);
+    function rmq(root, x,y,L, R) {
+      vertexTraversed[root] = true;
+      var ans = null;
+      if (internalSt[root]["lazy"]) {
+        cs = createState(internalSt, vertexTraversed, edgeTraversed);
+        cs["lineNo"] = 1;
+        cs["vl"][root]["state"] = VERTEX_HIGHLIGHTED;
+        switch (treetype) {
+        case 0:
+        case 1:
+          ans = internalSt[root]["value"];
+          break;
+        case 2:
+          ans = internalSt[root]["value"]/(y-x+1)*(Math.min(y,R)-Math.max(x,L)+1);
+          break;
+        }
+        cs["status"] = 'return ' + ans;
+        stateList.push(cs);
+      } else if ((L<=x) && (y<=R)) {
+        cs = createState(internalSt, vertexTraversed, edgeTraversed);
+        cs["lineNo"] = 2;
+        cs["vl"][root]["state"] = VERTEX_HIGHLIGHTED;
+        ans = internalSt[root]["value"];
+        cs["status"] = 'return ' + ans;
+        stateList.push(cs);
+      } else {
+        var middle=(Math.floor((x+y)/2));
+        var left = null, right = null, ans = null;
+        if (L<=middle) {
+          vertexTraversed[root*2] = true;
+          edgeTraversed[root*2] = true;
+          cs = createState(internalSt, vertexTraversed, edgeTraversed);
+          cs["el"][root*2]["animateHighlighted"] = true;
+          cs["el"][root*2]["state"] = EDGE_TRAVERSED;
+          cs["lineNo"] = 4;
+          cs["status"] = 'Look for {treefuncname} on the left side'.replace("{treefuncname}", treefuncname);
+          stateList.push(cs);
+          left = rmq(root*2, x, Math.floor((x+y)/2),L,R);
+          delete vertexTraversed[root*2];
+          delete edgeTraversed[root*2];
+        }
+        if (R>=middle+1){
+          vertexTraversed[root*2+1] = true;
+          edgeTraversed[root*2+1] = true;
+          cs = createState(internalSt, vertexTraversed, edgeTraversed);
+          cs["el"][root*2+1]["animateHighlighted"] = true;
+          cs["el"][root*2+1]["state"] = EDGE_TRAVERSED;
+          cs["lineNo"] = 5;
+          cs["status"] = 'Look for {treefuncname} on the right side'.replace("{treefuncname}", treefuncname);
+          stateList.push(cs);
+          right = rmq(root*2+1, Math.floor((x+y)/2)+1, y,L,R);
+          delete vertexTraversed[root*2+1];
+          delete edgeTraversed[root*2+1];
+        }
+        cs = createState(internalSt, vertexTraversed, edgeTraversed);
+        cs["lineNo"] = 6;
+        ans = treefunc(left, right);
+        switch (treetype){
+        case 0:
+          cs["status"]='if value[{left}]{sign}value[{right}] return {left} else return {right}'.replace("{left}", left).replace("{sign}", "&lt;").replace("{right}", right);
+
+          break;
+        case 1:
+          cs["status"]='if value[{left}]{sign}value[{right}] return {left} else return {right}'.replace("{left}", left).replace("{sign}", "&gt;").replace("{right}", right);
+          break;
+        case 2:
+          cs["status"] = 'return ' + treefuncname + "(" + left + "," + right + ") = " + ans;
+        }
+        cs["vl"][root]["state"] = VERTEX_HIGHLIGHTED;
+        if ((left!=null) && (treetype != 2))
+          cs["vl"][vertexMax+left]["state"] = VERTEX_HIGHLIGHTED;
+        if ((right!=null) && (treetype != 2))
+          cs["vl"][vertexMax+right]["state"] = VERTEX_HIGHLIGHTED;
+        stateList.push(cs);
+      }
+      delete vertexTraversed[root];
+      return ans;
+    }
+    var ans = rmq(1, 0, vertexAmt-1,L,R);
+    cs = createState(internalSt, vertexTraversed, edgeTraversed);
+    cs["lineNo"] = 0;
+    cs["status"] = 'Finish, answer = ' + ans;
+    stateList.push(cs);
+    graphWidget.startAnimation(stateList);
+    populatePseudocode(1);
+    return true;
+  };
+
+  this.update = function (L, R, value) {
+    if (isNaN(L) || !Number.isInteger(L) || L < 0 || L >= vertexAmt) {
+      $("#update-err").html('Invalid input, {pos}} must be an integer between [0..{limit}]'.replace("{pos}", "L").replace("{limit}", (vertexAmt-1)));
+      return false;
+    }
+    if (isNaN(R) || !Number.isInteger(R) || R < 0 || R >= vertexAmt) {
+      $("#update-err").html('Invalid input, {pos}} must be an integer between [0..{limit}]'.replace("{pos}", "R").replace("{limit}", (vertexAmt-1)));
+      return false;
+    }
+    if (isNaN(value) || !Number.isInteger(value) || value < -99 || value > 99) {
+      $("#update-err").html('Invalid input, VALUE must be an integer between [-99..99] (2 digits)');
+      return false;
+    }
+    if (R < L) {
+      $("#update-err").html('Invalid input, R must be ≥ L');
+      return false;
+    }
+    var stateList = [];
+    var vertexTraversed = {};
+    var edgeTraversed = {};
+    var cs = createState(internalSt);
+
+    cs["status"] = 'Update the value from {L} to {R}'.replace("{L}", L).replace("{R}", R);
+    cs["lineNo"] = 0;
+    stateList.push(cs);
+    function update(root, x,y,L, R,value) {
+      vertexTraversed[root] = true;
+      if ((L<=x) && (y<=R)) {
+        if (x == y) {
+          internalSt[vertexMax+x]["value"] = value;
+          if (treetype == 2) {
+            internalSt[root]["value"] = value;
+          }
+          cs = createState(internalSt, vertexTraversed, edgeTraversed);
+          cs["lineNo"] = 1;
+          cs["status"] = 'update this to {val}'.replace("{val}", value);
+          cs["vl"][root]["state"] = VERTEX_HIGHLIGHTED;
+          stateList.push(cs);
+        } else {
+          internalSt[root]["lazy"] = true;
+          switch (treetype) {
+          case 0:
+          case 1:
+            internalSt[root]["value"] = x;
+            break;
+          case 2:
+            internalSt[root]["value"] = (y-x+1)*value;
+          }
+          for (var i=x;i<=y;i++) {
+            internalSt[vertexMax+i]["value"] = value;
+            internalSt[vertexMax+i]["lazy"] = true;
+          }
+          cs = createState(internalSt, vertexTraversed, edgeTraversed);
+          cs["lineNo"] = 1;
+          cs["status"] = 'This vertex would be lazily updated to {val}'.replace("{val}", internalSt[root]["value"]);
+          cs["vl"][root]["state"] = VERTEX_HIGHLIGHTED;
+          stateList.push(cs);
+        }
+      } else {
+        if (internalSt[root]["lazy"]==true){
+          internalSt[root]["lazy"]=false;
+          for (var i=x;i<=y;i++) {
+            internalSt[vertexMax+i]["lazy"] = false;
+          }
+          cs = createState(internalSt, vertexTraversed, edgeTraversed);
+          cs["lineNo"] = 3;
+          cs["status"] = 'pass on lazy flag';
+          cs["vl"][root*2]["state"] = VERTEX_HIGHLIGHTED;
+          cs["vl"][root*2+1]["state"] = VERTEX_HIGHLIGHTED;
+          stateList.push(cs);
+          switch (treetype) {
+          case 0:
+          case 1:
+            update(root*2,x,Math.floor((x+y)/2),x,Math.floor((x+y)/2),internalSt[vertexMax+x]["value"]);
+            update(root*2+1,Math.floor((x+y)/2+1),y,Math.floor((x+y)/2+1),y,internalSt[vertexMax+x]["value"]);
+            break;
+          case 2:
+            update(root*2,x,Math.floor((x+y)/2),x,Math.floor((x+y)/2),internalSt[root]["value"]/(y-x+1));
+            update(root*2+1,Math.floor((x+y)/2+1),y,Math.floor((x+y)/2+1),y,internalSt[root]["value"]/(y-x+1));
+            break;
+          }
+        }
+        if (L<=Math.floor((x+y)/2)) {
+          edgeTraversed[root*2] = true;
+          cs = createState(internalSt, vertexTraversed, edgeTraversed);
+          cs["el"][root*2]["animateHighlighted"] = true;
+          cs["el"][root*2]["state"] = EDGE_TRAVERSED;
+          cs["lineNo"] = 4;
+          cs["status"] = 'update at left_child, L, (L+R)/2';
+          stateList.push(cs);
+          update(root*2,x,Math.floor((x+y)/2),L,R,value);
+          delete edgeTraversed[root*2];
+        }
+        if (Math.floor((x+y)/2+1)<=R) {
+          edgeTraversed[root*2+1] = true;
+          cs = createState(internalSt, vertexTraversed, edgeTraversed);
+          cs["el"][root*2+1]["animateHighlighted"] = true;
+          cs["el"][root*2+1]["state"] = EDGE_TRAVERSED;
+          cs["lineNo"] = 5;
+          cs["status"] = 'update at right_child, (L+R)/2+1, R';
+          stateList.push(cs);
+          update(root*2+1,Math.floor((x+y)/2+1),y,L,R,value);
+          delete edgeTraversed[root*2+1];
+        }
+        internalSt[root]["value"] = treefunc(internalSt[root*2]["value"], internalSt[root*2+1]["value"]);
+        cs = createState(internalSt, vertexTraversed, edgeTraversed);
+        cs["lineNo"] = 6;
+        switch (treetype){
+        case 0:
+          cs["status"]='if value[{val1}]{sign}value[{val2}] this = {val1} else this = {val2}'.replace("{val1}", internalSt[root*2]["value"]).replace("{sign}", "&lt;").replace("{val2}", internalSt[root*2+1]["value"]);
+          break;
+        case 1:
+          cs["status"]='if value[{val1}]{sign}value[{val2}] this = {val1} else this = {val2}'.replace("{val1}", internalSt[root*2]["value"]).replace("{sign}", "&gt;").replace("{val2}", internalSt[root*2+1]["value"]);
+          break;
+        case 2:
+          cs["status"] = 'Set this to {val}'.replace("{val}", (treefuncname + "(" + internalSt[root*2]["value"] + ", " + internalSt[root*2+1]["value"] + ") = " + internalSt[root]["value"]));
+        }
+        cs["vl"][root]["state"] = VERTEX_HIGHLIGHTED;
+        if (treetype != 2) {
+          cs["vl"][vertexMax+internalSt[root*2]["value"]]["state"] = VERTEX_HIGHLIGHTED;
+          cs["vl"][vertexMax+internalSt[root*2+1]["value"]]["state"] = VERTEX_HIGHLIGHTED;
+        }
+        stateList.push(cs);
+      }
+      delete vertexTraversed[root];
+    }
+
+    update(1, 0, vertexAmt-1,L,R,value);
+    cs = createState(internalSt, vertexTraversed, edgeTraversed);
+    cs["status"] = 'Finish';
+    stateList.push(cs);
+    graphWidget.startAnimation(stateList);
+    populatePseudocode(2);
+    return true;
+  }
+
+  function create_empty_tree(nodes){
+    clearScreen();
+    vertexMax = Math.pow(2,Math.ceil(Math.log(nodes.length)/Math.log(2))+1);
+
+    function helper(parent, root, L, R) {
+      if (L == R) {
+        internalSt[root] = {
+          "parent": parent,
+          "leftChild": vertexMax+L,
+          "rightChild": null,
+          "value": '?',
+          "extratext": root + ":[" + L + "," + R + "]",
+          "lazy": false,
+          "leaf": "",
+          "L": L,
+          "R": R
+        };
+        internalSt[vertexMax+L] = {
+          "parent": null,
+          "leftChild": null,
+          "rightChild": null,
+          "value": nodes[L],
+          "extratext": L,
+          "lazy": false,
+          "leaf": "leaf-"
+        };
+      } else {
+        internalSt[root] = {
+          "parent": parent,
+          "leftChild": root * 2,
+          "rightChild": root * 2 + 1,
+          "value": '?',
+          "extratext": root + ":[" + L + "," + R + "]",
+          "lazy": false,
+          "leaf": "",
+          "L": L,
+          "R": R
+        };
+        helper(root, root * 2, L, Math.floor((L+R)/2));
+        helper(root, root * 2 + 1, Math.floor((L+R)/2)+1, R);
+      }
+    }
+
+    internalSt["root"] = 1;
+    helper(null, 1, 0, vertexAmt - 1);
+
+    recalculatePosition();
+  }
+
+  function display_tree() {
+    function helper(root, L, R) {
+      if (L == R) {
+        graphWidget.addVertex(internalSt[root]["cx"], internalSt[root]["cy"], internalSt[root]["value"], root, true);
+        graphWidget.addVertex(internalSt[vertexMax+L]["cx"], internalSt[vertexMax+L]["cy"], internalSt[vertexMax+L]["value"], vertexMax+L, true);
+      } else {
+        graphWidget.addVertex(internalSt[root]["cx"], internalSt[root]["cy"], internalSt[root]["value"], root, true);
+        helper(root * 2, L, Math.floor((L+R)/2));
+        helper(root * 2 + 1, Math.floor((L+R)/2)+1, R);
+      }
+    }
+    helper(1, 0, vertexAmt - 1);
+
+    for(key in internalSt){
+      if(key == "root") continue;
+      if(key == internalSt["root"]) continue;
+      var parentVertex = internalSt[key]["parent"];
+      if (parentVertex != null)
+        graphWidget.addEdge(parentVertex, parseInt(key), parseInt(key), EDGE_TYPE_UDE, 1, true);
+    }
+  }
+
+  function clearScreen(){
+    var key;
+
+    for(key in internalSt){
+      if(key == "root") continue;
+      if(key == internalSt["root"]) continue;
+      graphWidget.removeEdge(key);
+    }
+
+    for(key in internalSt){
+      if(key == "root") continue;
+      graphWidget.removeVertex(key);
+    }
+
+    internalSt = {};
+    internalSt["root"] = null;
+    amountVertex = 0;
+  }
+
+  /*
+   * internalStObject: a JS object with the same structure of internalSt. This means the BST doen't have to be the BST stored in this class
+   * vertexTraversed: JS object with the vertexes of the BST which are to be marked as traversed as the key
+   * edgeTraversed: JS object with the edges of the BST which are to be marked as traversed as the key
+   */
+
+  function createState(internalStObject, vertexTraversed, edgeTraversed){
+    if(vertexTraversed == null || vertexTraversed == undefined || !(vertexTraversed instanceof Object))
+      vertexTraversed = {};
+    if(edgeTraversed == null || edgeTraversed == undefined || !(edgeTraversed instanceof Object))
+      edgeTraversed = {};
+
+    var state = {
+      "vl":{},
+      "el":{}
+    };
+
+    var key;
+    var vertexClass;
+
+    for(key in internalStObject){
+      if(key == "root") continue;
+      key = parseInt(key);
+      state["vl"][key] = {};
+
+      state["vl"][key]["cx"] = internalStObject[key]["cx"];
+      state["vl"][key]["cy"] = internalStObject[key]["cy"];
+      state["vl"][key]["text"] = internalStObject[key]["value"];
+      state["vl"][key]["extratext"] = internalStObject[key]["extratext"];
+      var z = ""+internalStObject[key]["extratext"];
+      if (z.indexOf(":") != -1) {
+          var y = ""+internalStObject[key]["value"];
+          if (y != "?")
+              state["vl"][key]["text"] = curnodes[parseInt(y)];
+      }
+
+      if (internalStObject[key]["lazy"])
+          state["vl"][key]["state"] = internalStObject[key]["leaf"] + "lazy";
+      else
+          state["vl"][key]["state"] = internalStObject[key]["leaf"] + VERTEX_DEFAULT;
+
+      if(internalStObject[key]["parent"] == null) continue;
+
+      state["el"][key] = {};
+
+      state["el"][key]["vertexA"] = internalStObject[key]["parent"];
+      state["el"][key]["vertexB"] = key;
+      state["el"][key]["type"] = EDGE_TYPE_UDE;
+      state["el"][key]["weight"] = 1;
+      state["el"][key]["state"] = EDGE_DEFAULT;
+      state["el"][key]["animateHighlighted"] = false;
+    }
+
+    for(key in vertexTraversed){
+      key = parseInt(key);
+      if (typeof state["vl"][key] == "undefined")
+        console.log(internalStObject[key]);
+      state["vl"][key]["state"] = VERTEX_TRAVERSED;
+    }
+
+    for(key in edgeTraversed){
+      key = parseInt(key);
+      state["el"][key]["state"] = EDGE_TRAVERSED;
+    }
+
+    return state;
+  }
+
+  function recalculatePosition(){
+    calcHeight(internalSt["root"], 0);
+    updatePosition(internalSt["root"]);
+
+    function calcHeight(currentVertex, currentHeight){
+      if(currentVertex == null) return;
+      internalSt[currentVertex]["height"] = currentHeight;
+      calcHeight(internalSt[currentVertex]["leftChild"], currentHeight + 1);
+      calcHeight(internalSt[currentVertex]["rightChild"], currentHeight + 1);
+    }
+
+    function updatePosition(currentVertex, isLeft){
+      if(currentVertex == null) return;
+
+      if(currentVertex == internalSt["root"]) internalSt[currentVertex]["cx"] = MAIN_SVG_WIDTH/2;
+      else{
+        var i;
+        var xAxisOffset = MAIN_SVG_WIDTH/2;
+        var parentVertex = internalSt[currentVertex]["parent"]
+        for(i = 0; i < internalSt[currentVertex]["height"]; i++){
+          xAxisOffset /= 2;
+        }
+
+        if(isLeft) {
+          internalSt[currentVertex]["cx"] = internalSt[parentVertex]["cx"] - xAxisOffset;
+        } else
+          internalSt[currentVertex]["cx"] = internalSt[parentVertex]["cx"] + xAxisOffset;
+      }
+
+      internalSt[currentVertex]["cy"] = 50 + 50*internalSt[currentVertex]["height"];
+
+      if ((internalSt[currentVertex]["leftChild"] != null) && (internalSt[currentVertex]["rightChild"] == null)) {
+        internalSt[internalSt[currentVertex]["leftChild"]]["cx"] = internalSt[currentVertex]["cx"];
+        internalSt[internalSt[currentVertex]["leftChild"]]["cy"] = 350;
+      } else {
+        updatePosition(internalSt[currentVertex]["leftChild"], true);
+        updatePosition(internalSt[currentVertex]["rightChild"], false);
+      }
+    }
+  }
+
+  function populatePseudocode(act) {
+    switch (act) {
+      case 0: // Build
+        $("#code1").html('if L == R then this = ' + (treetype == 2 ? "A[L]" : "L"));
+        $("#code2").html('else');
+        $("#code3").html('&nbsp&nbspbuild left_child, L, (L+R)/2');
+        $("#code4").html('&nbsp&nbspbuild left_child, (L+R)/2+1, R');
+        switch (treetype) {
+          case 0:
+            $("#code5").html('if value[left_child] {sign} value[right_child]'.replace("{sign}", "&lt;"));
+            $("#code6").html('&nbsp&nbspthis = left_child else this = right_child');
+            break;
+          case 1:
+            $("#code5").html('if value[left_child] {sign} value[right_child]'.replace("{sign}", "&gt;"));
+            $("#code6").html('&nbsp&nbspthis = left_child else this = right_child');
+            break;
+          case 2:
+            $("#code5").html('this = sum(value[left_child], value[right_child]');
+            $("#code6").html("");
+            break;
+        }
+        $("#code7").html("");
+        break;
+      case 1: // RMQ
+        $("#code1").html('if this have lazy flag then return this');
+        $("#code2").html('else if L &le; x &le; y &le; R then return this');
+        $("#code3").html('else');
+        $("#code4").html('&nbsp&nbspRMQ at left_child, L, (L+R)/2');
+        $("#code5").html('&nbsp&nbspRMQ at right_child, (L+R)/2+1, R');
+        switch (treetype){
+          case 0:
+            $("#code6").html('if value[left_child] {sign} value[right_child]'.replace("{sign}", "&lt;"));
+            $("#code7").html('&nbsp&nbspreturn left_child else return right_child');
+            break;
+          case 1:
+            $("#code6").html('if value[left_child] {sign} value[right_child]'.replace("{sign}", "&gt;"));
+            $("#code7").html('&nbsp&nbspreturn left_child else return right_child');
+            break;
+          case 2:
+            $("#code6").html('return sum(value[left_child], value[right_child]');
+            $("#code7").html("");
+            break;
+        }
+        break;
+      case 2: // update
+        $("#code1").html('if L &le; x &le; y &le; R then update this');
+        $("#code2").html('else');
+        $("#code3").html('&nbsp&nbsppass on lazy flag');
+        $("#code4").html('&nbsp&nbspupdate at left_child, L, (L+R)/2');
+        $("#code5").html('&nbsp&nbspupdate at right_child, (L+R)/2+1, R');
+        switch (treetype) {
+          case 0:
+            $("#code6").html('if value[left_child] {sign} value[right_child]'.replace("{sign}", "&lt;"));
+            $("#code7").html('&nbsp&nbspthis = left_child else this = right_child');
+            break;
+          case 1:
+            $("#code6").html('if value[left_child] {sign} value[right_child]'.replace("{sign}", "&gt;"));
+            $("#code7").html('&nbsp&nbspthis = left_child else this = right_child');
+            break;
+          case 2:
+            $("#code6").html('this = sum(value[left_child], value[right_child]');
+            $("#code7").html("");
+            break;
+        }
+        break;
+    }
+  }
+}
+
+
+
+// STaction.js
+//actions panel stuff
+var actionsWidth = 150;
+var statusCodetraceWidth = 420;
+
+var isCreateOpen = false;
+var isRMQOpen = false;
+var isUpdateOpen = false;
+
+function openCreate() {
+  if(!isCreateOpen) {
+    $('.create').fadeIn('fast');
+    isCreateOpen = true;
+  }
+}
+function closeCreate() {
+  if(isCreateOpen) {
+    $('.create').fadeOut('fast');
+    $('#create-err').html("");
+    isCreateOpen = false;
+  }
+}
+function openRMQ() {
+  if(!isRMQOpen) {
+    $('.rmq').fadeIn('fast');
+    isRMQOpen = true;
+  }
+}
+function closeRMQ() {
+  if(isRMQOpen) {
+    $('.rmq').fadeOut('fast');
+    $('#rmq-err').html("");
+    isRMQOpen = false;
+  }
+}
+function openUpdate() {
+  if(!isUpdateOpen) {
+    $('.update').fadeIn('fast');
+    isUpdateOpen = true;
+  }
+}
+function closeUpdate() {
+  if(isUpdateOpen) {
+    $('.update').fadeOut('fast');
+    $('#update-err').html("");
+    isUpdateOpen = false;
+  }
+}
+
+function hideEntireActionsPanel() {
+  closeCreate();
+  closeRMQ();
+  closeUpdate();
+  hideActionsPanel();
+}
+
+
+
+// local
+var stWidget = new ST(), gw;
+
+$(function() {
+  $('#play').hide();
+  gw = stWidget.getGraphWidget();
+
+  $('#create').click(function() {
+    closeUpdate();
+    closeRMQ();
+    openCreate();
+  });
+  $('#rmq').click(function() {
+    closeCreate();
+    closeUpdate();
+    openRMQ();
+  });
+  $('#update').click(function() {
+    closeCreate();
+    closeRMQ();
+    openUpdate();
+  })
+});
+
+$('#title-Min').click(function() {
+  if(isPlaying) { stop(); }
+  showActionsPanel();
+  hideStatusPanel();
+  hideCodetracePanel();
+  stWidget.init(getRandomData(), 0);
+});
+$('#title-Max').click(function() {
+  if(isPlaying) { stop(); }
+  showActionsPanel();
+  hideStatusPanel();
+  hideCodetracePanel();
+  stWidget.init(getRandomData(), 1);
+});
+$('#title-Sum').click(function() {
+  if(isPlaying) { stop(); }
+  showActionsPanel();
+  hideStatusPanel();
+  hideCodetracePanel();
+  stWidget.init(getRandomData(), 2);
+});
+
+stWidget.init(getRandomData(), 0);
+
+function getCreateData() {
+  var input = $('#v-create').val();
+  if (input == "") {
+    $("#create-err").html('Please enter a comma seperated values');
+    return null;
+    /*vertexAmt = Math.floor((Math.random()*(stWidget.maxVertexAllowed-5) + 5));
+    var initArr = [];
+    while(initArr.length < vertexAmt)
+      initArr.push(Math.floor(1+Math.random()*(stWidget.maxValueAllowed-1)));
+    return initArr;*/
+  } else {
+    input = input.replace(/\s*/g,"").split(',');
+    for (i in input) {
+      input[i] = Number(input[i]);
+      if (typeof input[i] == "NaN") {
+        alert('Invalid input');
+        return null;
+      }
+    }
+    return input;
+  }
+}
+
+function getRandomData() {
+  vertexAmt = Math.floor((Math.random()*(stWidget.maxVertexAllowed-5) + 5));
+  var initArr = [];
+  while(initArr.length < vertexAmt)
+    initArr.push(Math.floor(1+Math.random()*(stWidget.maxValueAllowed-1)));
+  return initArr;
+}
+
+function create() {
+  var data;
+  if(isPlaying) { stop(); }
+  setTimeout( function() {
+    if ((mode=="exploration") && ((data = getCreateData()) != null) && stWidget.create(data)) {
+      $('#current-action').show();
+      $('#current-action p').html('Build tree');
+      $('#progress-bar').slider( "option", "max", gw.getTotalIteration()-1);
+      closeCreate();
+      triggerRightPanels();
+      isPlaying = true;
+    }
+  }, 500)
+}
+
+function randomm(){
+  if(isPlaying) { stop(); }
+  vertexAmt = Math.floor((Math.random()*(stWidget.maxVertexAllowed-5) + 5));
+  var initArr = [];
+  while(initArr.length < vertexAmt)
+    initArr.push(Math.floor(1+Math.random()*(stWidget.maxValueAllowed-1)));
+  setTimeout( function() {
+    if ((mode=="exploration") && ((data = initArr) != null) && stWidget.create(data)) {
+      $('#current-action').show();
+      $('#current-action p').html('Build tree');
+      $('#progress-bar').slider( "option", "max", gw.getTotalIteration()-1);
+      closeCreate();
+      triggerRightPanels();
+      isPlaying = true;
+    }
+  }, gw.getAnimationDuration())
+}
+
+function randomLL(){
+  if(isPlaying) { stop(); }
+  vertexAmt = Math.floor((Math.random()*(stWidget.maxVertexAllowed-5) + 5));
+  var initArr = [];
+  while(initArr.length < vertexAmt)
+    initArr.push(Math.floor(1+Math.random()*(stWidget.maxValueAllowed-1)));
+  var i=0;
+  var j=0;
+  for (i=0;i<vertexAmt;i++){
+    for (j=i+1;j<vertexAmt;j++){
+      if (initArr[i]>initArr[j]){
+        var k=initArr[i];
+        initArr[i]=initArr[j];
+        initArr[j]=k;
+      }
+    }
+  }
+  setTimeout( function() {
+    if ((mode=="exploration") && ((data = initArr) != null) && stWidget.create(data)) {
+      $('#current-action').show();
+      $('#current-action p').html('Build tree');
+      $('#progress-bar').slider( "option", "max", gw.getTotalIteration()-1);
+      closeCreate();
+      triggerRightPanels();
+      isPlaying = true;
+    }
+  }, gw.getAnimationDuration())
+}
+
+function rmq(){
+  if(isPlaying) { stop(); }
+  setTimeout( function() {
+    var input_l = $('#v-rmq-l').val();
+    var input_r = $('#v-rmq-r').val();
+    input_l = parseInt(input_l);
+    input_r = parseInt(input_r);
+    if((mode=="exploration") && stWidget.rmq(input_l, input_r)) {
+      $('#current-action').show();
+      $('#current-action p').html('Query RMQ in ["+ input_l + ", " + input_r + "]');
+      $('#progress-bar').slider( "option", "max", gw.getTotalIteration()-1);
+      closeRMQ();
+      triggerRightPanels();
+      isPlaying = true;
+    }
+  }, gw.getAnimationDuration());
+}
+
+function update(){
+  if(isPlaying) { stop(); }
+  setTimeout( function() {
+    var input_l = $('#v-update-l').val();
+    var input_r = $('#v-update-r').val();
+    var input_value=$('#v-update-value').val();
+    input_l = parseInt(input_l);
+    input_r = parseInt(input_r);
+    input_value=parseInt(input_value);
+    if((mode=="exploration")&&stWidget.update(input_l, input_r,input_value)) {
+      $('#current-action').show();
+      $('#current-action p').html('Query Update in ["+ input_l + ", " + input_r + "]');
+      $('#progress-bar').slider( "option", "max", gw.getTotalIteration()-1);
+      closeUpdate();
+      triggerRightPanels();
+      isPlaying = true;
+    }
+  }, gw.getAnimationDuration());
+}
+</script>
+</body>
+</html>

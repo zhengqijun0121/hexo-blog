@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0, user-scalable=no">
+  <title>NeuroEvolution : Flappy Bird</title>
+  <link rel="shortcut icon" href="./favicon.ico" />
+  <link href='https://fonts.googleapis.com/css?family=Oswald' rel='stylesheet' type='text/css'>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-7XF2LE3X13"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-7XF2LE3X13');
+  </script>
+</head>
+<body>
+  <div align="center">
+    <canvas id="flappy" width="500" height="512"></canvas>
+  </div>
+  <br/>
+  <div align="center">
+    <button onclick="speed(60)">x1</button>
+    <button onclick="speed(120)">x2</button>
+    <button onclick="speed(180)">x3</button>
+    <button onclick="speed(300)">x5</button>
+    <button onclick="speed(0)">MAX</button>
+  </div>
+  <br/>
+  <script src="js/Neuroevolution.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

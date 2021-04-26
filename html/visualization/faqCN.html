@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <link rel="stylesheet" href="visualPages.css" />
+        <title>数据结构可视化</title>
+        <link rel="shortcut icon" href="favicon.ico" />
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-7XF2LE3X13"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-7XF2LE3X13');
+        </script>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="header"><h1>数据结构可视化</h1></div>
+            <div class="menu">
+                <ul>
+                    <li><a href="aboutCN.html">关于</a></li>
+                    <li><a href="AlgorithmsCN.html">算法</a></li>
+                    <li><a href="faqCN.html">常问问题</a></li>
+                    <li><a href="bugfeatureCN.html">已知错误 /<br /> &nbsp; &nbsp; 功能请求</a></li>
+                    <li><a href="sourceCN.html">创建自己的 /<br /> &nbsp; &nbsp; 源代码</a></li>
+                    <li><a href="contactCN.html">联系</a></li>
+                </ul>
+
+                <br /><br />
+                <div class="about">
+                    <a href="http://www.cs.usfca.edu/galles"> David Galles </a><br />
+                    <a href="http://www.cs.usfca.edu">计算机科学系</a><br />
+                    <a href="http://www.usfca.edu">旧金山大学</a>
+                </div>
+            </div>
+
+            <div class="content">
+
+            <h1>经常问的问题</h1>
+
+            <ol>
+                <li>有时，当我将元素插入 BST 或其他有序数据结构中时，会出现奇怪的行为 -- "-2" 似乎小于 "-3"。这是怎么回事？</li>
+
+                <ul>
+                    <li>
+                    我们对所有内容都使用字符串比较，因此按字典顺序，"-2" 实际上小于 "-3"。
+                    我们试图通过将正整数自动转换为带有前导零的等价数字来减轻混淆，从而使正整数始终按预期排序（尽管负数可惜）。
+                    事实证明，如果你尝试对一组任何字符串进行排序，则使用混合比较策略会很快造成混乱 -- 10.4 与 3.1.2 相比应该如何？
+                    3A 怎么样 -- 是一个字符串还是一个十六进制数字？那 AF 呢？BC 应该在 AFF 之前还是之后？
+                    我们做出了最终决定，只是为了方便起见，在任何地方都进行字符串比较。
+                    </li>
+                </ul>
+
+                <li>我如何在屏幕很小的手机上使用此功能？</li>
+
+                <ul>
+                    <li>
+                    如果你将画布尺寸更改为适合你的设备的尺寸，我们将使用 cookie 记住你的首选尺寸。
+                    然后重新加载页面，你应该已设置好！手机有点棘手，因为它们的屏幕非常小 -- iPhone 4 似乎可以很好地用于大多数算法，宽度为500，高度为300
+                    （尽管排序算法实际上需要 900 的宽度才能看到所有内容，并且图形算法需要 1000 的宽度才能看到所有内容。）
+                    使用 iOS 设备时，你可以将画布大小设置为比一次可以浸入的更大的值，不过你随后需要做一些放大/缩小或滚动。
+                    </li>
+                </ul>
+
+                <li>等等 ... 你正在使用 cookies？</li>
+                <ul>
+                    <li>
+                    仅用于记住你喜欢的宽度/高度/速度。如果你禁用 cookie，一切仍然可以正常使用，只是你不会为设备拥有合适的尺寸而特别方便。我们没有做任何形式的跟踪。
+                    </li>
+                </ul>
+
+                <li>我想我发现了一个 Bug ...</li>
+                <ul>
+                    <li>
+                    如果有任何 Bug 报告，请通过电子邮件给我，<a href="mailto: galles@usfca.edu">galles@usfca.edu</a>。越具体，越好（也就是说，什么顺序的操作会导致不良行为）。
+                    </li>
+                </ul>
+
+                <li>我可以在课堂上使用这些材料吗？</li>
+                <ul>
+                    <li>
+                    当然！我希望你仅链接到我的页面，而不是在本地缓存任何内容，以便你的学生获得所有内容的最新版本。
+                    如果你确实在课堂上使用了此功能，请给我留言以告知我这一点，我很想知道还有谁会觉得有用。
+                    </li>
+                </ul>
+
+                <li>我可以将此材料用作自己的可视化基础吗？</li>
+                <ul>
+                    <li>
+                    是的！请参阅<a href="sourceCN.html">源代码</a>页面以获取简单的教程和包含所需一切的压缩包。
+                    请注意，对源代码版本的更新不如对可视化本身进行更新的速度快，因此在任何给定时间，并非所有可视化都可能在压缩包中。
+                    我计划每月至少更新一次源代码，所以它不会过时。
+                    如果你确实使用我的代码，请在每个源文件的开头保留版权信息，并在可视化文件所在的页面上放置指向这些页面的链接。
+                    如果你创建了非常酷的东西，请告诉我，我可以链接到它。
+                    </li>
+                </ul>
+
+                <li>下一步是什么？</li>
+                <ul>
+                    <li>将剩余的仅 java 可视化转换为 javascript（仅霍夫曼编码和列表！）</li>
+                    <li>添加一组简单的递归可视化（阶乘，反转链表，通用树操作等）。类似于<a href="DPFib.html">动态编程：斐波那契可视化</a>，但有更多详细信息（调用堆栈的内容等）</li>
+                    <li>添加更多的动态编程可视化</li>
+                    <li>添加简单对象的平移和旋转的可视化效果（在2D或3D中，如果我感到雄心勃勃）。主要是因为这些视觉效果对于我的游戏工程课程很方便。</li>
+                </ul>
+            </ol>
+
+            <br /><br /><br />
+            </div>
+            <div class="footer">Copyright 2011 <a href="http://www.cs.usfca.edu/galles">David Galles </a></div>
+        </div>
+    </body>
+</html>

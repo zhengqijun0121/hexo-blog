@@ -1,0 +1,3538 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="哈希表是一种将键映射到值的数据结构。它用哈希方程来将键映射到小范围的指数（一般为[0..哈希表大小-1]）。 两个键冲突为 同样指数的几率相对较高并且每次潜在的冲突需要被解决才能维持数据完整。在这个可视化中有一些解决冲突的策略会被高亮： 开放寻址法（线性探测，二次探测 和 双倍散列）以及 分离连接法（即将上线）。">
+<meta name="keywords" content="哈希表 开放寻址法 线性 二次 探测 双倍散列 闭散列分裂连接">
+ 
+<meta name="csrf-token" content="kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<meta property="og:image" content="../img/png/hashtable.png">
+<title>VisuAlgo - 哈希表（开放寻址法：线性探测，二次探测，双倍散列 以及 闭散列分离连接法）</title>
+<link rel="icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="114x114" href="../img/favicon.png">
+<link rel="stylesheet" type="text/css" href="../fonts/silkscreen/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="../css/common.css">
+<link rel="stylesheet" href="../css/viz-1.0.1.css">
+<link rel="stylesheet" href="../css/visual.css">
+<link rel="stylesheet" href="../css/drawgraph.css">
+<style>
+      #e-lecture {
+        top: 45px;
+        right: 130px;
+        width: 400px;
+        display: block;
+        background: none;
+        /*overflow: normal;*/
+        white-space: normal;
+        text-align: right;
+        color: black; font-weight: bold; font-size: 20px;
+      }
+      .electure-prev, .electure-next { /* force update, copied from viz.css */
+        position: absolute;
+        /* bottom: -12px; */
+        top: -20px;
+        /*bottom: '';*/
+        padding: 3px 8px;
+        background: #999;
+        color: white;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .electure-prev {
+        left: -10px;
+        /* right: 30px; */
+      }
+      .electure-next {
+        right: -10px;
+        color: white;
+      }
+    </style>
+<style>
+.execAction { padding: 5px 8px; }
+.err { padding: 5px 0px; }
+#actions-extras input {
+  width: 35px;
+  padding: 5px 8px 7px;
+}
+
+#insert-input input { width: 100px; }
+
+.create { bottom: 146px; }
+.search { bottom: 119px; }
+.insert { bottom: 92px; }
+.remove { bottom: 65px; }
+</style>
+<script>
+      function changeURL() {
+        var URL = window.location.href.split('/');
+        var val = document.getElementById("Language").value;
+        URL[3] = val;
+        window.location.assign(URL.join('/'));
+      }
+    </script>
+</head>
+<body>
+<div id="top-bar">
+<a id="home" href="/">Visu<span class="colour">Algo</span><span style="font-size: 40%">.net</span></a>
+/
+<select id="Language" onchange="changeURL()">
+<option value="zh" selected>zh</option>
+</select>
+/hashtable
+<span id="title">
+<a id='title-LP' class='selected-viz'>LP</a>
+<a id='title-QP'>QP</a>
+<a id='title-DH'>DH</a>
+<a id='title-SC'>SC</a>
+</span>
+<div id="mode-menu">
+<div id='mode-button' title='exploration'>示例模式 &#9663;</div>
+<div id='other-modes'>
+<a title='e-Lecture'>电子讲座模式</a>
+</div>
+</div>
+</div>
+<div id="dark-overlay"></div>
+<div id="status" class="panel"><p></p></div>
+<div id="status-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide status panel" /></div>
+<div id="codetrace" class="panel">
+<p id="code1" style="padding-top: 10px;"></p>
+<p id="code2"></p>
+<p id="code3"></p>
+<p id="code4"></p>
+<p id="code5"></p>
+<p id="code6"></p>
+<p id="code7" style="padding-bottom: 10px;"></p>
+</div>
+<div id="codetrace-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide codetrace panel" /></div>
+<div id="left-bar"></div>
+<div id="right-bar"></div>
+<div id="media-controls">
+<div id='speed-control'>减速<div id='speed-input'></div>加速</div>
+<span id="go-to-beginning" class="media-control-button" title="go to beginning" onclick=goToBeginning()><img src="../img/goToBeginning.png" alt="go to beginning"></span>
+<span id="previous" class="media-control-button" title="step backward" onclick=stepBackward()><img src="../img/prevFrame.png" alt="previous frame"></span>
+<span id="pause" class="media-control-button" title="pause" onclick=pause()><img src="../img/pause.png" alt="pause"></span>
+<span id="play" class="media-control-button" title="play" onclick=play()><img src="../img/play.png" alt="play"></span>
+<span id="next" class="media-control-button" title="step forward" onclick=stepForward()><img src="../img/nextFrame.png" alt="next frame"></span>
+<span id="go-to-end" class="media-control-button" title="go to end" onclick=goToEnd()><img src="../img/goToEnd.png" alt="go to end"></span>
+<div id="progress-bar" class="media-control-button"></div>
+</div>
+<div id='viz'></div>
+<div id='current-action' class='panel'></div>
+<div id='e-lecture' class='panel'></div>
+<div id="overlay" hidden></div>
+<div id="dropdown-temp-holder" hidden></div>
+<div id="electure-1" class="electure-dialog" style="bottom:60px;left:50%;margin-left:-250px;width:500px;">
+<span style="white-space: normal;">哈希表是一种将键映射到值的数据结构。它用哈希方程来将键映射到小范围的指数（一般为</span><span style="white-space: normal;">[0..哈希表大小-1]）。 两个键冲突为 同样指数的几率相对较高并且每次潜在的冲突需要被解决才能维持数据完整。在这个可视化中有一些解决冲突的策略会被高亮： 开放寻址法</span>（线性探测，二次探测 和 双倍散列）以及 分离连接法（即将上线）。<br>
+<hr>
+<p><b>Remarks</b>: By default, we show e-Lecture Mode for first time (or non logged-in) visitor.<br>
+Please <a href="login"><u>login</u></a> if you are a repeated visitor or <a href="login"><u>register</u></a> for an (optional) free account first.</p>
+<div id='electure-dropdown'>
+<select class="lecture-dropdown" style="width:100%">
+<option value="1">1. 哈希表</option>
+<option value="2">2. 动机</option>
+<option value="2-1">&nbsp;&nbsp;&nbsp;2-1. 表ADT</option>
+<option value="2-2">&nbsp;&nbsp;&nbsp;2-2. 直接寻址表</option>
+<option value="2-3">&nbsp;&nbsp;&nbsp;2-3. DAT的例子</option>
+<option value="2-4">&nbsp;&nbsp;&nbsp;2-4. 带数据的DAT示例</option>
+<option value="2-5">&nbsp;&nbsp;&nbsp;2-5. 答案</option>
+<option value="2-6">&nbsp;&nbsp;&nbsp;2-6. DAT的局限性</option>
+<option value="3">3. 散列：想法</option>
+<option value="3-1">&nbsp;&nbsp;&nbsp;3-1. 电话号码示例</option>
+<option value="3-2">&nbsp;&nbsp;&nbsp;3-2. 哈希表预览</option>
+<option value="3-3">&nbsp;&nbsp;&nbsp;3-3. 带数据的哈希表</option>
+<option value="3-4">&nbsp;&nbsp;&nbsp;3-4. 冲突</option>
+<option value="3-5">&nbsp;&nbsp;&nbsp;3-5. 冲突的概率</option>
+<option value="3-6">&nbsp;&nbsp;&nbsp;3-6. 计算</option>
+<option value="3-7">&nbsp;&nbsp;&nbsp;3-7. 两个重要的问题</option>
+<option value="4">4. 哈希函数</option>
+<option value="4-1">&nbsp;&nbsp;&nbsp;4-1. 初步措施</option>
+<option value="4-2">&nbsp;&nbsp;&nbsp;4-2. 不好的哈希函数的例子</option>
+<option value="4-3">&nbsp;&nbsp;&nbsp;4-3. 答案</option>
+<option value="4-4">&nbsp;&nbsp;&nbsp;4-4. <span style="white-space: normal;">完美的哈希函数</span><br></option>
+<option value="4-5">&nbsp;&nbsp;&nbsp;4-5. 散列整数 - 最佳实践</option>
+<option value="4-6">&nbsp;&nbsp;&nbsp;4-6. 答案</option>
+<option value="4-7">&nbsp;&nbsp;&nbsp;4-7. 散列串 - 最佳实践</option>
+<option value="4-8">&nbsp;&nbsp;&nbsp;4-8. 答案</option>
+<option value="5">5. 冲突解决方案</option>
+<option value="5-1">&nbsp;&nbsp;&nbsp;5-1. 开地址法（OA）</option>
+<option value="5-2">&nbsp;&nbsp;&nbsp;5-2. 分离链接法（SC）</option>
+<option value="6">6. 可视化</option>
+<option value="6-1">&nbsp;&nbsp;&nbsp;6-1. 开址法版本</option>
+<option value="6-2">&nbsp;&nbsp;&nbsp;6-2. 分离链接版本</option>
+<option value="7">7. 线性探测<br></option>
+<option value="7-1">&nbsp;&nbsp;&nbsp;7-1. 插入（[18，14，21])</option>
+<option value="7-2">&nbsp;&nbsp;&nbsp;7-2. 插入([1,35])</option>
+<option value="7-3">&nbsp;&nbsp;&nbsp;7-3. <span style="white-space: normal;">搜索（35）和搜索（8）</span></option>
+<option value="7-4">&nbsp;&nbsp;&nbsp;7-4. <span style="white-space: normal;">删除（v） - 初步措施</span><br></option>
+<option value="7-5">&nbsp;&nbsp;&nbsp;7-5. 答案</option>
+<option value="7-6">&nbsp;&nbsp;&nbsp;7-6. 删除（21）</option>
+<option value="7-7">&nbsp;&nbsp;&nbsp;7-7. 再次搜索（35）</option>
+<option value="7-8">&nbsp;&nbsp;&nbsp;7-8. <span style="white-space: normal;">插入（28） - 覆盖DEL</span><br></option>
+<option value="7-9">&nbsp;&nbsp;&nbsp;7-9. 主群集</option>
+<option value="7-10">&nbsp;&nbsp;&nbsp;7-10. 线性探测顺序<br></option>
+<option value="8">8. 二次探测（QP）</option>
+<option value="8-1">&nbsp;&nbsp;&nbsp;8-1. 插入(38)</option>
+<option value="8-2">&nbsp;&nbsp;&nbsp;8-2. 移除（18）， 再次搜索（38）</option>
+<option value="8-3">&nbsp;&nbsp;&nbsp;8-3. <span style="white-space: normal;">比线性探测更好？</span></option>
+<option value="8-4">&nbsp;&nbsp;&nbsp;8-4. 细节</option>
+<option value="8-5">&nbsp;&nbsp;&nbsp;8-5. 定理</option>
+<option value="8-6">&nbsp;&nbsp;&nbsp;8-6. 证明</option>
+<option value="8-7">&nbsp;&nbsp;&nbsp;8-7. 更好的二次探测<br></option>
+<option value="8-8">&nbsp;&nbsp;&nbsp;8-8. 二次聚类</option>
+<option value="9">9. 双倍散列（DH）<br></option>
+<option value="9-1">&nbsp;&nbsp;&nbsp;9-1. <span style="white-space: normal;">次要散列函数h2（v）</span><br></option>
+<option value="9-2">&nbsp;&nbsp;&nbsp;9-2. 插入（[35,42])</option>
+<option value="9-3">&nbsp;&nbsp;&nbsp;9-3. 移除（17）， 再次搜索（35）<br></option>
+<option value="9-4">&nbsp;&nbsp;&nbsp;9-4. 好的OA冲突解决方案</option>
+<option value="10">10. 分离链接（SC）</option>
+<option value="10-1">&nbsp;&nbsp;&nbsp;10-1. <span style="white-space: normal;">搜索（35）和删除（7）</span><br></option>
+<option value="10-2">&nbsp;&nbsp;&nbsp;10-2. 闭散列法 vs 分离链接法？</option>
+<option value="10-3">&nbsp;&nbsp;&nbsp;10-3. （当前）答案</option>
+<option value="11">11. 额外的</option>
+<option value="11-1">&nbsp;&nbsp;&nbsp;11-1. Rehash</option>
+<option value="11-2">&nbsp;&nbsp;&nbsp;11-2. 哈希表的实现</option>
+<option value="11-3">&nbsp;&nbsp;&nbsp;11-3. <span style="white-space: normal;">数据结构组合？</span><br></option>
+<option value="11-4">&nbsp;&nbsp;&nbsp;11-4. 对于表ADT的 备选数据结构</option>
+<option value="11-5">&nbsp;&nbsp;&nbsp;11-5. 在线小测试</option>
+<option value="11-6">&nbsp;&nbsp;&nbsp;11-6. 在线评判练习</option>
+<option value="99">99. 状态面板</option>
+<option value="99-1">&nbsp;&nbsp;&nbsp;99-1. 代码追踪面板</option>
+<option value="99-2">&nbsp;&nbsp;&nbsp;99-2. 媒体控制</option>
+<option value="99-3">&nbsp;&nbsp;&nbsp;99-3. 返回 ”探索模式“</option>
+</select>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-next' data-nextid="2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>散列是一种算法（通过散列函数），将大型可变长度数据集（称为键，不一定是整数）映射为固定长度的较小整数数据集。<br>哈希表是一种数据结构，它使用哈希函数有效地将键映射到值（表或地图ADT），以便进行高效的搜索/检索，插入和/或删除。<br>散列表广泛应用于多种计算机软件中，特别是<a href="https://en.wikipedia.org/wiki/Associative_array" target="_blank"><u>关联数组</u></a>，数据库索引，缓存和集合。<br>在这个电子讲座中，我们将深入讨论表ADT，<a href="?slide=3"><u>哈希表</u></a>的基本概念，讨论<a href="?slide=4"><u>哈希函数</u></a>，然后再讨论<a href="?slide=5"><u>哈希表</u></a>数据结构本身的细节。<br></p>
+<hr>
+<p>Pro-tip: Since you are not <a href="login"><u>logged-in</u></a>, you may be a first time visitor who are not aware of the following keyboard shortcuts to navigate this e-Lecture mode: <b>[PageDown]</b> to advance to the next slide, <b>[PageUp]</b> to go back to the previous slide, <b>[Esc]</b> to toggle between this e-Lecture mode and exploration mode.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="2-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>ADT表必须至少支持以下三种操作，并且尽可能高效：<br></p><ol><li>搜索（v） - 确定v是否存在于ADT中，<br></li><li>插入（v） - 将v插入ADT，<br></li><li>删除（v） - 从ADT中删除v。</li></ol><p></p><p>哈希表是这个表ADT的一个可能的好实现（另一个是<a href="./bst?slide=1"><u>这个</u></a>）。</p><hr><p>PS1：对于Table ADT的两个较弱的实现，您可以单击相应的链接：<a href="./bst?slide=3-2"><u>未排序数组</u></a>或<a href="./bst?slide=3-3"><u>排序数组</u></a>来阅读详细讨论。</p><hr><p>PS2：在现场课程中，您可能想要比较Table ADT和<a href="en/list?slide=2-1" target="_blank"><u>List ADT</u></a>的要求。</p>
+<hr>
+<p>Another pro-tip: We designed this visualization and this e-Lecture mode to look good on 1366x768 resolution <b>or larger</b> (typical modern laptop resolution in 2017). We recommend using Google Chrome to access VisuAlgo. Go to full screen mode (<b>F11</b>) to enjoy this setup. However, you can use zoom-in (<b>Ctrl +</b>) or zoom-out (<b>Ctrl -</b>) to calibrate this.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="2-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2-2" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>当整数键的范围很小时，例如 [0..M-1]，我们可以使用大小为M的初始空（<span style="white-space: normal;">Boolean</span>）数组A，并直接实现以下表ADT操作：</p><ol><li>搜索（v）：检查<b>A [v]</b>是true（填充）还是false（空），<br></li><li>插入（v）：将<b>A [v]</b>设置为true（填充），<br></li><li>移除（v）：将<b>A [v]</b>设置为false（空白）。<br></li></ol><p>就是这样，我们使用小整数键本身来确定数组A中的地址，因此称为直接寻址。 很明显，所有三种主要的ADT操作都是<b>O(1)</b>。<br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="2-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2-3" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>在新加坡（<a href="https://en.wikipedia.org/wiki/List_of_bus_routes_in_Singapore" target="_blank"><u>截至2018年3月</u></a>），公交路线编号是从[2,990]。<br>当前并不是所有的[2..990]之间的整数，例如， 没有公交线路989 - 搜索（989）应该返回错误。 我们可以引入新的公共汽车路线 <b>x</b>，即插入（x）或现有的公共汽车路线 <b>y </b>可以不连续，即移除（y）。<br>由于可能的公交路线的范围很小，为了记录数据是否存在公交线路号码，我们可以使用具有1 000大小的布尔数组（<span style="white-space: normal;">Boolean array</span>）的DAT。</p><p>讨论：在现实生活中，我们可以讨论为什么我们使用1 000而不是990（或991）。<br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="2-4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2-4" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>请注意，我们总是可以添加数值，而不是使用boolean数组来记录密钥的存在。<br>例如，我们可以使用一个关联的字符串数组<b>A</b>来代替一个公交路线号码到它的运营商名称，例如，</p><pre>A[2] = "Go-Ahead Singapore",<br>A[10] = "SBS Transit",<br>A[183] = "Tower Transit Singapore",<br>A[188] = "SMRT Buses", etc.</pre><p>讨论：你能想到其他一些现实生活中的DAT示例吗？</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="2-5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2-5" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2-4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="2-6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2-6" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+键必须是（或可以轻松映射到）<b>非负整数值</b>。 基本的DAT在前面两张幻灯片的例子的完整版本中存在问题，因为在新加坡实际上有公交路线号的变化，例如， 96B，151A，NR10等<br>键的范围必须<b>很小</b>。 如果我们有（非常）大范围的话，内存使用量会（非常的）很大。<br>键必须密集，即键值中没有太多空白。 否则DAT将包含太多的空单元。<br>我们将用哈希来克服这些限制。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2-5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>使用散列，我们可以：</p><ol><li>将（一些）非整数键映射成整数键，<br></li><li>将大整数映射成较小的整数，<br></li><li>影响哈希表的密度或负载因子α= N / M，其中N是键的数量，M是哈希表的大小。<br></li></ol>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2-6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+举个例子，我们有N = 400个新加坡电话号码（新加坡电话号码有8位数字，所以在新加坡可能有10 ^ 8 = 100M的电话号码）。<br>我们可以使用以下简单的哈希函数h（v）= v％997来代替使用DAT并使用大小为<b>M</b> = 1亿的<b>巨大的</b>数组。<br><br>这样，我们将8位电话号码<b>6675 2378</b>和<b>6874 4483</b>分别映射到最多3位数字<b>h（6675 2378）= 237</b>和<b>h（6874 4483）= 336</b>。 因此，我们只需要准备大小为<b>M</b> = 997（或1000）的数组而不是<b>M</b> = 1亿。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-2" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+使用散列，我们现在可以使用整数数组（而不是布尔数组）执行下面的表ADT操作，如下所示：<br><div><ol><li>搜索（v）：检查<b>A [h（v）]！= -1</b>（假设 <b>v≥0</b>，我们对空单元使用-1）<br></li><li>插入（v）：设置<b>A [h（v）] = v</b>（我们把 <b>v </b>散列到<b>h（v）</b>中，所以我们需要以某种方式记录键 <b>v</b>），<br></li><li>删除（v）：设置<b>A [h（v）] = -1</b> --- 将进一步阐述。<br></li></ol></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-3" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p style=""><span style="white-space: normal;">如果我们有映射到卫星数据的键，并且我们也想记录原始键，我们可以使用如下一对（整数，卫星数据类型）数组实现哈希表：</span></p><p style=""><ol><li>搜索（v）：返回<b>A [h（v）</b>]，它是<b>一对</b>（<b>v，卫星数据</b>），可能是空的，<br></li><li>插入（v，卫星数据）：设置<b>A [h（v）] =对（v，卫星数据）</b>，<br></li><li>删除（v）：设置<b>A [h（v）] =（空对）</b> - 将进一步详细阐述。</li></ol></p><p style=""><span style="white-space: normal;">但是，现在你应该注意到有些地方是不完整的......</span></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-4" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>散列函数可能且很可能将<b>不同的键</b>（整数或不是）映射到<b>同一个整数槽</b>中，即<b>多对一</b>映射而不是<b>一对一</b>映射。<br>例如，早些时候<a href="?slide=3-1"><u>三张幻灯片</u></a>中的<b>h（6675 2378）= 237</b>，如果我们想插入另一个电话号码<b>6675 4372</b>，我们也会遇到问题，因为<b>h（6675 4372）= 237</b>。<br>这种情况称为<b>冲突</b>，即两个（或更多）键具有相同的<b>散列值</b>。<br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-5" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+生日（冯米塞斯）悖论问：&#39;在一个人与其他人共享同一天生日（碰撞，两个键被散列的概率）之前，在一个365个座位（单元格）的房间（散列表）中必须有多少人（键数量） ，忽略闰年（即所有年份都有365天），变得&gt; 50％（即更可能）？<br><span class="slide-actions" onclick="doButtonAction88()">Reveal</span>这个答案对我们中的一些人来说可能令人惊讶。<br>我们来做一些计算吧。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-6" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>假设Q（n）是房间中n个人唯一生日的概率。<br><b>Q（n）= 365/365×364/365×363/365×...×（365-n + 1）/ 365，</b><br>即第一人的生日可以是365天中的任何一天，第二人的生日可以是除第一人的生日之外的任何365天，等等。<br>设<b>P（n）</b>为房间中 <b>n </b>个人的相同生日（碰撞）的概率。<b>P（n）= 1-Q（n）</b><br>我们计算<b><a href="https://www.wolframalpha.com/input/?i=1.00-(365%2F365*364%2F365*...*343%2F365)" target="_blank"><u>P(23) = 0.507</u></a>&gt; 0.5（50％）。</b><br>因此，我们只需要在365人的座位（单元格）的房间（哈希表）中为<b>23人</b>（少量钥匙）发生（超过）50％的机会碰撞事件（该房间中两个不同人的生日 是365天/插槽之一）。<br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-7">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-7" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>问题1：我们已经看到了一个简单的散列函数，如<a href="?slide=3-1"><u>电话号码示例</u></a>中使用的<b>h（v）= v％997</b>，它将大范围的整数键映射到整数键的较小范围内，但非整数键的情况如何？ 如何有效地做这样的散列？<br>问题2：我们已经看到，通过将大范围散列或映射到更小范围，很可能会发生碰撞。 如何处理它们？<br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+如何用这些理想的属性创建一个好的散列函数？<br><ol><li>快速计算，即在O（1）中，<br></li><li>尽可能使用最小插槽/散列表的大小M，<br></li><li>尽可能均匀地将键分散到不同的基地址∈[0..M-1]，<br></li><li>尽可能减少碰撞。<br></li></ol>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-7">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+假设我们有一个大小为 <b>M </b>的散列表，其中键用于标识卫星数据，并且使用特定的散列函数来计算散列值。<br>使用散列函数从键<b>v</b>计算键<b>v</b>的散列值/散列码以获得范围从0到M-1的整数。 该散列值用作卫星数据的散列表条目的基址/归位索引/地址。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-2" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p><br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-3" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-4" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>在讨论现实之前，让我们讨论理想的情况：<b>完美的散列函数</b>。<br>完美的散列函数是键和散列值之间的<b>一对一</b>映射，即根本不存在冲突。 如果事先知道所有的键是可能的。 例如，编译器/解释器搜索保留关键字。 但是，这种情况很少见。<br>当表格大小与提供的关键字数量相同时，实现最小的完美散列函数。 这种情况更为罕见。<br>如果你有兴趣，你可以探索<a href="https://www.gnu.org/software/gperf/"><u>GNU gperf</u></a>，这是一个用C ++编写的免费可用的完美哈希函数生成器，可以从用户提供的关键字列表中自动构建完美的函数（C ++程序）。<br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-5" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+人们已经尝试过各种方法，尽可能均匀地将大范围的整数散列到更小范围的整数中。 在这个电子讲座中，我们直接跳到最好的和最受欢迎的版本之一：<b>h（v）= v％M</b>，即将v 映射到大小为<b>M</b>个时隙的散列表中。 （％）是一个模运算符，给出了除法后的余数。 这显然很快，即O（1）假设v不超过自然整数数据类型限制。<br>哈希表大小<b>M</b>被设置为不接近2的幂的相当大的素数，大约比将在哈希表中使用的期望的键的数量N大2倍以上。 这样，负载因子α= N / M &lt;0.5 <span style="white-space: normal;">—</span> 稍后我们将看到具有低负载因子，从而牺牲空闲空间，有助于提高哈希表性能。<br>讨论：如果我们将M设置为10（十进制）的幂或2（幂的二进制），那该怎么办？<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-6" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-7">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-7" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+人们也尝试过各种方法，尽可能均匀地将字符串散列到小范围的整数中。 在这个电子讲座中，我们直接跳到最好和最流行的版本之一，如下所示：<br><br>int hash_function（string v）{//假设1：v仅使用[&#39;A&#39;..&#39;Z&#39;]<br>&nbsp;&nbsp; int sum = 0; //假设2：v是一个短字符串<br>&nbsp;&nbsp; for（auto＆c：v）//对于v中的每个字符c<br>&nbsp;&nbsp;&nbsp;&nbsp; sum =（（sum * 26）％M +（c - &#39;A&#39; + 1））％M; // M是表格大小<br>&nbsp;&nbsp; return sum;<br>}<br>讨论：在现实生活中，讨论上面散列函数的组成部分，例如 为什么循环遍历所有字符?,会比O（1）慢吗？为什么要用26来乘？，如果字符串v使用的不仅仅是大写字符?,等等<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4-8">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4-8" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-7">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5" class="electure-dialog" style="top:60px;left:200px;width:500px;">
+选择分别的页眉以在不同使用模式之间切换：分离连接法或者开放寻址法（线性探测，二次探测 和 双倍散列）<div>设：</div><div>HT_size = 现在哈希表的大小</div><div>基础 = <span style="white-space: normal; font-size: 13px;">(值%HT_size)&nbsp;</span></div><div><span style="white-space: normal; font-size: 13px;">步骤 = &nbsp;现在探测的步骤&nbsp;</span></div><div><span style="white-space: normal; font-size: 13px;">第二级 =&nbsp;</span><span style="white-space: normal; font-size: 13px;">1+值%(HT_size-2) ( 防止为0 ), 则:&nbsp;</span></div><div><span style="white-space: normal; font-size: 13px;"><br></span></div><div><span style="white-space: normal; font-size: 13px;">线性探测：</span><span style="white-space: normal; font-size: 13px;">&nbsp;i=(基础+步骤*1)%HT_size,</span></div><span style="white-space: normal;">二次探测： i=(基础+步骤*步骤)%HT_size, 以及</span><br style="white-space: normal;"><span style="white-space: normal;">双倍散列： i=(基础+步骤*第二级)%HT_size</span><div><span style="white-space: normal; font-size: 13px;"><br></span></div><div><span style="white-space: normal;"> </span></div><div><span style="white-space: normal;"> </span></div><div></div><div><span style="white-space: normal;"> </span></div><div><span style="white-space: normal;"> </span></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4-8">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5-1" class="electure-dialog" style="top:60px;left:220px;width:500px;">
+在此可视化中讨论了三种开放寻址（OA）冲突解决技术：线性探测（LP），二次探测（QP）和双散列（DH）。<br>要在三种模式之间切换，请点击相应的标题。<br>假设：<b>M</b> = HT.length =当前散列表大小，base =（key％HT.length），step =当前探测步骤，secondary = smaller_prime - key％smaller_prime（避免零 - 很快就会阐述）我们很快就会看到 三种模式的探测序列为：线性探测：i =（基础+步骤* 1）％M，二次探测：i =（基础+步骤*步骤）％M和双散列：i =（基础+步骤 *次要）％M.<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5-2" class="electure-dialog" style="top:60px;left:250px;width:500px;">
+<p>分离链接法（SC）冲突解决技术很简单。 我们使用 <b>M </b>个副本数据结构副本，通常是<a href="./list?mode=DLL"><u>双向链接列表</u></a>。 如果两个键 <b>a </b>和 <b>b </b>都具有相同的散列值 <b>i</b>，则两个键都将被附加到双链表 <b>i </b>的（前/后）（在该可视化中，我们借助尾指针，用O（1）的时间将它附加到后面）。 就是这样，键（keys）将被插入的地方完全依赖于散列函数本身，因此我们也称分离链接法为封闭寻址冲突解决技术。</p><p>如果我们使用分离链接法，负载因子α= <b>N / M</b>描述了<b>M</b>个列表的平均长度，它将决定搜索的性能（v），因为我们可能需要平均探索α个元素。 由于删除（v） - 也需要搜索（v），其性能与搜索（v）相似。 插入（v）显然是O（1）。<br>如果我们可以将α限制为一个小常量，则使用分离链接法的所有搜索（v），插入（v）和删除（v）操作都将为O（1）。<br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-6" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+查看上面的哈希表的可视化。<div>在这个可视化中，我们防止重复键的插入。</div><div>由于屏幕大小限制，散列表尺寸被限制为<b>M=19</b>。</div><div>哈希表在水平方向上可视化为一个数组，其中指数0放置在最左边，指数M-1放置在最右边，但是当我们可视化开放寻址 vs 分离链接冲突解决方法时，细节会有不同。<br></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="6-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-6-1" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+本可视化中讨论了三种开放寻址冲突解决技术：线性探测（LP），二次探测（QP）和双散列（DH）。<br>对于所有三种技术，每个哈希表单元格都显示为顶点标签显示的单元格值为[0..99]的顶点。 在不失一般性的情况下，我们不会在该可视化中显示任何卫星数据，因为我们只关注按键的排列。 我们保留值-1以指示&#39;EMPTY cell&#39;（可视化为空白顶点），-2指示&#39;DELETED cell&#39;（可视化为具有缩写标签“DEL”的顶点）。 单元格索引范围从[0..M-1]在每个顶点下方显示为<font color="#ff0000">红色标签</font>。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="6-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-6-2" class="electure-dialog" style="bottom:40%;left:50%;margin-left:-250px;width:500px;">
+<p>对于分离连接法（SC）冲突解决方法，第一行包含<b>M</b>个<a href="./list?mode=DLL"><u>双向链表</u></a>的<b>M</b>“H”（头）指针。<br>然后，每个双向链表我包含按任意顺序散列到 <b>i </b>中的所有密钥。 在数学上，所有可以表示为<b>i</b>（mod <b>M</b>）的键都被散列到DLL <b>i </b>中。 再次，我们不在此可视化中存储任何卫星数据。<br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="6-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+在线性探测冲突解决方法中，每当发生冲突时，我们会一次扫描一个索引，以查找<b>下一个空/被删除的插槽</b>（当我们到达最后一个插槽时再重新环绕）。<br>例如，我们假设我们以表格大小M = HT.length = 7的空的散列表 <b>HT</b>开始，如上所示，使用索引0到 <b>M</b>-1 = 7-1 = 6。请注意，7是素数。 （主）散列函数很简单，<b>h（v）= v％M</b>。<br>此演练将向您展示使用线性探测作为冲突解决技术时Insert（v），Search（v）和Remove（v）操作所采取的步骤。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="6-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-1" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+<p>现在单击<span class="slide-actions" onclick="doButtonAction79()">Insert([18,14,21])</span> - 一个命令中有三个单独的插入。<br>回顾（点击上面的按钮后显示）。<br>形式上，我们将<a href="?slide=5-1"><u>线性探测指数 <b>i</b></u></a>描述为<b>i =（base + step * 1）％M</b>，其中<b>base</b>是键v的（主）散列值，即<b>h（v）</b>，<b>step</b>是从1开始的线性探测步骤。<br>提示：为了快速精确地计算（小）整数<b>V</b>模<b>M</b>，我们简单地用<b>M≤V</b>的最大倍数来减去<b>V</b>，例如， 18％7 = 18-14 = 4，因为14是7的最大倍数并且≤18。<br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-2" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+现在点击<span class="slide-actions" onclick="doButtonAction80()">Insert([1,35])</span>（在上一张幻灯片中插入的前三个值的顶部）。<br>回顾（在点击上面的按钮后显示）<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-3" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+现在我们说明使用线性探测作为碰撞解析技术的Search（v）操作。 所采取的步骤与 Insert（v）操作非常相似，即我们从（主）散列键值开始，检查是否已找到v，否则我们一次向前移动一个索引（如果需要，则进行包装）并重新检查 当我们遇到一个空单元时，我们就停止，这意味着v完全不在哈希表中（因为之前的Insert（v）操作会将v放在那里）。<br><br>现在点击<span class="slide-actions" onclick="doButtonAction81()">Search(35)</span> - 你应该看到探测序列[0,1,2,3（找到键35）]。<br><br>现在单击<span class="slide-actions" onclick="doButtonAction82()">Search(8)</span> - [1,2,3,4,5（空单元格，因此在哈希表中找不到键8）]。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-4" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+现在我们来讨论移除（v）操作。<br>如果我们直接设置<b>HT [i] = EMPTY</b>单元，其中<b>i</b>是包含<b>v</b>的索引（在必要时进行线性探测之后），您是否意识到我们会导致问题？ 为什么？<br><br>提示：查看以前的三张幻灯片，了解插入（v）和搜索（v）的行为。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-5" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-6" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+现在让我们看看完整的删除（v）。 如果我们在索引 <b>i </b>处找到 <b>v</b>（必要时在线性探测之后），我们必须设置 <b>HT [i] = DELETED</b>（在此可视化中缩写为DEL），其中DEL是一个特殊符号（通常你只能在你的应用程序种没有使用过的使用一个特殊符号）指示该单元格可以在将来的搜索（v）需要时绕过，但可以被将来的插入（w）覆盖。 这种策略被称为懒惰删除。<br>现在点击<span class="slide-actions" onclick="doButtonAction83()">Remove(21)</span> - [0,1（找到关键21，我们设置H [1] = DEL）]。<br>然后请继续讨论下一张幻灯片。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-7">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-7" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+现在点击<span class="slide-actions" onclick="doButtonAction81()">Search(35)</span> - [0,1（绕过那个DELETED cell），2,3（找到键35）]。<br>想象一下，如果我们错误地设置H [1] = EMPTY，会发生什么。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-8">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-8" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+现在单击<span class="slide-actions" onclick="doButtonAction84()">Insert(28)</span> - 您应该看到探测序列[0,1（使用DEL符号找到一个单元格）]，因此，实际上可以用新值覆盖，而不会影响将来搜索（v）的正确性。 因此，我们把28放在索引1中。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-7">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-9">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-9" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+虽然我们可以解决与线性探测的碰撞，但它不是最有效的方法。<br>我们将一个<b>群集</b>定义为连续占用时隙的群集。 覆盖键基地址的集群称为键的主群集。<br>现在请注意，线性探测可以创建大型主群集，这会增加搜索（v）/插入（v）/删除（v）操作在O（1）之外的运行时间。<br>参见上面的一个例子，M = 11，我们插入了全部为6（模11）的键，即当除以11时，所有键都有余数6.现在看看&#39;慢&#39;（BTN92）是如何。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-8">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7-10">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7-10" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+线性探测的探测序列可以正式描述如下：<br><br>&nbsp; h（v）//基地址<br>（h（v）+ 1 * 1）％M //第一个探测步骤，如果发生碰撞<br>（h（v）+ 2 * 1）％M //第二次探测步骤，如果仍有碰撞<br>（h（v）+ 3 * 1）％M //第三次探测步骤，如果仍有冲突<br>...<br>（h（v）+ k * 1）％M //第k个探测步骤等...<div><br>在Insert（v）过程中，如果发生冲突，但在Hash Table中仍有一个空（或DEL）时隙，我们肯定会在最多M个线性探测步骤后找到它。 而当我们这样做时，冲突将得到解决，但是键 <b>v </b>的主集群会因此而扩展，未来的哈希表操作也会变得更慢。<br>由于相邻（但先前不相连）的群集的兼并（或组合），主群集的大小可能非常大。</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-9">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="8">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-8" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+为了减少主聚类，我们可以将探针序列修改为：<br><br>&nbsp; h（v）//基地址<br>（h（v）+ 1 * <font color="#ff0000">1</font>）％M //第一个探测步骤，如果发生碰撞<br>（h（v）+ 2 * <font color="#ff0000">2</font>）％M //第2次探测步骤，如果仍有冲突<br>（h（v）+ 3 * <font color="#ff0000">3</font>）％M //第三次探测步骤，如果仍有冲突<br>...<br>（h（v）+ k * <font color="#ff0000">k</font>）％M //第k个探测步骤等...<br>就是这样，探针按照二次方跳转，根据需要环绕哈希表。<br>由于这是一种不同的二次探测，所以<font color="#ff0000">一个非常常见的错误</font>就是：做H（V），（H（v）的1）％M，（H（v）的+ 1 + 4）％M，（H（V）+ 1 + 4 + 9）％M，...<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7-10">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="8-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-8-1" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+假设我们已经调用 Insert（18）和Insert（10）到大小为M = HT.length = 7的初始空Hash表中。由于18％7 = 4和10％7 = 3,18和3不会相互碰撞， 如上所示分别位于指数4和3中。<br>现在，我们点击<span class="slide-actions" onclick="doButtonAction85()">Insert(38)</span>。<br>回顾（点击上面的按钮后显示）。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="8">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="8-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-8-2" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+删除（x）和搜索（y）操作的定义类似。 只是这次我们使用二次探测而不是线性探测。<br>例如，假设我们在上一张幻灯片之后调用了Remove（18），并且标记了HT [4] = DEL。 如果我们调用<span class="slide-actions" onclick="doButtonAction91()">Search(38)</span>，我们将使用与上一张幻灯片相同的二次探测序列，但是会通过标记为DELETED的HT [4]。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="8-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="8-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-8-3" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+一目了然，二次探测（<span style="white-space: normal;">Quadratic Probing</span>）能够快速解决我们之前对线性探测的主要聚类问题，但它是完美的碰撞解决技术吗？<br>尝试<span class="slide-actions" onclick="doButtonAction86()">Insert([12,17])</span>。<br>你意识到刚刚发生了什么吗？<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="8-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="8-4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-8-4" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+我们可以很容易地插入12，因为h（12）= 12％7 = 5 以前是空的（见上文）。<br>但是，即使我们仍然有3个空槽，我们仍然存在主要问题：h（17）= 17％7 = 3已被键10占用，（3 + 1 * 1）％7 = 4已被占用 （3 + 2 * 2）％7 = 0已被键38占用，（3 + 3 * 3）％7 = 5已被键12占用，（3 + 4 * 4）％7 = 5 （3 + 5 * 5）％7 = 0再次被键38占据，（3 + 6 * 6）％7 = 4又被键18占据，（3 + 7 * 7）％7 = 3再次被键10占用，如果我们继续二次探测，它将<b>永远循环</b>...<br>尽管我们仍然有几个（3）空单元格，但我们无法将此新值17插入到哈希表中。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="8-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="8-5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-8-5" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+如果α&lt;0.5且M是质数（&gt; 3），那么我们总是可以使用二次探测找到一个空槽。 回想一下：α是加载因子，M是散列表大小（HT.length）。<br><br>如果满足上述两个要求，我们可以证明包括基地址h（v）的第一M / 2二次探测指数都是不同且唯一的。<br><br>但除此之外没有这样的保证。 因此，如果我们想要使用二次探测，我们需要确保α&lt;0.5（在这个可视化中没有强制执行，但是为了防止无限循环，我们在M步之后打破了循环）。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="8-4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="8-6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-8-6" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+我们将通过矛盾使用证据。 我们首先假设两个二次探测步骤：x和y，x！= y（假设x <y）可以产生相同的地址模数m.<div><br>h(v) + x*x = h(v) + y*y (mod M)<div>x*x = y*y (mod M)//从两边敲出h（v）<br>x*x - y*y = 0 (mod M) //将y * y移动到左边<div>(x-y)*(x+y) = 0 (mod M)//重新排列公式</div><div><br>现在，（x-y）或（x + y）必须等于零。 我们的假设是<samp style="white-space: normal;">x != y</samp><span style="white-space: normal;">,&nbsp; 那么</span>（x-y）不能为0. 由于0≤ x <y≤（m 2）且m是大于3的素数（奇数整数），所以（x="" +="" y）也不能为为0模m<="" div=""><div>矛盾！<br>因此，第一个M / 2二次探测步骤不能产生相同的地址模M（如果我们将M设置为大于3的质数）。<br>讨论：我们可以使二次探测能够使用其他约50％的表格单元吗？</div></y≤（m></div></div></y）可以产生相同的地址模数m.<div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="8-5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="8-7">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-8-7" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="8-6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="8-8">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-8-8" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+在二次探测中，群集（clusters）沿着探测路径形成，而不是像线性探测那样围绕基地址形成。 这些群集称为次级群集（<b>Secondary Clusters</b>）。<br>由于在所有密钥的探测中使用相同的模式，所以形成次级群集。 请注意，如果两个不同的键具有相同的基址，则它们的二次探测序列将是相同的。<br>二次探测中的次级群集不如线性探测中的主群集那样糟糕，因为理论上散列函数理论上应该首先将键分散到不同的基地址∈[0..<b>M</b>-1]中。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="8-7">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="9">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-9" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+为了减少主要和次要群集，我们可以修改探针序列为：<br><br>&nbsp; h（v）//基地址<br>（h（v）+ 1 * <font color="#ff0000">h2（v）</font>）％M //第一个探测步骤，如果有碰撞<br>（h（v）+ 2 * <font color="#ff0000">h2（v）</font>）％M //第2次探测步骤，如果仍有冲突<br>（h（v）+ 3 * <font color="#ff0000">h2（v）</font>）％M //第三次探测步骤，如果仍有冲突<br>...<br>（h（v）+ k * <font color="#ff0000">h2（v）</font>）％M //第k个探测步骤等...<br>就是这样，探测器根据<b>第二个散列函数</b>h2（v）的值跳转，根据需要环绕散列表。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="8-8">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="9-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-9-1" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+如果h2（v）= 1，则双散列（Double Hashing）的工作方式与线性探测（Linear Probing）完全相同。 所以我们通常希望h2（v）&gt; 1来避免主聚类。<br>如果h2（v）= 0，那么Double Hashing不起作用的原因很明显，因为任何探测步数乘以0仍然是0，即我们在碰撞期间永远停留在基地址我们需要避免这种情况。<br>通常（对于整数键），h2（v）= M&#39; - v％M&#39;其中M&#39;是一个小于M的质数。这使得h2（v）∈[1..M&#39;]，它足够多样 二次聚类。<br>二次散列函数的使用使得理论上难以产生主要或次要群集问题。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="9">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="9-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-9-2" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+点击<span class="slide-actions" onclick="doButtonAction87()">Insert([35,42])</span>插入35，然后插入42到上面的当前哈希表。<br>回顾（点击上面的按钮后显示）。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="9-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="9-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-9-3" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+删除（x）和搜索（y）操作的定义类似。 只是这次我们使用双散列（Double Hashing）而不是线性探测或二次探测。<br>例如，假设我们在上一张幻灯片之后调用了Remove（17），并且标记了HT [3] = DEL。 如果我们调用<span class="slide-actions" onclick="doButtonAction81()">Search(35)</span>，我们将使用与前一张幻灯片相同的双哈希序列，但是会通过标记为DELETED的HT [3]。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="9-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="9-4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-9-4" class="electure-dialog" style="top:230px;left:50%;margin-left:-250px;width:500px;">
+总之，一个好的开放寻址冲突解决技术需要：<br><ol><li>如果它存在，总是找到一个空插槽，<br></li><li>最小化聚类（任何类型），<br></li><li>当两个不同的键碰撞时, 给出不同的探针序列，<br></li><li>快，O（1）。</li></ol><div>讨论：双散列（Double Hashing）似乎符合。 但是...... 双散列策略是否足够灵活，可用作哈希表的默认库的实现？ 让我们来看看...</div><div></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="9-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="10">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-10" class="electure-dialog" style="bottom:60px;left:50%;margin-left:-250px;width:500px;">
+如果我们使用分离链接法作为冲突解决技术，请尝试<span class="slide-actions" onclick="doButtonAction93()">Insert([9,16,23,30,37,44])</span>以查看Insert（v）操作是如何工作的。 请注意，所有整数{9,16,23,30,37,44}都是2（模7），因此所有整数都将被添加到双链表2的后面，并且每个插入显然都是O（1）。<br>由于屏幕限制，我们将每个双链表的长度限制为6。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="9-4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="10-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-10-1" class="electure-dialog" style="bottom:60px;left:50%;margin-left:-250px;width:500px;">
+尝试<span class="slide-actions" onclick="doButtonAction81()">Search(35)</span>以查看可以使Search(v )在O（<b>1 +α</b>）中运行。<br>尝试<span class="slide-actions" onclick="doButtonAction94()">Remove(7)</span>以查看Remove(v) 也可以在O（<b>1 +α</b>）中运行。<br>如果α很大，分离连接法性能不是真的O（<b>1</b>）。 然而，如果我们粗略地知道我们的应用程序将使用的键的可能数量n，那么我们可以相应地设置表格大小<b>m</b>，使得<b>α= n / m</b>是非常低的正数，从而使分离链接性能全部为O（<b>1</b>）。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="10">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="10-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-10-2" class="electure-dialog" style="bottom:60px;left:50%;margin-left:-250px;width:500px;">
+<span style="white-space: normal;">讨论：在所有这些解释之后，两种冲突解决方法的哪一种更好？</span><br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="10-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="10-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-10-3" class="electure-dialog" style="bottom:60px;left:50%;margin-left:-250px;width:500px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="10-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="11">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-11" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p style=""><span style="white-space: normal;">您已经完成了这个哈希表数据结构的基本工作，我们鼓励您在<b>探索模式</b>中进一步探索。</span></p><p style=""><span style="white-space: normal;">但是，我们仍然会为您提供一些本节中概述的更有趣的哈希表的挑战。</span></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="10-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="11-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-11-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+当负载因子α变高时，哈希表的性能会降低。 对于（标准）二次探测冲突解决方法，当哈希表的α&gt; 0.5时，插入可能失败。<br>如果发生这种情况，我们可以重新散列（rehash）。 我们用一个新的散列函数构建另一个大约两倍的散列表。 我们遍历原始哈希表中的所有键，重新计算新的哈希值，然后将键（及其卫星数据）重新插入新的更大的哈希表中，最后删除较早的较小哈希表。<br>一个经验法则是，如果使用开放寻址，并且当α&gt;小的常数（根据需要接近1.0），如果使用单独链接，当α≥0.5时重新散列。<br>如果我们知道可能的最大键数，我们可以始终将α作为一个低的数字。<br>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="11">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="11-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-11-2" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>However, if you ever need to implement a Hash Table in C++ or Java and your keys are either Integers or Strings, you can use the built-in C++ STL or Java API. They already have good built-in implementation of default hash functions for Integers or Strings.</p><br><p>See C++ STL <a href="http://en.cppreference.com/w/cpp/container/unordered_map" target="_blank"><u>unordered_map</u></a>, <a href="http://en.cppreference.com/w/cpp/container/unordered_set" target="_blank"><u>unordered_set</u></a> or Java <a href="https://docs.oracle.com/javase/8/docs/api/java/util/HashMap.html" target="_blank"><u>HashMap</u></a>, <a href="https://docs.oracle.com/javase/8/docs/api/java/util/HashSet.html" target="_blank"><u>HashSet</u></a>.</p><br><p>Notice that multimap/multiset implementations also exist (duplicate keys are allowed).</p><br><p>For Python, we can use <a href="https://docs.python.org/3/tutorial/datastructures.html#dictionaries" target="_blank"><u>dict</u></a>/<a href="https://docs.python.org/3/tutorial/datastructures.html#sets" target="_blank"><u>set</u></a>. For OCaml, we can use <a href="https://caml.inria.fr/pub/docs/manual-ocaml/libref/Hashtbl.html" target="_blank"><u>Hashtbl</u></a>.</p><br><p>However, here is our take of a simple <a href="http://www.comp.nus.edu.sg/~stevenha/cs2040c/demos/HashTableDemo.cpp" target="_blank"><u>Separate Chaining implementation</u></a> in C++<br>(not generic enough though).</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="11-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="11-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-11-3" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="11-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="11-4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-11-4" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>如果（整数或字符串）键只需要映射到卫星数据，则散列表是实现Table ADT的非常好的数据结构，对于Search（v），Insert（v）和Remove（ v）如果哈希表设置正确，则执行时间复杂度为O(<b>1</b>)。<br>但是，如果我们需要<a href="./bst?slide=3-5"><u>更多地使用 键</u></a>，我们可能需要使用另一种数据结构。<br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="11-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="11-5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-11-5" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>关于这个数据结构的一些更有趣的问题，请在<a href="training?diff=Medium&amp;n=7&amp;tl=0&amp;module=hashtable"><u>哈希表</u></a>培训模块上练习（不需要登录，但是只需短暂且中等难度设置）。<br>但是，对于注册用户，您应该登录，然后转到<a href="training"><u>主要培训页面</u></a>以正式清除此模块，这些成果将记录在您的用户帐户中。<br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="11-4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="11-6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-11-6" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>尝试解决一些基本的编程问题，就很可能需要使用哈希表（特别是如果输入大小很大的时候）：<br></p><ol><li><a href="https://open.kattis.com/problems/cd" target="_blank"><u>Kattis - cd</u></a>（输入已经被排序，因此存在替代的非哈希表解决方案; 如果未对输入进行排序，则在哈希表的帮助下最好解决此组交集问题），<br></li><li><a href="https://open.kattis.com/problems/oddmanout" target="_blank"><u>Kattis - oddmanout</u></a>（我们可以将较大的邀请代码映射到较小范围的整数;这是整数散列（大范围）的一种做法），<br></li><li><a href="https://open.kattis.com/problems/whatdoesthefoxsay" target="_blank"><u>Kattis - whatdoesthefoxsay</u></a>（我们把不是狐狸的声音放入无序集合;这是散列字符串的做法）。<br></li></ol><p></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="11-5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99" class="electure-dialog" style="right:150px;bottom:335px;width:500px;">
+当操作进行时，状态面板将会有每个步骤的描述。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="11-6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-1" class="electure-dialog" style="right:170px;bottom:275px;width:180px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-2" class="electure-dialog" style="bottom:70px;left:50%;margin-left:-120px;width:260px;">
+使用用户控件控制动画！可用的快捷键有：<div>空格键：绘制／停止／重绘</div><div>左／右箭头：上一步／下一步</div><div>-／+：减缓／增加速度</div><div><br></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-3" class="electure-dialog" style="top:70px;right:60px;width:300px;">
+<p>Return to &#39;Exploration Mode&#39; to start exploring!</p><br><p>Note that if you notice any bug in this visualization or if you want to request for a new visualization feature, do not hesitate to drop an email to the project leader: Dr Steven Halim via his email address: stevenhalim at gmail dot com.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-2">上一个 <u>PgUp</u></div>
+</div>
+<div id="popup" hidden>
+<div id="popup-content"></div>
+<span id="hide-popup" hidden>X <u>关闭</u></span>
+</div>
+<div id="actions" class="panel">
+<p id="create">创建</p>
+<p id="search">搜索(v)</p>
+<p id="insert">插入(v)</p>
+<p id="remove">移除(v)</p>
+</div>
+<div id="actions-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide actions panel" /></div>
+<div id="actions-extras">
+<div class="create action-menu-pullout">
+<div id="create-input" class="new-menu-option"><p>创建空的哈希表大小为 =<input type="number" id="v-create" title="Enter an Integer" autocomplete="off" min=0 max=19 value=13></p></div>
+<div id="create-go" class="execAction coloured-menu-option" onclick="createTable()"><p>执行</p></div>
+<div id="create-err" class="err"></div>
+</div>
+<div class="search action-menu-pullout">
+<div id="search-input" class="new-menu-option">v = <input type="number" id="v-search" title="Enter an Integer" autocomplete="off" min=0 value=7></div>
+<div id="search-go" class="execAction coloured-menu-option" onclick="searchInteger()"><p>执行</p></div>
+<div id="search-err" class="err"></div>
+</div>
+<div class="insert action-menu-pullout">
+<div id="insert-input" class="new-menu-option">v = <input type="text" id="v-insert" title="Enter an Integer or comma-separated array of Integers" autocomplete="off" value="35,77"></div>
+<div id="insert-go" class="execAction coloured-menu-option" onclick="insertInteger()"><p>执行</p></div>
+<div id="insert-err" class="err"></div>
+</div>
+<div class="remove action-menu-pullout">
+<div id="remove-input" class="new-menu-option">v = <input type="number" id="v-remove" title="Enter an Integer" autocomplete="off" min=0 value=21></div>
+<div id="remove-go" class="execAction coloured-menu-option" onclick="removeInteger()"><p>执行</p></div>
+<div id="remove-err" class="err"></div>
+</div>
+</div>
+<div id="bottom-bar">
+<a id="trigger-about">关于</a>
+</div>
+<div id="about" class="overlays">
+<h4>关于</h4><span class='close-overlay'>&#x2715;</span>
+<div class='content'>
+VisuAlgo在2011年由Steven Halim博士概念化，作为一个工具，帮助他的学生更好地理解数据结构和算法，让他们自己和自己的步伐学习基础。<br>VisuAlgo包含许多高级算法，这些算法在Steven Halim博士的书（“竞争规划”，与他的兄弟Felix Halim博士合作）和其他书中讨论。今天，一些高级算法的可视化/动画只能在VisuAlgo中找到。<br>虽然专门为新加坡国立大学（NUS）学生采取各种数据结构和算法类（例如CS1010，CS1020，CS2010，CS2020，CS3230和CS3230），作为在线学习的倡导者，我们希望世界各地的好奇心发现这些可视化也很有用。<br>VisuAlgo不是从一开始就设计为在小触摸屏（例如智能手机）上工作良好，因为需要满足许多复杂的算法可视化，需要大量的像素和点击并拖动手势进行交互。一个令人尊敬的用户体验的最低屏幕分辨率为1024x768，并且只有着陆页相对适合移动设备。<br>VisuAlgo是一个正在进行的项目，更复杂的可视化仍在开发中。<br>最令人兴奋的发展是自动问题生成器和验证器（在线测验系统），允许学生测试他们的基本数据结构和算法的知识。这些问题是通过一些规则随机生成的，学生的答案会在提交给我们的评分服务器后立即自动分级。这个在线测验系统，当它被更多的世界各地的CS教师采用，应该技术上消除许多大学的典型计算机科学考试手动基本数据结构和算法问题。通过在通过在线测验时设置小（但非零）的重量，CS教练可以（显着地）增加他/她的学生掌握这些基本问题，因为学生具有几乎无限数量的可以立即被验证的训练问题他们参加在线测验。培训模式目前包含12个可视化模块的问题。我们将很快添加剩余的8个可视化模块，以便VisuAlgo中的每个可视化模块都有在线测验组件。<br>另一个积极的发展分支是VisuAlgo的国际化子项目。我们要为VisuAlgo系统中出现的所有英语文本准备一个CS术语的数据库。这是一个很大的任务，需要众包。一旦系统准备就绪，我们将邀请VisuAlgo游客贡献，特别是如果你不是英语母语者。目前，我们还以各种语言写了有关VisuAlgo的公共注释：<br>
+<a href="https://weibo.com/p/230418436e9ee80102v4rk" target='_blank'><u>zh</u></a>, <a href='https://www.facebook.com/notes/steven-halim/httpidvisualgonet-visualisasi-struktur-data-dan-algoritma-dengan-animasi/10153236934439689' target='_blank'><u>id</u></a>, <a href="https://blog.naver.com/visualgo_nus" target='_blank'><u>kr</u></a>, <a href='https://www.facebook.com/groups/163215593699283/permalink/824003417620494/' target='_blank'><u>vn</u></a>, <a href='http://pantip.com/topic/32736343' target='_blank'><u>th</u></a>.</p>
+</div>
+</div>
+
+<script src="../js/jquery-3.3.1.min.js"></script>
+<script>
+      var PHP_DOMAIN = "";
+
+      // surprise colour!
+      // Referenced to in  home.js and viz.js also
+      var colourArray = ["#52bc69", "#d65775"/*"#ed5a7d"*/, "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"]; // green, pink, blue, red, yellow, indigo, orange, lime
+
+      function disableScroll() { $('html').css('overflow', 'hidden'); }
+
+      function enableScroll() { $('html').css('overflow', 'visible'); }
+
+      function replaceAll(find, replace, str) { return str.replace(new RegExp(find, 'g'), replace); }
+
+      function getColours() {
+        var generatedColours = new Array();
+        while (generatedColours.length < 4) {
+          var n = (Math.floor(Math.random() * colourArray.length));
+          if ($.inArray(n, generatedColours) == -1)
+            generatedColours.push(n);
+        }
+        return generatedColours;
+      }
+
+      function isOn(value, position) {
+        return (value>>position) & 1 === 1;
+      }
+
+      function customAlert(msg) {
+        $('#custom-alert p').html(msg);
+        var m = -1 * ($('#custom-alert').outerHeight()/2);
+        $('#custom-alert').css('margin-top', m+'px');
+        $('#dark-overlay').fadeIn(function() {
+          $('#custom-alert').fadeIn(function() {
+            setTimeout(function() {
+              $('#custom-alert').fadeOut(function() {
+                $('#dark-overlay').fadeOut();
+              });
+            }, 1000);
+          });
+        });
+      }
+
+      function showLoadingScreen() {
+        $('#loading-overlay').show();
+        $('#loading-message').show();
+      }
+
+      function hideLoadingScreen() {
+        $('#loading-overlay').hide();
+      }
+
+      function commonAction(retval, msg) {
+        //setTimeout(function() {
+          if (retval) { // mode == "exploration" && // now not only for exploration mode, but check if this opens other problems
+            $('#current-action').show();
+            $('#current-action').html(mode == "exploration" ? msg : ("e-Lecture Example (auto play until done)<br>" + msg));
+            $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+            triggerRightPanels();
+            isPlaying = true;
+          }
+        //}, 500);
+      }
+
+      function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable)
+            return decodeURIComponent(pair[1]);
+        }
+        return "";
+      }
+
+      var generatedColours = getColours();
+      var surpriseColour = colourArray[generatedColours[0]];
+      var colourTheSecond = colourArray[generatedColours[1]];
+      var colourTheThird = colourArray[generatedColours[2]];
+      var colourTheFourth = colourArray[generatedColours[3]];
+
+      $(function() {
+        $('.links').css('background', surpriseColour);
+        $('.right-links').css('background', surpriseColour);
+        $('#login-go').css('background', surpriseColour);
+
+        $('.colour').css("color", surpriseColour); // name
+        $('h4').css("background-color", surpriseColour); // about, contact us etc. button background
+
+        // title
+        $('#title a').click(function() {
+          $('#title a').removeClass('selected-viz');
+          $(this).addClass('selected-viz');
+          // temporary quick fix for Google Chrome Aug 2016 issue...
+          setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 100); // force resize/redraw...
+          setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        });
+
+        // overlays stuffs
+        $('#trigger-about').click(function() {
+          if ($(window).width() > 600) {
+            $('#dark-overlay').fadeIn(function() {
+              $('#about').fadeIn();
+            });
+          }
+          else
+            alert('Sorry, this dialog is too big. Please load it on bigger screen');
+        });
+
+        $('.close-overlay').click(function() {
+          $('.overlays').fadeOut(function() {
+            $('#dark-overlay').fadeOut();
+          });
+        });
+
+        $('#dark-overlay').click(function() {
+          $('.overlays').fadeOut();
+          $('#dark-overlay').fadeOut();
+        });
+      });
+    </script>
+
+<script src="../js/jquery-ui.min.js"></script>
+<script src="../js/d3.min.js"></script>
+<script src="../js/viz-1.0.3.js"></script>
+<script src="../js/visualgo_print.js"></script>
+<script src="../js/graph_library.js"></script>
+<script>
+      function runSlide(slide) {
+        if (slide == '1') {
+          $("#e-lecture").html("slide " + slide + " (" + 1 + "%)");
+          $('#title-SC').click();
+$("#v-search").val(8);
+$("#search").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2') {
+          $("#e-lecture").html("slide " + slide + " (" + 2 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 4 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 5 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 7 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2-4') {
+          $("#e-lecture").html("slide " + slide + " (" + 8 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2-5') {
+          $("#e-lecture").html("slide " + slide + " (" + 9 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2-6') {
+          $("#e-lecture").html("slide " + slide + " (" + 11 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3') {
+          $("#e-lecture").html("slide " + slide + " (" + 12 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 14 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 15 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 16 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-4') {
+          $("#e-lecture").html("slide " + slide + " (" + 18 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-5') {
+          $("#e-lecture").html("slide " + slide + " (" + 19 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-6') {
+          $("#e-lecture").html("slide " + slide + " (" + 21 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-7') {
+          $("#e-lecture").html("slide " + slide + " (" + 22 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4') {
+          $("#e-lecture").html("slide " + slide + " (" + 23 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 25 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 26 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 28 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-4') {
+          $("#e-lecture").html("slide " + slide + " (" + 29 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-5') {
+          $("#e-lecture").html("slide " + slide + " (" + 30 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-6') {
+          $("#e-lecture").html("slide " + slide + " (" + 32 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-7') {
+          $("#e-lecture").html("slide " + slide + " (" + 33 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4-8') {
+          $("#e-lecture").html("slide " + slide + " (" + 35 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5') {
+          $("#e-lecture").html("slide " + slide + " (" + 36 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 38 + "%)");
+          $('#title-LP').click();
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 39 + "%)");
+          $('#title-SC').click();
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '6') {
+          $("#e-lecture").html("slide " + slide + " (" + 40 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '6-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 42 + "%)");
+          $('#title-LP').click();
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '6-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 43 + "%)");
+          $('#title-SC').click();
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7') {
+          $("#e-lecture").html("slide " + slide + " (" + 45 + "%)");
+          $('#title-LP').click();
+$("#create").click().addClass("menu-highlighted");
+$("#v-create").val(7);
+createTable();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 46 + "%)");
+          $('#title-LP').click();
+$("#v-create").val(7);
+createTable();
+$("#v-insert").val("18,14,21");
+$("#insert").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 47 + "%)");
+          $('#title-LP').click();
+createTableSpecial([14,21,-1,-1,18,-1,-1]);
+$("#v-insert").val("1,35");
+$("#insert").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 49 + "%)");
+          $('#title-LP').click();
+createTableSpecial([14,21,1,35,18,-1,-1]);
+$("#v-search").val(35);
+$("#search").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-4') {
+          $("#e-lecture").html("slide " + slide + " (" + 50 + "%)");
+          $('#title-LP').click();
+createTableSpecial([14,21,1,35,18,-1,-1]);
+$("#v-remove").val(21);
+$("#remove").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-5') {
+          $("#e-lecture").html("slide " + slide + " (" + 52 + "%)");
+          $('#title-LP').click();
+createTableSpecial([14,21,1,35,18,-1,-1]);
+$("#v-remove").val(21);
+$("#remove").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-6') {
+          $("#e-lecture").html("slide " + slide + " (" + 53 + "%)");
+          $('#title-LP').click();
+createTableSpecial([14,21,1,35,18,-1,-1]);
+$("#v-remove").val(21);
+$("#remove").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-7') {
+          $("#e-lecture").html("slide " + slide + " (" + 54 + "%)");
+          $('#title-LP').click();
+createTableSpecial([14,-2,1,35,18,-1,-1]);
+$("#v-search").val(35);
+$("#search").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-8') {
+          $("#e-lecture").html("slide " + slide + " (" + 56 + "%)");
+          $('#title-LP').click();
+createTableSpecial([14,-2,1,35,18,-1,-1]);
+$("#v-insert").val(15);
+$("#insert").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-9') {
+          $("#e-lecture").html("slide " + slide + " (" + 57 + "%)");
+          $('#title-LP').click();
+createTableSpecial([61,72,83,-1,-1,-1,6,17,28,39,50]);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7-10') {
+          $("#e-lecture").html("slide " + slide + " (" + 59 + "%)");
+          $('#title-LP').click();
+createTableSpecial([14,15,1,35,18,-1,-1]);
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '8') {
+          $("#e-lecture").html("slide " + slide + " (" + 60 + "%)");
+          $('#title-QP').click();
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '8-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 61 + "%)");
+          $('#title-QP').click();
+createTableSpecial([-1,-1,-1,10,18,-1,-1]);
+$("#v-insert").val("38");
+$("#insert").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '8-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 63 + "%)");
+          $('#title-QP').click();
+createTableSpecial([38,-1,-1,10,-2,-1,-1]);
+$("#v-search").val("38");
+$("#search").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '8-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 64 + "%)");
+          $('#title-QP').click();
+createTableSpecial([38,-1,-1,10,18,-1,-1]);
+$("#v-insert").val("12,17");
+$("#insert").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '8-4') {
+          $("#e-lecture").html("slide " + slide + " (" + 66 + "%)");
+          $('#title-QP').click();
+createTableSpecial([38,-1,-1,10,18,12,-1]);
+$("#v-insert").val("17");
+$("#insert").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '8-5') {
+          $("#e-lecture").html("slide " + slide + " (" + 67 + "%)");
+          
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '8-6') {
+          $("#e-lecture").html("slide " + slide + " (" + 69 + "%)");
+          
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '8-7') {
+          $("#e-lecture").html("slide " + slide + " (" + 70 + "%)");
+          
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '8-8') {
+          $("#e-lecture").html("slide " + slide + " (" + 71 + "%)");
+          
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '9') {
+          $("#e-lecture").html("slide " + slide + " (" + 73 + "%)");
+          $('#title-DH').click();
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '9-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 74 + "%)");
+          $('#title-DH').click();
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '9-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 76 + "%)");
+          $('#title-DH').click();
+createTableSpecial([14,-1,-1,17,-1,12,-1]);
+$("#v-insert").val("35,42");
+$("#insert").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '9-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 77 + "%)");
+          $('#title-DH').click();
+createTableSpecial([14,35,-1,-2,-1,12,42]);
+$("#v-search").val(35);
+$("#search").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '9-4') {
+          $("#e-lecture").html("slide " + slide + " (" + 78 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '10') {
+          $("#e-lecture").html("slide " + slide + " (" + 80 + "%)");
+          $('#title-SC').click();
+$("#v-insert").val("9,16,23,30,37,44");
+$("#insert").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '10-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 81 + "%)");
+          $('#title-SC').click();
+$("#v-search").val(35);
+$("#search").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '10-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 83 + "%)");
+          $('#title-SC').click();
+$("#v-search").val(35);
+$("#search").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '10-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 84 + "%)");
+          $('#title-SC').click();
+$("#v-search").val(35);
+$("#search").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '11') {
+          $("#e-lecture").html("slide " + slide + " (" + 85 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '11-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 87 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '11-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 88 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '11-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 90 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '11-4') {
+          $("#e-lecture").html("slide " + slide + " (" + 91 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '11-5') {
+          $("#e-lecture").html("slide " + slide + " (" + 92 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '11-6') {
+          $("#e-lecture").html("slide " + slide + " (" + 94 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99') {
+          $("#e-lecture").html("slide " + slide + " (" + 95 + "%)");
+          
+          hideEntireActionsPanel();
+ 
+          showStatusPanel();
+          showCodetracePanel();
+      
+        }
+        if (slide == '99-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 97 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 98 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 100 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+      }
+
+      window.onpopstate = function(event) {
+        var slide = event.state['slide'];
+        openSlide(slide, function() {
+          runSlide(slide);
+        });
+      };
+
+      function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'), sParameterName, i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+          if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+      };
+
+      function pushState(slideValue) {
+        var url = '/zh/hashtable';
+        if (typeof slideValue != 'undefined' && slideValue != null) url += '?slide=' + slideValue;
+        window.history.pushState({slide: slideValue}, "slide " + slideValue, url);
+      }
+
+      function showPopup(callback) {
+        $('#popup').fadeIn(100, callback);
+      }
+
+      function hidePopup(callback) {
+        $('#popup').fadeOut(100, callback);
+      }
+
+      function showOverlay() {
+        $('#overlay').css('opacity', 0.5); 
+        $('#overlay').show();
+      }
+
+      function hideOverlay() {
+        $('#overlay').hide();
+        $("#e-lecture").html("");
+      }
+
+      function makeOverlayTransparent() {
+        $('#overlay').css('opacity', 0);
+      }
+
+      function hideSlide(callback) {
+        isPlaying = true;
+        closeSlide(cur_slide, function() {
+          makeOverlayTransparent();
+          setTimeout(callback, 700); // don't immediately run the animation, wait for 500ms+ first
+        });
+      }
+
+      function showSlide() {
+        isPlaying = false;
+        openSlide(cur_slide);
+        showOverlay();
+      }
+
+      $(function() {
+        var slide = getUrlParameter('slide');
+        
+        $.get('/hasvisited' + '/hashtable', function(data) {
+          var hasVisited = data['hasvisited'] == '1';
+          if (!hasVisited) {
+            var postData = {
+              '_token': 'kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh',
+              'page': '/hashtable'.substring(1),
+            };
+
+            $.post("/visitpage", postData, function(data) {
+              // non critical request...
+            });
+
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+            }
+
+            $("#mode-menu a").trigger("click");
+          }
+          else {
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+              $('#mode-menu a').click();
+            }    
+          }
+        }).fail(function() {
+          if (typeof slide != undefined && slide != null) {
+            cur_slide = slide;
+            $('#mode-menu a').click();
+          }
+        });
+
+        $('.mcq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#mcq-answer-' + questionId).val();
+          var userAnswer = $('input[type=radio][name=mcq-'+questionId+'-choice]:checked').val();
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green"><b>Correct!</b></font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red"><b>Wrong Answer! Try again...</b></font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('.msq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#msq-answer-' + questionId).val();
+
+          var answers = [];
+          $('input[type=checkbox][class=msq-choice]:checked').each(function() {
+            answers.push($(this).attr('id').split('-')[3]);
+          });
+          answers.sort();
+          var userAnswer = answers.join(',');
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green">Correct!</font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red">Wrong Answer! Try again...</font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('select.lecture-dropdown').change(function() {
+          var nextSlide = $(this).val();
+          openSlide(nextSlide, function() {
+            runSlide(nextSlide);
+            pushState(nextSlide);
+          });
+        });
+
+        $('#hide-popup').click(function() {
+          hidePopup();
+        });
+
+        $('#popup').hover(function() {
+          $('#hide-popup').show();
+        }, function() {
+          $('#hide-popup').hide();
+        });
+
+        $('#electure-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2-1');
+          pushState('2-1');
+        });
+        $('#electure-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('1');
+          pushState('1');
+        });
+      
+        $('#electure-2-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2-2');
+          pushState('2-2');
+        });
+        $('#electure-2-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-2-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2-3');
+          pushState('2-3');
+        });
+        $('#electure-2-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2-1');
+          pushState('2-1');
+        });
+      
+        $('#electure-2-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2-4');
+          pushState('2-4');
+        });
+        $('#electure-2-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2-2');
+          pushState('2-2');
+        });
+      
+        $('#electure-2-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2-5');
+          pushState('2-5');
+        });
+        $('#electure-2-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2-3');
+          pushState('2-3');
+        });
+      
+        $('#electure-2-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2-6');
+          pushState('2-6');
+        });
+        $('#electure-2-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2-4');
+          pushState('2-4');
+        });
+      
+        $('#electure-2-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+        $('#electure-2-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2-5');
+          pushState('2-5');
+        });
+      
+        $('#electure-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-1');
+          pushState('3-1');
+        });
+        $('#electure-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2-6');
+          pushState('2-6');
+        });
+      
+        $('#electure-3-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-2');
+          pushState('3-2');
+        });
+        $('#electure-3-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+      
+        $('#electure-3-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-3');
+          pushState('3-3');
+        });
+        $('#electure-3-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-1');
+          pushState('3-1');
+        });
+      
+        $('#electure-3-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-4');
+          pushState('3-4');
+        });
+        $('#electure-3-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-2');
+          pushState('3-2');
+        });
+      
+        $('#electure-3-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-5');
+          pushState('3-5');
+        });
+        $('#electure-3-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-3');
+          pushState('3-3');
+        });
+      
+        $('#electure-3-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-6');
+          pushState('3-6');
+        });
+        $('#electure-3-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-4');
+          pushState('3-4');
+        });
+      
+        $('#electure-3-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-7');
+          pushState('3-7');
+        });
+        $('#electure-3-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-5');
+          pushState('3-5');
+        });
+      
+        $('#electure-3-7 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+        $('#electure-3-7 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-6');
+          pushState('3-6');
+        });
+      
+        $('#electure-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-1');
+          pushState('4-1');
+        });
+        $('#electure-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-7');
+          pushState('3-7');
+        });
+      
+        $('#electure-4-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-2');
+          pushState('4-2');
+        });
+        $('#electure-4-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+      
+        $('#electure-4-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-3');
+          pushState('4-3');
+        });
+        $('#electure-4-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-1');
+          pushState('4-1');
+        });
+      
+        $('#electure-4-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-4');
+          pushState('4-4');
+        });
+        $('#electure-4-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-2');
+          pushState('4-2');
+        });
+      
+        $('#electure-4-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-5');
+          pushState('4-5');
+        });
+        $('#electure-4-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-3');
+          pushState('4-3');
+        });
+      
+        $('#electure-4-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-6');
+          pushState('4-6');
+        });
+        $('#electure-4-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-4');
+          pushState('4-4');
+        });
+      
+        $('#electure-4-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-7');
+          pushState('4-7');
+        });
+        $('#electure-4-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-5');
+          pushState('4-5');
+        });
+      
+        $('#electure-4-7 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4-8');
+          pushState('4-8');
+        });
+        $('#electure-4-7 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-6');
+          pushState('4-6');
+        });
+      
+        $('#electure-4-8 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+        $('#electure-4-8 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-7');
+          pushState('4-7');
+        });
+      
+        $('#electure-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5-1');
+          pushState('5-1');
+        });
+        $('#electure-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4-8');
+          pushState('4-8');
+        });
+      
+        $('#electure-5-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5-2');
+          pushState('5-2');
+        });
+        $('#electure-5-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+      
+        $('#electure-5-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('6');
+          pushState('6');
+        });
+        $('#electure-5-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5-1');
+          pushState('5-1');
+        });
+      
+        $('#electure-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('6-1');
+          pushState('6-1');
+        });
+        $('#electure-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5-2');
+          pushState('5-2');
+        });
+      
+        $('#electure-6-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('6-2');
+          pushState('6-2');
+        });
+        $('#electure-6-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('6');
+          pushState('6');
+        });
+      
+        $('#electure-6-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7');
+          pushState('7');
+        });
+        $('#electure-6-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('6-1');
+          pushState('6-1');
+        });
+      
+        $('#electure-7 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-1');
+          pushState('7-1');
+        });
+        $('#electure-7 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('6-2');
+          pushState('6-2');
+        });
+      
+        $('#electure-7-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-2');
+          pushState('7-2');
+        });
+        $('#electure-7-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7');
+          pushState('7');
+        });
+      
+        $('#electure-7-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-3');
+          pushState('7-3');
+        });
+        $('#electure-7-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-1');
+          pushState('7-1');
+        });
+      
+        $('#electure-7-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-4');
+          pushState('7-4');
+        });
+        $('#electure-7-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-2');
+          pushState('7-2');
+        });
+      
+        $('#electure-7-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-5');
+          pushState('7-5');
+        });
+        $('#electure-7-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-3');
+          pushState('7-3');
+        });
+      
+        $('#electure-7-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-6');
+          pushState('7-6');
+        });
+        $('#electure-7-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-4');
+          pushState('7-4');
+        });
+      
+        $('#electure-7-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-7');
+          pushState('7-7');
+        });
+        $('#electure-7-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-5');
+          pushState('7-5');
+        });
+      
+        $('#electure-7-7 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-8');
+          pushState('7-8');
+        });
+        $('#electure-7-7 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-6');
+          pushState('7-6');
+        });
+      
+        $('#electure-7-8 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-9');
+          pushState('7-9');
+        });
+        $('#electure-7-8 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-7');
+          pushState('7-7');
+        });
+      
+        $('#electure-7-9 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7-10');
+          pushState('7-10');
+        });
+        $('#electure-7-9 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-8');
+          pushState('7-8');
+        });
+      
+        $('#electure-7-10 .electure-next').click(function() {
+          hidePopup();
+          runSlide('8');
+          pushState('8');
+        });
+        $('#electure-7-10 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-9');
+          pushState('7-9');
+        });
+      
+        $('#electure-8 .electure-next').click(function() {
+          hidePopup();
+          runSlide('8-1');
+          pushState('8-1');
+        });
+        $('#electure-8 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7-10');
+          pushState('7-10');
+        });
+      
+        $('#electure-8-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('8-2');
+          pushState('8-2');
+        });
+        $('#electure-8-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('8');
+          pushState('8');
+        });
+      
+        $('#electure-8-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('8-3');
+          pushState('8-3');
+        });
+        $('#electure-8-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('8-1');
+          pushState('8-1');
+        });
+      
+        $('#electure-8-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('8-4');
+          pushState('8-4');
+        });
+        $('#electure-8-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('8-2');
+          pushState('8-2');
+        });
+      
+        $('#electure-8-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('8-5');
+          pushState('8-5');
+        });
+        $('#electure-8-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('8-3');
+          pushState('8-3');
+        });
+      
+        $('#electure-8-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('8-6');
+          pushState('8-6');
+        });
+        $('#electure-8-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('8-4');
+          pushState('8-4');
+        });
+      
+        $('#electure-8-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('8-7');
+          pushState('8-7');
+        });
+        $('#electure-8-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('8-5');
+          pushState('8-5');
+        });
+      
+        $('#electure-8-7 .electure-next').click(function() {
+          hidePopup();
+          runSlide('8-8');
+          pushState('8-8');
+        });
+        $('#electure-8-7 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('8-6');
+          pushState('8-6');
+        });
+      
+        $('#electure-8-8 .electure-next').click(function() {
+          hidePopup();
+          runSlide('9');
+          pushState('9');
+        });
+        $('#electure-8-8 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('8-7');
+          pushState('8-7');
+        });
+      
+        $('#electure-9 .electure-next').click(function() {
+          hidePopup();
+          runSlide('9-1');
+          pushState('9-1');
+        });
+        $('#electure-9 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('8-8');
+          pushState('8-8');
+        });
+      
+        $('#electure-9-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('9-2');
+          pushState('9-2');
+        });
+        $('#electure-9-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('9');
+          pushState('9');
+        });
+      
+        $('#electure-9-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('9-3');
+          pushState('9-3');
+        });
+        $('#electure-9-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('9-1');
+          pushState('9-1');
+        });
+      
+        $('#electure-9-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('9-4');
+          pushState('9-4');
+        });
+        $('#electure-9-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('9-2');
+          pushState('9-2');
+        });
+      
+        $('#electure-9-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('10');
+          pushState('10');
+        });
+        $('#electure-9-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('9-3');
+          pushState('9-3');
+        });
+      
+        $('#electure-10 .electure-next').click(function() {
+          hidePopup();
+          runSlide('10-1');
+          pushState('10-1');
+        });
+        $('#electure-10 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('9-4');
+          pushState('9-4');
+        });
+      
+        $('#electure-10-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('10-2');
+          pushState('10-2');
+        });
+        $('#electure-10-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('10');
+          pushState('10');
+        });
+      
+        $('#electure-10-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('10-3');
+          pushState('10-3');
+        });
+        $('#electure-10-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('10-1');
+          pushState('10-1');
+        });
+      
+        $('#electure-10-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('11');
+          pushState('11');
+        });
+        $('#electure-10-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('10-2');
+          pushState('10-2');
+        });
+      
+        $('#electure-11 .electure-next').click(function() {
+          hidePopup();
+          runSlide('11-1');
+          pushState('11-1');
+        });
+        $('#electure-11 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('10-3');
+          pushState('10-3');
+        });
+      
+        $('#electure-11-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('11-2');
+          pushState('11-2');
+        });
+        $('#electure-11-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('11');
+          pushState('11');
+        });
+      
+        $('#electure-11-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('11-3');
+          pushState('11-3');
+        });
+        $('#electure-11-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('11-1');
+          pushState('11-1');
+        });
+      
+        $('#electure-11-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('11-4');
+          pushState('11-4');
+        });
+        $('#electure-11-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('11-2');
+          pushState('11-2');
+        });
+      
+        $('#electure-11-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('11-5');
+          pushState('11-5');
+        });
+        $('#electure-11-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('11-3');
+          pushState('11-3');
+        });
+      
+        $('#electure-11-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('11-6');
+          pushState('11-6');
+        });
+        $('#electure-11-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('11-4');
+          pushState('11-4');
+        });
+      
+        $('#electure-11-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+        $('#electure-11-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('11-5');
+          pushState('11-5');
+        });
+      
+        $('#electure-99 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+        $('#electure-99 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('11-6');
+          pushState('11-6');
+        });
+      
+        $('#electure-99-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+        $('#electure-99-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+      
+        $('#electure-99-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-3');
+          pushState('99-3');
+        });
+        $('#electure-99-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+      
+        $('#electure-99-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+      
+ 
+
+        // temporary quick fix for Google Chrome Aug 2016 issue..., put at last part so that everything else has been loaded
+        // setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 500);
+        // setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        // I turn it off on 14 June 2018, seems 'ok'?
+      });
+
+      function doButtonAction79() {
+        $("#v-create").val(7);
+createTable();
+CUSTOM_ACTION('insert','18,14,21');
+$("#recap1").html("First, we Insert(18). h(18) = 18%7 = 4. As HT[4] is clearly empty, we put 18 there.<br>Second, we Insert(14). h(14) = 14%7 = 0. As HT[0] is clearly empty, we put 14 there.<br><br>Third, we Insert(21). h(21) = 21%7 = 0 too. As HT[0] is already occupied by key 14 above, we cannot put 21 there. Since we use linear probing as the collision resolution technique, we look for the next empty slot. HT[1] happens to be empty and we put 21 there.");
+      }
+      function doButtonAction80() {
+        createTableSpecial([14,21,-1,-1,18,-1,-1]);
+CUSTOM_ACTION('insert','1,35');
+$("#recap2").html("Fourth, we Insert(1). h(1) = 1%7 = 1. As HT[1] is already occupied by key 21 from earlier slide, we cannot put 1 there. Using Linear Probing, we look for the next available slot. HT[2] happens to be empty and we put 1 there.<br><br>Fifth, we Insert(35). h(35) = 35%7 = 0 too. As HT[0] and the next two adjacent slots: HT[1] and HT[2] have been occupied from previous insertions, we cannot put 35 in those three slots. Linear Probing will continue and find HT[3] is empty and put 35 there.");
+      }
+      function doButtonAction81() {
+        CUSTOM_ACTION('search','35');
+      }
+      function doButtonAction82() {
+        CUSTOM_ACTION('search','8');
+      }
+      function doButtonAction83() {
+        createTableSpecial([14,21,1,35,18,-1,-1]);
+CUSTOM_ACTION('remove','21');
+      }
+      function doButtonAction84() {
+        createTableSpecial([14,-2,1,35,18,-1,-1]);
+CUSTOM_ACTION('insert','28');
+      }
+      function doButtonAction85() {
+        createTableSpecial([-1,-1,-1,10,18,-1,-1]);
+CUSTOM_ACTION('insert','38');
+$("#recap3").html("We will first try to put 38 at base address index h(38) = 38%7 = 3, but we are unable to do so as key 10 is already there.<br><br>Then, we try to put 38 at base address 3 + 1*1 = 4, but again we are unable to do so as key 18 is already there.<br><br>So, we try to put 38 at base address 3 + 2*2 = 7. But index 7 exceeds the last index <b>M</b>-1 = 7-1 = 6 in this Hash Table. We need the modulo operation to help us wrap around and reach index (3+4) % 7 = 0. We put 38 in this empty cell.");
+      }
+      function doButtonAction86() {
+        createTableSpecial([38,-1,-1,10,18,-1,-1]);
+CUSTOM_ACTION('insert','12,17');
+      }
+      function doButtonAction87() {
+        createTableSpecial([14,-1,-1,17,-1,12,-1]);
+CUSTOM_ACTION('insert','35,42');
+$("#recap4").html("As the Hash Table size <b>M = 7</b>, the smaller prime is <b>M' = 5</b>.<br>Then, <samp>h2(35) = 5 - 35%5 = 5</samp> and <samp>h2(42) = 5 - 42%5 = 3</samp>.<br><br>Thus, Insert(35) will check indices [0,5,3,1 (found empty slot)] and insert 35 at index 1.<br>Then, Insert(42) will check indices [0,3,6 (found empty slot)] and insert 42 at index 6.<br>While <samp>h(35) = h(42) = 0</samp>, their probing sequences are different as <samp>h2(35) &ne; h2(42)</samp>.");
+      }
+      function doButtonAction88() {
+        $("#vonmises").html("after having just 23 people (keys) in the room (the hash table of size 365 cells), it is more likely (&gt; 50% chance) to have a collision than not... We do not need 365/2 ~= 180+ people");
+      }
+      function doButtonAction91() {
+        CUSTOM_ACTION('search','38');
+      }
+      function doButtonAction92() {
+        createTableSpecial([61,72,83,-1,-1,-1,6,17,28,39,50]);
+CUSTOM_ACTION('insert','94');
+      }
+      function doButtonAction93() {
+        $('#title-SC').click();
+CUSTOM_ACTION('insert','9,16,23,30,37,44');
+      }
+      function doButtonAction94() {
+        CUSTOM_ACTION('remove','7');
+      }
+
+      function adjustPopupToImageSize() {
+        var width = $('#popup-image').prop('width');
+        var height = $('#popup-image').prop('height');
+        $('#popup').width(width + 20);
+        $('#popup').height(height + 20);
+        if (width == 0 && height == 0) {
+          setTimeout(adjustPopupToImageSize, 200);
+        } else {
+          showPopup();  
+        }
+      }
+
+      function POPUP_IMAGE(url) {
+        $('#popup-content').html('<img id="popup-image" src="' + url + '">');
+        adjustPopupToImageSize();
+      }
+
+      function URL(url) {
+        window.open(url, '_blank');
+      }
+
+      // Implement these functions in each visualisation
+      // This function will be called before entering e-Lecture Mode
+      function ENTER_LECTURE_MODE() {}
+
+      // This function will be called before returning to Explore Mode
+      function ENTER_EXPLORE_MODE() {}
+
+      // Lecture action functions
+      function CUSTOM_ACTION(action, data, mode) {}
+    </script>
+<script type="text/javascript">
+// HashTable Widget
+// original author: Steven Halim
+// Defines a HashTable object; keeps implementation of Hash Table internally and interact with GraphWidget to display Hash Table visualizations
+// will add Separate Chaining sometime soon...
+
+var HashTable = function() {
+  var self = this;
+  var gw = new GraphWidget();
+  var activeStatus = "-";
+  var maxHashTableSize = 19; // we only allow primes up to 17
+  var primes = [3, 5, 7, 11, 13, 17, 19]; // OK, only these 5 primes are actually within our range of allowed Hash Table size
+  var EMPTY = -1; // use -1 to indicate EMPTY element
+  var DELETED = -2; // use -2 to indicate DELETED element
+  var HT;  // HT: the Array that represents the state of the Hash Table in Open Addressing
+  var HT_SC; // HT_SC: Adjacency List like structure to represent the state of the Hash Table in Separate Chaining
+  var N = 4; // number of elements actually present in the hash table
+
+  this.setActiveStatus = function(newActiveStatus) {
+    if (activeStatus != newActiveStatus) {
+      activeStatus = newActiveStatus;
+      if (activeStatus == "SC") { // Separate Chaining
+        HT_SC = [[11], [1], [24,13,35], [14], [], [27], [28], [18,7], [8], [], [21,10]];
+        N = 13;
+        initSC(HT_SC);
+      }
+      else { // Open Addressing
+        if (activeStatus == "LP") {
+          HT = [14, 21, 1, EMPTY, 18, EMPTY, EMPTY];
+          N = 4;
+        }
+        else if (activeStatus == "QP") {
+          HT = [38, EMPTY, EMPTY, 3, 18, EMPTY, EMPTY];
+          N = 3;
+        }
+        else if (activeStatus == "DH") {
+          HT = [14, EMPTY, EMPTY, 7, 18, EMPTY, EMPTY];
+          N = 3;
+        }
+        init(HT);
+      }
+    }
+  }
+
+  this.getActiveStatus = function() { return activeStatus; }
+
+  this.getGraphWidget = function() { return gw; }
+
+  this.createTable = function(sz) {
+    if (sz > maxHashTableSize) {
+      // Sorry, maximum allowed Hash Table size is
+      $('#create-err').html('抱歉，哈希表的最大上限为' + maxHashTableSize);
+      return false;
+    }
+    else if (sz < 5) {
+      // Sorry, Hash Table size should be ≥
+      $('#create-err').html('抱歉，哈希表的大小应该 <span style="white-space: normal;">&nbsp;≥</span>' + "5");
+      return false;
+    }
+
+    N = 0;
+    if (activeStatus == "SC") { // Separate Chaining
+      HT_SC = new Array(sz);
+      for (var i = 0; i < sz; i++) HT_SC[i] = [];
+      initSC(HT_SC);
+    }
+    else if (activeStatus != "SC") { // NOT Separate Chaining means Open Addressing where we cannot have big table
+      HT = new Array(sz);
+      for (var i = 0; i < sz; i++) HT[i] = EMPTY;
+      init(HT);
+    }
+  };
+
+  this.createTableSpecial = function(_HT) {
+    HT = _HT;
+    N = 0;
+    for (var i = 0; i < HT.length; i++) if (HT[i] != EMPTY) N++;
+    init(HT);
+  }
+
+  this.generate = function(arr) {
+    if (arr.length > maxHashTableSize) {
+      // Sorry, maximum allowed Hash Table size is
+      $('#create-err').html('抱歉，哈希表的最大上限为' + maxHashTableSize);
+      return;
+    }
+    if (arr.length < 5) {
+      // Sorry, Hash Table size should be ≥
+      $('#create-err').html('抱歉，哈希表的大小应该 <span style="white-space: normal;">&nbsp;≥</span>' + "5");
+      return;
+    }
+
+    for (var i = 0; i < arr.length; i++) {
+      arr[i] = parseInt(arr[i]);
+      if (arr[i] < EMPTY) { 
+        $('#create-err').html('Sorry, Hash Table cannot contain negative integers'); // put in variable soon
+        return; // can't create this hashtable
+      }
+    }
+    init(arr);
+  };
+
+  function init(initArr) {
+    var scale = (1000-100) / (initArr.length-1);
+
+    // remove old ones first (if exist)
+    try {
+      for (var i = 0; i < 20*8; i++) { // I don't record how many but not more than 19*7
+        gw.removeVertex(i);
+        gw.removeEdge(i);
+      }
+    }
+    catch (e) { // do nothing if that vertex actually not yet exist
+
+    }
+
+    HT = new Array(); // destroy previous content first...
+    for (var i = 0; i < initArr.length; i++) {
+      HT[i] = initArr[i];
+      gw.addVertex(50 + i*scale, 100, (HT[i] == EMPTY ? '' : (HT[i] == DELETED ? 'DEL' : HT[i])), i, true, "i:" + i);
+    }
+  }
+
+  function initSC(arr) {
+    var M = arr.length;
+    var scale = (1000-100) / (M-1);
+
+    // remove old ones first (if exist)
+    try {
+      for (var i = 0; i < 20*8; i++) { // I don't record how many but not more than 19*7
+        gw.removeVertex(i);
+        gw.removeEdge(i);
+      }
+    }
+    catch (e) { // do nothing if that vertex actually not yet exist
+
+    }
+
+    for (var i = 0; i < M; i++) gw.addVertex(50 + i*scale, 100, "H", i*7, true, "i:" + i);
+    N = 0;
+    for (var i = 0; i < M; i++) {
+      for (var j = 0; j < arr[i].length; j++) {
+        gw.addVertex(80 + i*scale, 100 + (j+1)*70, arr[i][j], i*7+(j+1), 1, "");
+        gw.addEdge(i*7+j, i*7+(j+1), i*7+(j+1), (j == 0) ? EDGE_TYPE_DE : EDGE_TYPE_UDE, 1, true);
+      }
+    }
+  }
+
+  this.search = function(key, callback) {
+    var stateList = [];
+    var vertexTraversed = {};
+    var edgeTraversed = {};
+    var cs;
+
+    if (key < 0 || key > 99) {
+      cs = createState(vertexTraversed, edgeTraversed);
+      // key = {key}, it must be between [0..99] in this visualization.
+      // -1 = empty cell (blank) and -2 = deleted item.
+      cs["status"] = '<span style="white-space: normal;">键 = {key}, 在这个可视化动画中它必须在&nbsp;[0..99] 之间</span><br style="white-space: normal;"><span style="white-space: normal;">-1 用来标记空白格&nbsp;(空) 以及 -2 用来标记以及被删除的项</span><br>'.replace("{key}", key);
+      stateList.push(cs);
+    }
+    else {
+      var i = key%(HT.length), base = i;
+      var i_next;
+      var jump = 1;
+      var step = 1;
+      var k = 5, smallerPrime = primes[k]; // start from 17
+      while (smallerPrime >= HT.length)
+        smallerPrime = primes[k--];
+      var secondary = smallerPrime - key%smallerPrime; // so it will always be positive
+      var strategy = "linear probing";
+
+      cs = createState(vertexTraversed, edgeTraversed);
+      // key = {key} is hashed to i = base = {key}%{length} = {i}.
+      cs["status"] = '<span style="white-space: normal;">键 = {key} 映射到&nbsp;i = base = {key}%{length} = {i}.</span>'.replace("{key}", key).replace("{key}", key).replace("{length}", HT.length).replace("{i}", i);
+      cs["vl"][i]["state"] = VERTEX_HIGHLIGHTED;
+      cs["lineNo"] = 1;
+      stateList.push(cs);
+      vertexTraversed[i] = true; // this is traversed in future iteration
+
+      while (true) {
+        if (HT[i] == EMPTY) { // Not Found
+          cs = createState(vertexTraversed, edgeTraversed);
+          // HT[{i}] is empty.
+          // Therefore key = {key} is not found in Hash Table HT.
+          cs["status"] = '<span style="white-space: normal;">&nbsp;HT 第[{i}]项为空</span><br style="white-space: normal;"><span style="white-space: normal;">所以键&nbsp;= {key} 不能再哈希表中被找到</span>'.replace("{i}", i).replace("{key}", key);
+          cs["vl"][i]["state"] = VERTEX_HIGHLIGHTED;
+          cs["lineNo"] = 3;
+          stateList.push(cs);
+          break;
+        }
+        else if (HT[i] == key) { // Found
+          cs = createState(vertexTraversed, edgeTraversed);
+          // HT[{i}] = {key}.
+          // Therefore key = {key} is found in Hash Table HT at index {i}.
+          cs["status"] = '<span style="white-space: normal;">HT 第[{i}]项&nbsp;= {key}</span><br style="white-space: normal;"><span style="white-space: normal;">所以 键 = {key} 能够在哈希表指数为{i} 的项上被找到</span>'.replace("{i}", i).replace("{key}", key).replace("{key}", key).replace("{i}", i);
+          cs["vl"][i]["state"] = VERTEX_HIGHLIGHTED;
+          cs["lineNo"] = 4;
+          stateList.push(cs);
+          break;
+        }
+        else {
+          if (step == HT.length) {
+            cs = createState(vertexTraversed, edgeTraversed);
+            // After probing all possibilities, key = {key} is not found in Hash Table HT.
+            cs["status"] = '探测过所有可能后，键<span style="white-space: normal;">&nbsp;= {key} 不能够在哈希表HT中被找到</span><br>'.replace("{key}", key);
+            stateList.push(cs);
+            break;
+          }
+
+          if (activeStatus == "LP") {
+            jump = 1;
+            strategy = "linear probing";
+          }
+          else if (activeStatus == "QP") {
+            jump = step;
+            strategy = "quadratic probing";
+          }
+          else if (activeStatus == "DH") {
+            jump = secondary;
+            strategy = "double hashing";
+          }
+
+          i_next = (base + step*jump) % HT.length;
+
+          cs = createState(vertexTraversed, edgeTraversed);
+          // HT[{i}] = {val} != key.
+          // Use {strategy} to check the next index i_next = ({base}+{step}*{jump})%{length} = {i_next}.
+          cs["status"] = '<span style="white-space: normal;">HT 第[{i}] 项 = {val} != 键</span><br style="white-space: normal;"><span style="white-space: normal;">用 {strategy} 来检查下一个指数&nbsp;= ({base}+{step}*{jump})%{length} = {i_next}</span>'
+                            .replace("{i}", i).replace("{val}", HT[i]).replace("{strategy}", strategy)
+                            .replace("{base}", base).replace("{step}", step).replace("{jump}", jump).replace("{length}", HT.length).replace("{i_next}", i_next);
+          cs["vl"][i_next]["state"] = VERTEX_HIGHLIGHTED;
+          cs["lineNo"] = 5;
+          stateList.push(cs);
+          vertexTraversed[i_next] = true; // this is traversed in future iteration
+          i = i_next;
+          step++;
+        }
+      }
+    }
+
+    gw.startAnimation(stateList, callback);
+    populatePseudocode(0);
+    return true;
+  }
+
+  this.searchSC = function(key, callback) {
+    var stateList = [];
+    var vertexTraversed = {};
+    var edgeTraversed = {};
+    var cs;
+
+    if (key < 0 || key > 99) {
+      cs = createStateSC(vertexTraversed, edgeTraversed);
+      // key = {key}, it must be between [0..99] in this visualization.
+      // -1 = empty cell (blank) and -2 = deleted item.
+      cs["status"] = '<span style="white-space: normal;">键 = {key}, 在这个可视化动画中它必须在&nbsp;[0..99] 之间</span><br style="white-space: normal;"><span style="white-space: normal;">-1 用来标记空白格&nbsp;(空) 以及 -2 用来标记以及被删除的项</span><br>'.replace("{key}", key);
+      stateList.push(cs);
+    }
+    else {
+      var M = HT_SC.length;
+      var i = key%M;
+      var j = 0;
+
+      cs = createStateSC(vertexTraversed, edgeTraversed);
+      // key = {key} is hashed to i = base = {key}%{length} = {i}.
+      cs["status"] = '<span style="white-space: normal;">键 = {key} 映射到&nbsp;i = base = {key}%{length} = {i}.</span>'.replace("{key}", key).replace("{key}", key).replace("{length}", M).replace("{i}", i);
+      cs["vl"][i*7]["state"] = VERTEX_HIGHLIGHTED;
+      cs["lineNo"] = 1;
+      stateList.push(cs);
+      vertexTraversed[i*7] = true; // this is traversed in future iteration
+
+      for (var j = 0; j < HT_SC[i].length; j++) {
+        cs = createStateSC(vertexTraversed, edgeTraversed);
+        cs["status"] = 'Checking this vertex';
+        cs["vl"][i*7+(j+1)]["state"] = VERTEX_HIGHLIGHTED;
+        cs["lineNo"] = [2, 3];
+        stateList.push(cs);
+        vertexTraversed[i*7+(j+1)] = true; // this is traversed in future iteration
+        if (HT_SC[i][j] == key) {
+          cs = createStateSC(vertexTraversed, edgeTraversed);
+          cs["status"] = '{key} is found in Hash Table'.replace("{key}", key);
+          cs["vl"][i*7+(j+1)]["state"] = VERTEX_HIGHLIGHTED;
+          cs["lineNo"] = [4];
+          stateList.push(cs);
+          break;
+        }
+      }
+
+      if (j == HT_SC[i].length) { // not found
+        cs = createStateSC(vertexTraversed, edgeTraversed);
+        cs["status"] = '{key} is not found in Hash Table'.replace("{key}", key);
+        cs["lineNo"] = 5;
+        stateList.push(cs);
+      }
+    }
+
+    gw.startAnimation(stateList, callback);
+    populatePseudocode(3);
+    return true;
+  }
+
+  this.insert = function(keys, callback) {
+    var stateList = [];
+    var vertexTraversed = {};
+    var edgeTraversed = {};
+    var cs;
+
+    var the_keys = keys.split(",");
+    for (idx in the_keys) {
+      key = parseInt(the_keys[idx]);
+
+      if (key < 0 || key > 99) {
+        cs = createState(vertexTraversed, edgeTraversed);
+        // key = {key}, it must be between [0..99] in this visualization.
+        // -1 = empty cell (blank) and -2 = deleted item.
+        cs["status"] = '<span style="white-space: normal;">键 = {key}, 在这个可视化动画中它必须在&nbsp;[0..99] 之间</span><br style="white-space: normal;"><span style="white-space: normal;">-1 用来标记空白格&nbsp;(空) 以及 -2 用来标记以及被删除的项</span><br>'.replace("{key}", key);
+        stateList.push(cs);
+      }
+      else if (HT.indexOf(key) != -1) {
+        cs = createState(vertexTraversed, edgeTraversed);
+        // key = {key} is already in the Hash Table.
+        // We prevent insertion of duplicate keys.
+        cs["status"] = 'key = {key} is already in the Hash Table.<br>We prevent insertion of duplicate keys.'.replace("{key}", key);
+        stateList.push(cs);
+      }
+      else {
+        if (N+1 == HT.length) { // one item before full (if we allow full, our search can get into infinite loop)
+          cs = createState(vertexTraversed, edgeTraversed);
+          // Sorry, the Hash Table HT is nearly full (load factor too high).
+          // We cannot insert a new integer.
+          cs["status"] = '抱歉，哈希表HT几乎满了（负荷系数太高）<div>我们无法插入一个新的整数</div>';
+          cs["lineNo"] = 1;
+          stateList.push(cs);
+        }
+        else { // not yet full, do the insertion
+          var i = key%(HT.length), base = i;
+          var i_next;
+          var jump = 1;
+          var step = 1;
+          var k = 5, smallerPrime = primes[k]; // start from 17
+          while (smallerPrime >= HT.length)
+            smallerPrime = primes[k--];
+          var secondary = smallerPrime - key%smallerPrime; // so it will always be positive
+          var strategy = "linear probing";
+
+          cs = createState(vertexTraversed, edgeTraversed);
+          // The hash table is not yet full.
+          // key = {key} is hashed to i = base = {key}%{length} = {i}.
+          cs["status"] = '哈希表还没有满<div><div><span style="white-space: normal;">键 = {key} 映射为&nbsp;i = base = {key}%{length} = {i}.</span><br></div></div>'.replace("{key}", key).replace("{key}", key).replace("{length}", HT.length).replace("{i}", i);
+          cs["vl"][i]["state"] = VERTEX_HIGHLIGHTED;
+          cs["lineNo"] = 2;
+          stateList.push(cs);
+          vertexTraversed[i] = true; // this is traversed in future iteration
+
+          while (HT[i] > 0 && step < HT.length) {
+            if (activeStatus == "LP") {
+              jump = 1;
+              strategy = "linear probing";
+            }
+            else if (activeStatus == "QP") {
+              jump = step;
+              strategy = "quadratic probing";
+            }
+            else if (activeStatus == "DH") {
+              jump = secondary;
+              strategy = "double hashing";
+            }
+
+            i_next = (base + step*jump) % HT.length;
+
+            var special = (HT[i] == key ? '（实际上是一个重复的键）' : ""); // ' (actually a duplicate key)'
+            cs = createState(vertexTraversed, edgeTraversed);
+            // HT[{i}] = {val} is occupied{special}.
+            // Use {strategy} to check the next index i_next ({base}+{step}*{jump})%{length} = {i_next}.
+            cs["status"] = '<span style="white-space: normal;">HT第[{i}]项&nbsp;= {val} 已经被{special} 占用</span><br style="white-space: normal;"><span style="white-space: normal;">用 {strategy} 来检查下一个指数 ({base}+{step}*{jump})%{length} = {i_next}</span>'
+                              .replace("{i}", i).replace("{val}", HT[i]).replace("{special}", special)
+                              .replace("{strategy}", strategy).replace("{base}", base).replace("{step}", step).replace("{jump}", jump).replace("{length}", HT.length).replace("{i_next}", i_next);
+            cs["vl"][i_next]["state"] = VERTEX_HIGHLIGHTED;
+            cs["lineNo"] = 3;
+            stateList.push(cs);
+            vertexTraversed[i_next] = true; // this is traversed in future iteration
+            i = i_next;
+            step++;
+          }
+
+          if (step == HT.length) {
+            cs = createState(vertexTraversed, edgeTraversed);
+            // After {step} probe steps, we still cannot find an insertion point.
+            // Reporting failure...
+            cs["status"] = '<span style="white-space: normal;">{step} 歩探测后，我们仍然不能找到插入点。</span><div><span style="white-space: normal;">报错......</span><div><span style="white-space: normal;"> </span></div><div><span style="white-space: normal;"> </span></div></div>'.replace("{step}", step);
+            stateList.push(cs);
+          }
+          else {
+            HT[i] = key;
+            N++;
+            cs = createState(vertexTraversed, edgeTraversed);
+            // Found insertion point: Insert {key} at HT[{i}].
+            // There are now {N} items in the Hash Table.
+            cs["status"] = '<span style="white-space: normal;">找到了插入点：在 哈希表第</span><span style="white-space: normal;">[{i}] 项插入。</span><div>现在哈希表中有<span style="white-space: normal;">{N} 项</span><br></div>'.replace("{key}", key).replace("{i}", i).replace("{N}", N);
+            cs["vl"][i]["state"] = VERTEX_TRAVERSED;
+            cs["lineNo"] = 4;
+            stateList.push(cs);
+          }
+        }
+      }
+    }
+
+    gw.startAnimation(stateList, callback);
+    populatePseudocode(1);
+    return true;
+  }
+
+  this.insertSC = function(keys, callback) {
+    var stateList = [];
+    var vertexTraversed = {};
+    var edgeTraversed = {};
+    var cs;
+
+    var the_keys = keys.split(",");
+    for (idx in the_keys) {
+      key = parseInt(the_keys[idx]);
+
+      if (key < 0 || key > 99) {
+        cs = createStateSC(vertexTraversed, edgeTraversed);
+        // key = {key}, it must be between [0..99] in this visualization.
+        // -1 = empty cell (blank) and -2 = deleted item.
+        cs["status"] = '<span style="white-space: normal;">键 = {key}, 在这个可视化动画中它必须在&nbsp;[0..99] 之间</span><br style="white-space: normal;"><span style="white-space: normal;">-1 用来标记空白格&nbsp;(空) 以及 -2 用来标记以及被删除的项</span><br>'.replace("{key}", key);
+        stateList.push(cs);
+      }
+      else {
+        var already_inside = false;
+        var M = HT_SC.length;
+        for (var i = 0; i < M; i++)
+          if (HT_SC[i].indexOf(key) != -1)
+            already_inside = true;
+
+        if (already_inside) {
+          cs = createStateSC(vertexTraversed, edgeTraversed);
+          // key = {key} is already in the Hash Table.
+          // We prevent insertion of duplicate keys.
+          cs["status"] = 'key = {key} is already in the Hash Table.<br>We prevent insertion of duplicate keys.'.replace("{key}", key);
+          stateList.push(cs);
+        }
+        else { // key [0..99] and not inside
+          var i = key%M;
+          cs = createStateSC(vertexTraversed, edgeTraversed);
+          // The hash table is not yet full.
+          // key = {key} is hashed to i = base = {key}%{length} = {i}.
+          cs["status"] = '哈希表还没有满<div><div><span style="white-space: normal;">键 = {key} 映射为&nbsp;i = base = {key}%{length} = {i}.</span><br></div></div>'.replace("{key}", key).replace("{key}", key).replace("{length}", M).replace("{i}", i);
+          cs["vl"][i*7]["state"] = VERTEX_HIGHLIGHTED;
+          cs["lineNo"] = 1;
+          stateList.push(cs);
+          vertexTraversed[i*7] = true; // this is traversed in future iteration
+
+          if (HT_SC[i].length == 6) {
+            cs = createStateSC(vertexTraversed, edgeTraversed);
+            cs["status"] = 'Sorry, due to the limitation of this visualization<br>We do not allow any more extension to linked list {i}'.replace("{i}", i);
+            cs["vl"][i*7]["state"] = VERTEX_HIGHLIGHTED;
+            cs["lineNo"] = 2;
+            stateList.push(cs);
+          }
+          else {
+            HT_SC[i].push(key); // put at the back of this doubly linked list (assume that we have access to tail pointer)
+            cs = createStateSC(vertexTraversed, edgeTraversed);
+            cs["status"] = 'We append {key} to the back of Doubly Linked List {i}<br>This is O(1) with tail pointer'.replace("{key}", key).replace("{i}", i);
+            cs["vl"][i*7+(HT_SC[i].length-1)]["state"] = VERTEX_HIGHLIGHTED;
+            cs["vl"][i*7+(HT_SC[i].length)]["state"] = VERTEX_HIGHLIGHTED;
+            cs["lineNo"] = 3;
+            stateList.push(cs);
+          }
+        }
+      }
+    }
+
+    gw.startAnimation(stateList, callback);
+    populatePseudocode(4);
+    return true;
+  }
+
+  this.remove = function(key, callback) {
+    var stateList = [];
+    var vertexTraversed = {};
+    var edgeTraversed = {};
+    var cs;
+
+    if (key < 0 || key > 99) {
+      cs = createState(vertexTraversed, edgeTraversed);
+      // key = {key}, it must be between [0..99] in this visualization.
+      // -1 = empty cell (blank) and -2 = deleted item.
+      cs["status"] = '<span style="white-space: normal;">键 = {key}, 在这个可视化动画中它必须在&nbsp;[0..99] 之间</span><br style="white-space: normal;"><span style="white-space: normal;">-1 用来标记空白格&nbsp;(空) 以及 -2 用来标记以及被删除的项</span><br>'.replace("{key}", key);
+      stateList.push(cs);
+    }
+    else {
+      var i = key % (HT.length), base = i;
+      var i_next;
+      var jump = 1;
+      var step = 1;
+      var k = 5, smallerPrime = primes[k]; // start from 17
+      while (smallerPrime >= HT.length)
+        smallerPrime = primes[k--];
+      var secondary = smallerPrime - key%smallerPrime; // so it will always be positive
+      var strategy = "linear probing";
+
+      cs = createState(vertexTraversed, edgeTraversed);
+      // key = {key} is hashed to i = base = {key}%{length} = {i}.
+      cs["status"] = '<span style="white-space: normal;">键 = {key} 映射到&nbsp;i = base = {key}%{length} = {i}.</span>'.replace("{key}", key).replace("{key}", key).replace("{length}", HT.length).replace("{i}", i);
+      cs["vl"][i]["state"] = VERTEX_HIGHLIGHTED;
+      cs["lineNo"] = 1;
+      stateList.push(cs);
+      vertexTraversed[i] = true; // this is traversed in future iteration
+
+      while (true) {
+        if (HT[i] == EMPTY) { // Not Found
+          cs = createState(vertexTraversed, edgeTraversed);
+          // HT[{i}] is empty.
+          // Therefore key = {key} is not found in Hash Table HT.
+          cs["status"] = '<span style="white-space: normal;">&nbsp;HT 第[{i}]项为空</span><br style="white-space: normal;"><span style="white-space: normal;">所以键&nbsp;= {key} 不能再哈希表中被找到</span>'.replace("{i}", i).replace("{key}", key);
+          cs["vl"][i]["state"] = VERTEX_HIGHLIGHTED;
+          cs["lineNo"] = 3;
+          stateList.push(cs);
+          break;
+        }
+        else if (HT[i] == key) { // Found
+          cs = createState(vertexTraversed, edgeTraversed);
+          // HT[{i}] = {key}.
+          // Therefore key = {key} is found in Hash Table HT at index {i}.
+          cs["status"] = '<span style="white-space: normal;">HT 第[{i}]项&nbsp;= {key}</span><br style="white-space: normal;"><span style="white-space: normal;">所以 键 = {key} 能够在哈希表指数为{i} 的项上被找到</span>'.replace("{i}", i).replace("{key}", key).replace("{key}", key).replace("{i}", i);
+          cs["vl"][i]["state"] = VERTEX_HIGHLIGHTED;
+          cs["lineNo"] = 4;
+          stateList.push(cs);
+
+          HT[i] = DELETED;
+          N--;
+          cs = createState(vertexTraversed, edgeTraversed);
+          // Now we mark HT[{i}] as deleted.
+          // There are now {N} items in the Hash Table.
+          cs["status"] = '<span style="white-space: normal;">现在我们将哈希表[{i}] 标记为已删除。</span><div><span style="white-space: normal;">现在哈希表中有{N}项</span></div>'.replace("{i}", i).replace("{N}", N);
+          cs["vl"][i]["state"] = VERTEX_HIGHLIGHTED;
+          cs["lineNo"] = 5;
+          stateList.push(cs);
+          break;
+        }
+        else {
+          if (activeStatus == "LP") {
+            jump = 1;
+            strategy = "linear probing";
+          }
+          else if (activeStatus == "QP") {
+            jump = step;
+            strategy = "quadratic probing";
+          }
+          else if (activeStatus == "DH") {
+            jump = secondary;
+            strategy = "double hashing";
+          }
+
+          i_next = (base + step * jump) % HT.length;
+
+          cs = createState(vertexTraversed, edgeTraversed);
+          // HT[{i}] = {val} != key.
+          // Use {strategy} to check the next index i_next = ({base}+{step}*{jump})%{length} = {i_next}.
+          cs["status"] = '<span style="white-space: normal;">HT 第[{i}] 项 = {val} != 键</span><br style="white-space: normal;"><span style="white-space: normal;">用 {strategy} 来检查下一个指数&nbsp;= ({base}+{step}*{jump})%{length} = {i_next}</span>'
+                            .replace("{i}", i).replace("{val}", HT[i])
+                            .replace("{strategy}", strategy).replace("{base}", base).replace("{step}", step).replace("{jump}", jump).replace("{length}", HT.length).replace("{i_next}", i_next);
+          cs["vl"][i_next]["state"] = VERTEX_HIGHLIGHTED;
+          cs["lineNo"] = 6;
+          stateList.push(cs);
+          vertexTraversed[i_next] = true; // this is traversed in future iteration
+          i = i_next;
+          step++;
+        }
+      }
+    }
+
+    gw.startAnimation(stateList, callback);
+    populatePseudocode(2);
+    return true;
+  }
+
+  this.removeSC = function(key, callback) {
+    var stateList = [];
+    var vertexTraversed = {};
+    var edgeTraversed = {};
+    var cs;
+
+    if (key < 0 || key > 99) {
+      cs = createStateSC(vertexTraversed, edgeTraversed);
+      // key = {key}, it must be between [0..99] in this visualization.
+      // -1 = empty cell (blank) and -2 = deleted item.
+      cs["status"] = '<span style="white-space: normal;">键 = {key}, 在这个可视化动画中它必须在&nbsp;[0..99] 之间</span><br style="white-space: normal;"><span style="white-space: normal;">-1 用来标记空白格&nbsp;(空) 以及 -2 用来标记以及被删除的项</span><br>'.replace("{key}", key);
+      stateList.push(cs);
+    }
+    else {
+      var M = HT_SC.length;
+      var i = key%M;
+      var j = 0;
+
+      cs = createStateSC(vertexTraversed, edgeTraversed);
+      // key = {key} is hashed to i = base = {key}%{length} = {i}.
+      cs["status"] = '<span style="white-space: normal;">键 = {key} 映射到&nbsp;i = base = {key}%{length} = {i}.</span>'.replace("{key}", key).replace("{key}", key).replace("{length}", M).replace("{i}", i);
+      cs["vl"][i*7]["state"] = VERTEX_HIGHLIGHTED;
+      cs["lineNo"] = 1;
+      stateList.push(cs);
+      vertexTraversed[i*7] = true; // this is traversed in future iteration
+
+      var found_and_deleted = false;
+      for (var j = 0; j < HT_SC[i].length; j++) {
+        cs = createStateSC(vertexTraversed, edgeTraversed);
+        cs["status"] = 'Checking this vertex';
+        cs["vl"][i*7+(j+1)]["state"] = VERTEX_HIGHLIGHTED;
+        cs["lineNo"] = [2, 3];
+        stateList.push(cs);
+        vertexTraversed[i*7+(j+1)] = true; // this is traversed in future iteration
+        if (HT_SC[i][j] == key) {
+          cs = createStateSC(vertexTraversed, edgeTraversed);
+          cs["status"] = '{key} is found in Hash Table'.replace("{key}", key).replace("{i}", i);
+          cs["vl"][i*7+(j+1)]["state"] = VERTEX_HIGHLIGHTED;
+          cs["lineNo"] = [4];
+          stateList.push(cs);
+
+          HT_SC[i].splice(j, 1);
+          delete vertexTraversed[i*7+(j+1)];
+          cs = createStateSC(vertexTraversed, edgeTraversed);
+          cs["status"] = 'It is removed from list {i} in O(1+&alpha;)<br>Deletion is fast if we use Doubly Linked List'.replace("{key}", key).replace("{i}", i);
+          cs["lineNo"] = [4];
+          stateList.push(cs);
+
+          found_and_deleted = true;
+          break;
+        }
+      }
+
+      if (!found_and_deleted) { // not found
+        cs = createStateSC(vertexTraversed, edgeTraversed);
+        cs["status"] = '{key} is not found in Hash Table'.replace("{key}", key);
+        cs["lineNo"] = 5;
+        stateList.push(cs);
+      }
+    }
+
+    gw.startAnimation(stateList, callback);
+    populatePseudocode(5);
+    return true;
+  }
+
+  /*
+   * vertexTraversed: JS object with the vertexes of the List which are to be marked as traversed as the key
+   * edgeTraversed: JS object with the edges of the List which are to be marked as traversed as the key
+   */
+
+  function createState(vertexTraversed, edgeTraversed) {
+    if (vertexTraversed == null || vertexTraversed == undefined || !(vertexTraversed instanceof Object))
+      vertexTraversed = {};
+    if (edgeTraversed == null || edgeTraversed == undefined || !(edgeTraversed instanceof Object))
+      edgeTraversed = {};
+
+    var scale = (1000-100) / (HT.length-1);
+
+    var state = {
+      "vl": {},
+      "el": {}
+    };
+
+    for (var i = 0; i < HT.length; i++) {
+      state["vl"][i] = {};
+      state["vl"][i]["cx"] = 50 + i*scale;
+      state["vl"][i]["cy"] = 100;
+      state["vl"][i]["text"] = (HT[i] == EMPTY ? '' : (HT[i] == DELETED ? 'DEL' : HT[i]));
+      state["vl"][i]["extratext"] = "i:" + i;
+      state["vl"][i]["state"] = VERTEX_DEFAULT;
+    }
+
+    for (var key in vertexTraversed)
+      state["vl"][key]["state"] = VERTEX_TRAVERSED;
+
+    return state;
+  }
+
+  function createStateSC(vertexTraversed, edgeTraversed) {
+    if (vertexTraversed == null || vertexTraversed == undefined || !(vertexTraversed instanceof Object))
+      vertexTraversed = {};
+    if (edgeTraversed == null || edgeTraversed == undefined || !(edgeTraversed instanceof Object))
+      edgeTraversed = {};
+
+    var M = HT_SC.length;
+    var scale = (1000-100) / (M-1);
+
+    var state = {
+      "vl": {},
+      "el": {}
+    };
+
+    for (var i = 0; i < M; i++) {
+      state["vl"][i*7] = {};
+      state["vl"][i*7]["cx"] = 50 + i*scale;
+      state["vl"][i*7]["cy"] = 100;
+      state["vl"][i*7]["text"] = "H";
+      state["vl"][i*7]["extratext"] = "i:" + i;
+      state["vl"][i*7]["state"] = VERTEX_DEFAULT;
+    }
+
+    for (var i = 0; i < M; i++) {
+      for (var j = 0; j < HT_SC[i].length; j++) {
+        state["vl"][i*7+(j+1)] = {};
+        state["vl"][i*7+(j+1)]["cx"] = 80 + i*scale;
+        state["vl"][i*7+(j+1)]["cy"] = 100 + (j+1)*70;
+        state["vl"][i*7+(j+1)]["text"] = HT_SC[i][j];
+        state["vl"][i*7+(j+1)]["state"] = VERTEX_DEFAULT;
+
+        state["el"][i*7+(j+1)] = {};
+        state["el"][i*7+(j+1)]["vertexA"] = i*7+j;
+        state["el"][i*7+(j+1)]["vertexB"] = i*7+(j+1);
+        state["el"][i*7+(j+1)]["type"] = (j == 0) ? EDGE_TYPE_DE : EDGE_TYPE_UDE;
+        state["el"][i*7+(j+1)]["weight"] = 1;
+        state["el"][i*7+(j+1)]["state"] = EDGE_DEFAULT;
+        state["el"][i*7+(j+1)]["animateHighlighted"] = false;
+      }
+    }
+
+    for (var key in vertexTraversed)
+      state["vl"][key]["state"] = VERTEX_TRAVERSED;
+
+    return state;
+  }
+
+  function populatePseudocode(act) {
+    var jump = '1';
+    if (activeStatus == "LP")
+      jump = '1';
+    else if (activeStatus == "QP")
+      jump = 'step';
+    else if (activeStatus == "DH")
+      jump = 'sec';
+
+    switch (act) {
+      case 0: // search
+        $('#code1').html('step = 0; i = base = key%HT.length;');
+        $('#code2').html('while (true)');
+        $('#code3').html('&nbsp&nbspif (HT[i] == EMPTY) return "如果(哈希表第i个值为空) 返还“未找到”"');
+        $('#code4').html('&nbsp&nbspelse if (HT[i] == key) return "另如果(哈希表第i个值等于键)，返还“在指数i找到”"');
+        $('#code5').html('&nbsp;&nbsp;else step++; i = (base+step*{jump})%HT.length'.replace('{jump}', jump));
+        $('#code6').html((activeStatus == 'DH' ? '// sec = prime - key%prime' : ''));
+        $('#code7').html('');
+        break;
+      case 1: // insert
+        $('#code1').html('if N+1 == M, 阻止插入');
+        $('#code2').html('step = 0; i = base = key%HT.length;');
+        $('#code3').html('<span style="white-space: normal;">while (HT[i] != 空 || HT[i] != 已删除)</span>');
+        $('#code4').html('&nbsp;&nbsp;step++; i = (base+step*{jump})%HT.length'.replace('{jump}', jump));
+        $('#code5').html('找到插入点，在 <span style="white-space: normal;">HT[i] 插入键</span>');
+        $('#code6').html((activeStatus == 'DH' ? '// sec = prime - key%prime' : ''));
+        $('#code7').html('');
+        break;
+      case 2: // remove
+        $('#code1').html('step = 0; i = base = key%HT.length;');
+        $('#code2').html('while (true)');
+        $('#code3').html('&nbsp&nbspif (HT[i] == EMPTY) break // &nbsp; if (HT[i] == EMPTY) break // <span style="white-space: normal;">&nbsp;键未找到</span>');
+        $('#code4').html('&nbsp&nbspelse if (HT[i] == key) // &nbsp;&nbsp;else if (HT[i] == key)');
+        $('#code5').html('&nbsp&nbsp&nbsp&nbspHT[i] = DELETED, break // &nbsp;&nbsp;&nbsp;&nbsp;HT[i] = DELETED');
+        $('#code6').html('&nbsp&nbspelse step++; i = (base+step*{jump})%HT.length'.replace('{jump}', jump));
+        $('#code7').html((activeStatus == 'DH' ? '// sec = prime - key%prime' : ''));
+        break;
+      case 3: // search SC
+        $('#code1').html('i = key%HT.length;');
+        $('#code2').html('for j = 0 to HT_SC[i].length');
+        $('#code3').html('&nbsp&nbspif (HT_SC[i][j] == key)');
+        $('#code4').html('&nbsp&nbsp&nbsp&nbspreturn "另如果(哈希表第i个值等于键)，返还“在指数i找到”"');
+        $('#code5').html('return "如果(哈希表第i个值为空) 返还“未找到”"');
+        $('#code6').html('');
+        $('#code7').html('');
+        break;
+      case 4: // insert SC
+        $('#code1').html('i = key%HT.length;');
+        $('#code2').html('if HT_SC[i].length == 6, prevent insertion');
+        $('#code3').html('insert key to the back of this list i');
+        $('#code4').html('');
+        $('#code5').html('');
+        $('#code6').html('');
+        $('#code7').html('');
+        break;
+      case 5: // remove SC
+        $('#code1').html('i = key%HT.length;');
+        $('#code2').html('for j = 0 to HT_SC[i].length');
+        $('#code3').html('&nbsp&nbspif (HT_SC[i][j] == key)');
+        $('#code4').html('&nbsp&nbsp&nbsp&nbspremove key from list i');
+        $('#code5').html('// do nothing, 如果(哈希表第i个值为空) 返还“未找到”');
+        $('#code6').html('');
+        $('#code7').html('');
+        break;
+    }
+  }
+}
+
+
+
+// HashTable_action.js
+// actions panel stuff
+var actionsWidth = 150;
+var statusCodetraceWidth = 420;
+
+var isCreateOpen = false;
+var isSearchOpen = false;
+var isInsertOpen = false;
+var isRemoveOpen = false;
+
+function openCreate() {
+  $(".create").css("bottom", "146px");
+  $('#createfixedsize-input').hide();
+  $('#createuserdefined-input').hide();
+  if (!isCreateOpen) {
+    $('.create').fadeIn('fast');
+    isCreateOpen = true;
+  }
+}
+
+function closeCreate() {
+  if (isCreateOpen) {
+    $('.create').fadeOut('fast');
+    $('#create-err').html("");
+    isCreateOpen = false;
+  }
+}
+
+function openSearch() {
+  if (!isSearchOpen) {
+    $('.search').fadeIn('fast');
+    isSearchOpen = true;
+  }
+}
+
+function closeSearch() {
+  if (isSearchOpen) {
+    $('.search').fadeOut('fast');
+    $('#search-err').html("");
+    isSearchOpen = false;
+  }
+}
+
+function openInsert() {
+  $(".insert").css("bottom", "92px");
+  $('#insertkth-input').hide();
+  $('#inserthead-input').hide();
+  $('#inserttail-input').hide();
+  if (!isInsertOpen) {
+    $('.insert').fadeIn('fast');
+    isInsertOpen = true;
+  }
+}
+
+function closeInsert() {
+  if (isInsertOpen) {
+    $('.insert').fadeOut('fast');
+    $('#insert-err').html("");
+    isInsertOpen = false;
+  }
+}
+
+function openRemove() {
+  $(".remove").css("bottom", "65px");
+  $('#removekth-input').hide();
+  if (!isRemoveOpen) {
+    $('.remove').fadeIn('fast');
+    isRemoveOpen = true;
+  }
+}
+
+function closeRemove() {
+  if (isRemoveOpen) {
+    $('.remove').fadeOut('fast');
+    $('#remove-err').html("");
+    isRemoveOpen = false;
+  }
+}
+
+function hideEntireActionsPanel() {
+  closeCreate();
+  closeSearch();
+  closeInsert();
+  closeRemove();
+  hideActionsPanel();
+}
+
+
+// title changing
+function AbbreviateTitle() {
+  $('#title-LP').text("LP");
+  $('#title-QP').text("QP");
+  $('#title-DH').text("DH");
+  $('#title-SC').text("SC");
+}
+$('#title-LP').click(function() {
+  if (isPlaying) stop();
+  htw.setActiveStatus("LP");
+  AbbreviateTitle();
+  $('#title-LP').text('线性探测');
+});
+$('#title-QP').click(function() {
+  if (isPlaying) stop();
+  htw.setActiveStatus("QP");
+  AbbreviateTitle();
+  $('#title-QP').text('二次探测');
+});
+$('#title-DH').click(function() {
+  if (isPlaying) stop();
+  htw.setActiveStatus("DH");
+  AbbreviateTitle();
+  $('#title-DH').text('双倍散列');
+});
+$('#title-SC').click(function() {
+  if (isPlaying) stop();
+  htw.setActiveStatus("SC");
+  AbbreviateTitle();
+  $('#title-SC').text('分离链接');
+});
+
+
+
+// local
+$('#play').hide();
+var htw = new HashTable();
+var gw = htw.getGraphWidget();
+
+$(function() {
+  var four_modes = ["LP", "QP", "DH", "SC"];
+  $('#title-'+four_modes[Math.floor(Math.random()*4)]).click(); // randomly open one of the four default example every time
+
+  var hashMode = getQueryVariable("mode");
+  if (hashMode.length > 0) {
+    $('#title-'+hashMode).click();
+  }
+  var createHT = getQueryVariable("create");
+  if (createHT.length > 0) {
+    var newHT = createHT.split(",");
+    if (newHT.length == 1)
+      htw.createTable(createHT);
+    else
+      htw.generate(newHT);
+  }
+  var insert = getQueryVariable("insert");
+  if (insert.length > 0) {
+    $('#v-insert').val(insert);
+    openInsert();
+  }
+  var remove = getQueryVariable("remove");
+  if (remove.length > 0) {
+    $('#v-remove').val(remove);
+    openRemove();
+  }
+
+  $('#create').click(function() {
+    closeSearch();
+    closeInsert();
+    closeRemove();
+    openCreate();
+  });
+  $('#search').click(function() {
+    closeCreate();
+    closeInsert();
+    closeRemove();
+    openSearch();
+  });
+  $('#insert').click(function() {
+    closeCreate();
+    closeSearch();
+    closeRemove();
+    openInsert();
+  });
+  $('#remove').click(function() {
+    closeCreate();
+    closeSearch();
+    closeInsert();
+    openRemove();
+  });
+});
+
+
+function createTable() {
+  if (isPlaying) stop();
+  var input = parseInt($('#v-create').val());
+  if (htw.createTable(input)) {
+    $('#progress-bar').slider("option", "max", 0);
+    closeCreate();
+    isPlaying = false;
+  }
+  hideStatusPanel();
+  hideCodetracePanel();
+}
+
+function createTableSpecial(_HT) {
+  if (isPlaying) stop();
+  htw.createTableSpecial(_HT);
+  $('#progress-bar').slider("option", "max", 0);
+  closeCreate();
+  isPlaying = false;
+  hideStatusPanel();
+  hideCodetracePanel();
+}
+
+function insertInteger(callback) {
+  if (isPlaying) stop();
+  var input = $('#v-insert').val();
+  commonAction(htw.getActiveStatus() == "SC" ? htw.insertSC(input, callback) : htw.insert(input, callback), "插入 " + input);
+  // setTimeout(function() {
+  //   var existing = hw.saveArray();
+  //   var next_num = 1 + Math.floor(Math.random()*88);
+  //   while (existing.includes(next_num)) next_num = 1 + Math.floor(Math.random()*88);
+  //   $("#v-insert").val(next_num); // randomized for next click between [1..89}, and it won't exist before (allow for a few more insertion of 90-99, still two digits)
+  // }, 500);
+}
+
+function searchInteger(callback) {
+  if (isPlaying) stop();
+  var input = parseInt($('#v-search').val());
+  commonAction(htw.getActiveStatus() == "SC" ? htw.searchSC(input, callback) : htw.search(input, callback), "搜索 " + input);
+}
+
+function removeInteger(callback) {
+  if (isPlaying) stop();
+  var input = parseInt($('#v-remove').val());
+  commonAction(htw.getActiveStatus() == "SC" ? htw.removeSC(input, callback) : htw.remove(input, callback), "移除 " + input);
+}
+
+// Implement these functions in each visualisation
+// var userGraph = {
+//   'vl': {},
+//   'el': {},
+// };
+
+// This function will be called before entering E-Lecture Mode
+function ENTER_LECTURE_MODE() {
+  //if (bw) userGraph = bw.getGraph();
+}
+
+// This function will be called before returning to Explore Mode
+function ENTER_EXPLORE_MODE() {
+  //loadGraph(userGraph);
+}
+
+// Lecture action functions
+function CUSTOM_ACTION(action, data, mode) {
+  if (action == 'create_special') {
+    createTableSpecial(data);
+  }
+  else if (action == 'search') {
+    hideSlide(function() {
+      $('#v-search').val(data); // force
+      searchInteger(showSlide);
+    });
+  }
+  else if (action == 'insert') {
+    hideSlide(function() {
+      $('#v-insert').val(data); // force
+      insertInteger(showSlide);
+    });
+  }
+  else if (action == 'remove') {
+    hideSlide(function() {
+      $('#v-remove').val(data); // force
+      removeInteger(showSlide);
+    });
+  }
+}
+</script>
+</body>
+</html>

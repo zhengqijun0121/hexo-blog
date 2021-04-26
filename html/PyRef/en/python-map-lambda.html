@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+
+<link rel="stylesheet" href="../css/book.css" />
+<script src="../js/book.js"></script>
+
+<style>
+pre.reveal { }  /* mark pre that should get this setup */
+span.phide { display:none; }
+span.pshow { color:darkgreen;} /* display:inline; */
+</style>
+
+</head>
+<body>
+
+<nav><div id="toc"></div></nav>
+
+<main>
+
+<h1>Python Map Lambda</h1>
+
+<!-- could talk about map vs. comprehensions, fine to use compr -->
+
+<p>A <code>lambda</code> expression is a way of creating a little function inline, without all the syntax of a def. Here is a lambda with a single <code>n</code> parameter, returning the parameter value doubled.</p>
+
+<pre>
+lambda n: n * 2
+</pre>
+
+<p>The code of the lambda is typically a single expression without variables or if-statements, and does not use "return". Lambda is perfect where you have a short computation to write inline. Many programs have some sub-part which can be solved very compactly this way. For longer code, def is better.</p>
+
+<p>The <code>map()</code> function runs a lambda function over the list <code>[1, 2, 3, 4, 5]</code>, building a list-like collection of the results, like this:</p>
+
+<pre>
+>>><b> list(map(lambda n: n * 2, [1, 2, 3, 4, 5]))</b>
+[2, 4, 6, 8, 10]
+</pre>
+
+<img src="../img/python-lambda2.png" alt="alt: map of lambda n: n * 2 over the list [1, 2, 3, 4, 5] yields something like the list [2, 4, 6, 8, 10]" />
+
+<p>To work with map(), the lambda should have one parameter in, representing one element from the source list. Choose a suitable name for the parameter, like <code>n</code> for a list of numbers, <code>s</code> for a list of strings. The result of map() is an "iterable" map object which mostly works like a list, but it does not print. Therefore, the examples wrap the map() result in list() for printing.</p>
+
+<!-- njp explain when list() conversion is needed, e.g. [] + print -->
+
+<pre>
+>>><b> nums = [1, 2, 3, 4, 5]</b>
+>>><b> </b>
+>>><b> map(lambda n: 2 * n, nums) </b> # print fails, so list() below
+&lt;map object at 0x10ce142e8>
+>>><b></b>
+>>><b> list(map(lambda n: 2 * n, nums)) </b> # e.g. double each n
+[2, 4, 6, 8, 10]
+>>><b></b>
+>>><b> list(map(lambda n: n * -1, nums))</b>
+[-1, -2, -3, -4, -5]
+>>><b></b>
+>>><b> list(map(lambda n: 2 ** n, nums))</b>
+[2, 4, 8, 16, 32]
+>>><b></b>
+>>><b> strs = ['Summer', 'is', 'coming']</b>
+>>><b> list(map(lambda s: s.upper() + '!', strs))</b>
+['SUMMER!', 'IS!', 'COMING!']
+</pre>
+
+<!-- njp could use a more motivated / neat example here, like change numbers to mean/delta -->
+
+<h2>Lambda Def Equivalence</h2>
+
+<p>Map is often used with lambda, but it works with a def too. With def come the advantages of multiple lines, loops, comments, tests and what have you. Here is the above double-n computation written as a def instead of a lambda:</p>
+
+<pre>
+def double(n):
+    return n * 2
+
+>>><b> nums = [1, 2, 3, 4, 5, 6]</b>
+>>><b> list(map(double, nums))   </b> # use name of function "double"
+[2, 4, 6, 8, 10, 12]
+</pre>
+
+<p>Note that the function is referred to by name, "double", but without the customary parenthesis (). This is the rare case of referring to a function, but not calling it.</p>
+
+
+<h2>Filter</h2>
+
+<p>As a companion to <code>map()</code>, the <code>filter()</code> function takes a function and a list, and returns a subsetted list of the elements where the function returns true.</p>
+
+<p>For example, given a list of strings, return a list of the strings where the length is greater than 3:</p>
+
+<pre>
+>>><b> strs = ['apple', 'and', 'a', 'donut']</b>
+>>><b></b>
+>>><b> list(filter(lambda s: len(s) > 3, strs))</b>
+['apple', 'donut']
+</pre>
+
+<p>As another example, given a list of numbers, filter to contain only the odd numbers (<code>n % 2</code> is the modulus remainder after dividing by 2. For an even number returns 0, for an odd number 1.)</p>
+
+<pre>
+>>><b> nums = [5, 3, 6, 1, 7, 2]</b>
+>>><b> list(filter(lambda n: n % 2 == 1, nums))</b>
+[5, 3, 1, 7]
+</pre>
+
+<!-- njp see also comprehensions -->
+
+<p>&nbsp;</p>
+
+<p class="small">Copyright 2020 Nick Parlante</p>
+
+</main>
+
+</body>
+</html>

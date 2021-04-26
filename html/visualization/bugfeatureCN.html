@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <link rel="stylesheet" href="visualPages.css" />
+        <title>数据结构可视化</title>
+        <link rel="shortcut icon" href="favicon.ico" />
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-7XF2LE3X13"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-7XF2LE3X13');
+        </script>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="header"><h1>数据结构可视化</h1></div>
+            <div class="menu">
+                <ul>
+                    <li><a href="aboutCN.html">关于</a></li>
+                    <li><a href="AlgorithmsCN.html">算法</a></li>
+                    <li><a href="faqCN.html">常问问题</a></li>
+                    <li><a href="bugfeatureCN.html">已知错误 /<br /> &nbsp; &nbsp; 功能请求</a></li>
+                    <li><a href="sourceCN.html">创建自己的 /<br /> &nbsp; &nbsp; 源代码</a></li>
+                    <li><a href="contactCN.html">联系</a></li>
+                </ul>
+
+                <br /><br />
+                <div class="about">
+                    <a href="http://www.cs.usfca.edu/galles"> David Galles </a><br />
+                    <a href="http://www.cs.usfca.edu">计算机科学系</a><br />
+                    <a href="http://www.usfca.edu">旧金山大学</a>
+                </div>
+            </div>
+
+            <div class="content">
+
+            <h1>已知 Bug</h1>
+
+            <p>
+            该软件可能存在许多 Bug 和问题 -- 目前应将其视为"测试版"。这是我们所知道的：
+            </p>
+
+            <ul>
+                <li><del>DeleteMin 在具有单个元素的堆上失败。</del></li>
+                <ul>
+                    <li>修复于 2013/12/19</li>
+                </ul>
+                <li><del>所有可视化都不适用于旧版本的资源管理器</del></li>
+                <ul>
+                    <li>修复于 2012/8/23。感谢 Stefan German 努力做到这一点。</li>
+                </ul>
+
+                <li><del>在任何输入字段中放入分号会导致应用程序终止</del></li>
+                <ul>
+                    <li>修复于 2011/5/3。分号不能再输入。感谢 Stefan German 努力做到这一点。</li>
+                </ul>
+                <li><del>BST 和 AVL 树在 HTML5 版本中破坏了撤消</del></li>
+                <ul>
+                    <li>修复于 2011/5/3</li>
+                </ul>
+
+                <li><del>查找和删除开放式哈希中的损坏</del></li>
+                <ul>
+                    <li>修复于 2011/5/10（感谢巴西圣卡塔琳娜联邦大学的 Eduardo Bonet 找到了这个！）</li>
+                </ul>
+
+                <li>所有排序的算法（BST, AVL 树等）均无法正确对浮点数进行排序 -- 9.2 &gt; 10.3</li>
+                <ul>
+                    <li>
+                    这是一项设计决策 -- 因为这些算法可以采用任何字符串，决定根据词典顺序排序。
+                    我们试图通过将正整数自动转换为带有前导零的等价数字来减轻混乱，从而使正整数始终按预期顺序排列（尽管负数很遗憾）。
+                    事实证明，如果你尝试对一组任何字符串进行排序，则使用混合比较策略会很快造成混乱 -- 10.4 与 3.1.2 相比应该如何？
+                    3A 怎么样 -- 是一个字符串还是一个十六进制数字？那 AF 呢？BC 应该在 AFF 之前还是之后？我们决定只进行字符串比较。
+                    </li>
+                </ul>
+                <li><del>运行连接的组件时，如果运行算法，然后撤消，然后再次运行，应用程序将中断。
+                         我们正在努力解决 -- 当前的工作方式是在撤消后创建新图，然后再次运行算法。</del></li>
+                <ul>
+                    <li>修复于 2011/5/10</li>
+                </ul>
+
+                <li><del>撤消从损坏的 B 树或 B+ 树中删除元素的操作</del></li>
+                <ul>
+                    <li>修复于 2011/6/13</li>
+                </ul>
+
+                <li><del>Safari 浏览器上的基数排序损坏</del></li>
+                <ul>
+                    <li>修复于 2011/6/13</li>
+                </ul>
+
+                <li>各种错别字</li>
+                <ul>
+                    <li>请继续发送你看到的任何错别字，我会在纠正错字时予以纠正（当然，其优先级要比功能错误低一些）。错字更正将不会显示在此页面上。</li>
+                </ul>
+            </ul>
+
+            <h1>功能要求</h1>
+
+            <p>
+            发现错误？有功能或新算法需求吗？发送电子邮件给 <a href="mailto: galles@usfca.edu">galles@usfca.edu</a>
+            </p>
+
+            <br /><br /><br /><br /><br /><br /><br />
+
+            </div>
+            <div class="footer">Copyright 2011 <a href = "http://www.cs.usfca.edu/galles">David Galles </a></div>
+        </div>
+    </body>
+</html>

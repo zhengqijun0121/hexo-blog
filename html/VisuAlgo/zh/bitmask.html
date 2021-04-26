@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="Bitmask provide an efficient way to manipulate a small set of Booleans.By using bitwise operations, Boolean flags can be checked, turned on (or turned off) easily and quickly. It can be used in various algorithms such as the Dynamic Programming solution for Travelling Salesman Problem to speed up crucial (small) set-based operations.Click &#39;Next&#39; (on the top right)/press &#39;Page Down&#39; to advance this e-Lecture slide, use the drop down list/press &#39;Space&#39; to jump to a specific slide, or Click &#39;X&#39; (on the bottom right)/press &#39;Esc&#39; to go to Exploration mode.">
+<meta name="keywords" content="Bitmask Bit Manipulation Shift Left Right And Or Xor Not">
+ 
+<meta name="csrf-token" content="kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<meta property="og:image" content="../img/png/bitmask.png">
+<title>VisuAlgo - 位掩码（位操作）</title>
+<link rel="icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="114x114" href="../img/favicon.png">
+<link rel="stylesheet" type="text/css" href="../fonts/silkscreen/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="../css/common.css">
+<link rel="stylesheet" href="../css/viz-1.0.1.css">
+<link rel="stylesheet" href="../css/visual.css">
+<link rel="stylesheet" href="../css/drawgraph.css">
+<style>
+      #e-lecture {
+        top: 45px;
+        right: 130px;
+        width: 400px;
+        display: block;
+        background: none;
+        /*overflow: normal;*/
+        white-space: normal;
+        text-align: right;
+        color: black; font-weight: bold; font-size: 20px;
+      }
+      .electure-prev, .electure-next { /* force update, copied from viz.css */
+        position: absolute;
+        /* bottom: -12px; */
+        top: -20px;
+        /*bottom: '';*/
+        padding: 3px 8px;
+        background: #999;
+        color: white;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .electure-prev {
+        left: -10px;
+        /* right: 30px; */
+      }
+      .electure-next {
+        right: -10px;
+        color: white;
+      }
+    </style>
+<style>
+#viz {
+  width: 900px;
+  height: 400px;
+  margin: 0px auto;
+  position: relative;
+  font-family: "PT Sans";
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.bit {
+  width: 32px;
+  height: 32px;
+  font-family: "PT Sans";
+  font-size: 20px;
+  font-weight: bold;
+  position: absolute;
+  box-sizing: border-box;
+}
+
+.viz-text {
+  position: absolute;
+  width: 80px;
+  text-align: left;
+  color: #bbb;
+}
+#op-text {
+  color: black;
+  text-align: right;
+}
+#S-text { top: 104px; }
+#j-text { top: 139px; }
+#result-text { top: 190px; }
+
+#divider {
+  height: 3px;
+  background: black;
+  position: absolute;
+}
+
+.setFlags { bottom: 200px; }
+#setFlags-input input {
+  width: 25px;
+  padding: 8px 8px 8px;
+}
+#setFlags-go p { padding: 7px 8px 8px; }
+#setFlags-err { padding: 8px 0px 7px; }
+
+.set { bottom: 173px; }
+#set-input input {
+  width: 25px;
+  padding: 6px 8px 5px;
+}
+#set-go p { padding: 5px 8px; }
+#set-err { padding: 5px 0px; }
+
+.check { bottom: 146px; }
+#check-input input {
+  width: 25px;
+  padding: 6px 8px 5px;
+}
+#check-go p { padding: 5px 8px; }
+#check-err { padding: 5px 0px; }
+
+.toggle { bottom: 119px; }
+#toggle-input input {
+  width: 25px;
+  padding: 6px 8px 5px;
+}
+#toggle-go p { padding: 5px 8px; }
+#toggle-err { padding: 5px 0px; }
+
+.clear { bottom: 92px; }
+#clear-input input {
+  width: 25px;
+  padding: 6px 8px 5px;
+}
+#clear-go p { padding: 5px 8px; }
+#clear-err { padding: 5px 0px; }
+
+.lsone { bottom: 60px; }
+#lsone-err { padding: 8px 0px 7px; }
+</style>
+<script>
+      function changeURL() {
+        var URL = window.location.href.split('/');
+        var val = document.getElementById("Language").value;
+        URL[3] = val;
+        window.location.assign(URL.join('/'));
+      }
+    </script>
+</head>
+<body>
+<div id="top-bar">
+<a id="home" href="/">Visu<span class="colour">Algo</span><span style="font-size: 40%">.net</span></a>
+/
+<select id="Language" onchange="changeURL()">
+<option value="zh" selected>zh</option>
+</select>
+/bitmask
+<span id="title">
+<a id='title-bitmask' class='selected-viz'>位掩码（位操作）<br></a>
+</span>
+<div id="mode-menu">
+<div id='mode-button' title='exploration'>示例模式 &#9663;</div>
+<div id='other-modes'>
+<a title='e-Lecture'>电子讲座模式</a>
+</div>
+</div>
+</div>
+<div id="dark-overlay"></div>
+<div id="status" class="panel"><p></p></div>
+<div id="status-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide status panel" /></div>
+<div id="codetrace" class="panel">
+<p id="code1" style="padding-top: 10px;"></p>
+<p id="code2"></p>
+<p id="code3"></p>
+<p id="code4"></p>
+<p id="code5"></p>
+<p id="code6"></p>
+<p id="code7" style="padding-bottom: 10px;"></p>
+</div>
+<div id="codetrace-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide codetrace panel" /></div>
+<div id="left-bar"></div>
+<div id="right-bar"></div>
+<div id="media-controls">
+<div id='speed-control'>减速<div id='speed-input'></div>加速</div>
+<span id="go-to-beginning" class="media-control-button" title="go to beginning" onclick=goToBeginning()><img src="../img/goToBeginning.png" alt="go to beginning"></span>
+<span id="previous" class="media-control-button" title="step backward" onclick=stepBackward()><img src="../img/prevFrame.png" alt="previous frame"></span>
+<span id="pause" class="media-control-button" title="pause" onclick=pause()><img src="../img/pause.png" alt="pause"></span>
+<span id="play" class="media-control-button" title="play" onclick=play()><img src="../img/play.png" alt="play"></span>
+<span id="next" class="media-control-button" title="step forward" onclick=stepForward()><img src="../img/nextFrame.png" alt="next frame"></span>
+<span id="go-to-end" class="media-control-button" title="go to end" onclick=goToEnd()><img src="../img/goToEnd.png" alt="go to end"></span>
+<div id="progress-bar" class="media-control-button"></div>
+</div>
+<div id='viz'></div>
+<div id='current-action' class='panel'></div>
+<div id='e-lecture' class='panel'></div>
+<div id="overlay" hidden></div>
+<div id="dropdown-temp-holder" hidden></div>
+<div id="electure-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>Bitmask provide an efficient way to manipulate a small set of Booleans.</p><br><p>By using bitwise operations, Boolean flags can be checked, turned on (or turned off) easily and quickly. It can be used in various algorithms such as the <a href="./tsp"><u>Dynamic Programming solution for Travelling Salesman Problem</u></a> to speed up crucial (small) set-based operations.</p><br><p>Click &#39;Next&#39; (on the top right)/press &#39;Page Down&#39; to advance this e-Lecture slide, use the drop down list/press &#39;Space&#39; to jump to a specific slide, or Click &#39;X&#39; (on the bottom right)/press &#39;Esc&#39; to go to Exploration mode.</p>
+<hr>
+<p><b>Remarks</b>: By default, we show e-Lecture Mode for first time (or non logged-in) visitor.<br>
+Please <a href="login"><u>login</u></a> if you are a repeated visitor or <a href="login"><u>register</u></a> for an (optional) free account first.</p>
+<div id='electure-dropdown'>
+<select class="lecture-dropdown" style="width:100%">
+<option value="1">1. 位掩码</option>
+<option value="2">2. 可视化</option>
+<option value="3">3. Bitmask Operations</option>
+<option value="4">4. 挑战</option>
+<option value="99">99. 状态面板</option>
+<option value="99-1">&nbsp;&nbsp;&nbsp;99-1. 代码追踪面板</option>
+<option value="99-2">&nbsp;&nbsp;&nbsp;99-2. 媒体控制</option>
+<option value="99-3">&nbsp;&nbsp;&nbsp;99-3. 返回 ”探索模式“</option>
+</select>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-next' data-nextid="2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2" class="electure-dialog" style="top:300px;left:50%;margin-left:-250px;width:500px;">
+<p>The visualisation of a bitmask data structure and its operations are shown above.</p><br><p>The top row describes the bits of the input integer <b>S</b>.</p><br><p>The middle row describes the bits of the <b>mask</b> <b>j</b> that will be applied to <b>S</b> together with the associated bitwise operation.</p><br><p>The last row describes the result <b>New S</b>.
+<hr>
+<p>Pro-tip: Since you are not <a href="login"><u>logged-in</u></a>, you may be a first time visitor who are not aware of the following keyboard shortcuts to navigate this e-Lecture mode: <b>[PageDown]</b> to advance to the next slide, <b>[PageUp]</b> to go back to the previous slide, <b>[Esc]</b> to toggle between this e-Lecture mode and exploration mode.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3" class="electure-dialog" style="bottom:250px;left:60px;width:500px;">
+<p>In this visualization, we currently support 6 Bitmask operations (all runs in O(1)):</p><ol><li>Set <b>S</b>, enter a (small) integer not more than 32767 (2<sup>15</sup>-1) and the bitmask of <b>S</b> will be visualized.</li><li>Set Bit, enter the index of the Bit to be set (turned on).<br>Note that index starts from 0 but counted from the rightmost bit.</li><li>Check Bit, enter the index of the Bit to be checked (on whether it is on or off).</li><li>Toggle Bit, enter the index of the Bit to be toggled (on &rarr; off and vice versa).</li><li>Clear Bit, enter the index of the Bit to be cleared (turned off).</li><li>Least Significant Bit (no input), a special operation to quickly identify the rightmost bit that is on in <b>S</b>.</li></ol>
+<hr>
+<p>Another pro-tip: We designed this visualization and this e-Lecture mode to look good on 1366x768 resolution <b>or larger</b> (typical modern laptop resolution in 2017). We recommend using Google Chrome to access VisuAlgo. Go to full screen mode (<b>F11</b>) to enjoy this setup. However, you can use zoom-in (<b>Ctrl +</b>) or zoom-out (<b>Ctrl -</b>) to calibrate this.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>For source code example involving bitmask/bit manipulation, plase see:<br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch2/ourown/bit_manipulation.cpp" target="_blank"><u>bit_manipulation.cpp</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch2/ourown/bit_manipulation.java" target="_blank"><u>bit_manipulation.java</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch2/ourown/bit_manipulation.py" target="_blank"><u>bit_manipulation.py</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch2/ourown/bit_manipulation.ml" target="_blank"><u>bit_manipulation.ml</u></a><br></p><br><p>To test your understanding about bit manipulation, try our <a href="training?diff=Medium&amp;n=7&amp;tl=0&amp;module=bitmask" target="_blank"><u>Online Quiz on bitmask topic</u></a>.</p><br><p>And for more challenging problems involving bitmask/bit manipulation, try the following online judge problems: <a href="http://uva.onlinejudge.org/external/119/11933.pdf" target="_blank"><u>UVa 11933 - Splitting Numbers</u></a> and <a href="https://open.kattis.com/problems/bitbybit" target="_blank"><u>Kattis - bitbybit</u></a>.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99" class="electure-dialog" style="right:150px;bottom:335px;width:500px;">
+当操作进行时，状态面板将会有每个步骤的描述。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-1" class="electure-dialog" style="right:170px;bottom:275px;width:180px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-2" class="electure-dialog" style="bottom:70px;left:50%;margin-left:-120px;width:260px;">
+使用用户控件控制动画！可用的快捷键有：<div>空格键：绘制／停止／重绘</div><div>左／右箭头：上一步／下一步</div><div>-／+：减缓／增加速度</div><div><br></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-3" class="electure-dialog" style="top:70px;right:60px;width:300px;">
+<p>Return to &#39;Exploration Mode&#39; to start exploring!</p><br><p>Note that if you notice any bug in this visualization or if you want to request for a new visualization feature, do not hesitate to drop an email to the project leader: Dr Steven Halim via his email address: stevenhalim at gmail dot com.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-2">上一个 <u>PgUp</u></div>
+</div>
+<div id="popup" hidden>
+<div id="popup-content"></div>
+<span id="hide-popup" hidden>X <u>关闭</u></span>
+</div>
+<div id="actions" class="panel">
+<p id="setFlags">设置 S</p>
+<p id="set">设置位置值</p>
+<p id="check">检验位</p>
+<p id="toggle">切换位</p>
+<p id="clear">清位</p>
+<p id="LSOne" onclick=LSOne()>最低有效位</p>
+</div>
+<div id="actions-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide actions panel"></div>
+<div id="actions-extras">
+<div class="setFlags action-menu-pullout">
+<div id="setFlags-input" class="new-menu-option"><input type="text" id="setS" autocomplete="off" value=75></div>
+<div id="setFlags-go" class="execAction coloured-menu-option" onclick=setFlags()><p>执行</p></div>
+<div id="setFlags-err" class="err"></div>
+</div>
+<div class="set action-menu-pullout">
+<div id="set-input" class="new-menu-option"><input type="text" id="set-j" autocomplete="off" value=3></div>
+<div id="set-go" class="execAction coloured-menu-option" onclick=set()><p>执行</p></div>
+<div id="set-err" class="err"></div>
+</div>
+<div class="check action-menu-pullout">
+<div id="check-input" class="new-menu-option"><input type="text" id="check-j" autocomplete="off" value=3></div>
+<div id="check-go" class="execAction coloured-menu-option" onclick=check()><p>执行</p></div>
+<div id="check-err" class="err"></div>
+</div>
+<div class="toggle action-menu-pullout">
+<div id="toggle-input" class="new-menu-option"><input type="text" id="toggle-j" autocomplete="off" value=3></div>
+<div id="toggle-go" class="execAction coloured-menu-option" onclick=toggle()><p>执行</p></div>
+<div id="toggle-err" class="err"></div>
+</div>
+<div class="clear action-menu-pullout">
+<div id="clear-input" class="new-menu-option"><input type="text" id="clear-j" autocomplete="off" value=3></div>
+<div id="clear-go" class="execAction coloured-menu-option" onclick=clearBit()><p>执行</p></div>
+<div id="clear-err" class="err"></div>
+</div>
+<div class="lsone action-menu-pullout">
+<div id="lsone-err" class="err"></div>
+</div>
+</div>
+<div id="bottom-bar">
+<a id="trigger-about">关于</a>
+</div>
+<div id="about" class="overlays">
+<h4>关于</h4><span class='close-overlay'>&#x2715;</span>
+<div class='content'>
+VisuAlgo在2011年由Steven Halim博士概念化，作为一个工具，帮助他的学生更好地理解数据结构和算法，让他们自己和自己的步伐学习基础。<br>VisuAlgo包含许多高级算法，这些算法在Steven Halim博士的书（“竞争规划”，与他的兄弟Felix Halim博士合作）和其他书中讨论。今天，一些高级算法的可视化/动画只能在VisuAlgo中找到。<br>虽然专门为新加坡国立大学（NUS）学生采取各种数据结构和算法类（例如CS1010，CS1020，CS2010，CS2020，CS3230和CS3230），作为在线学习的倡导者，我们希望世界各地的好奇心发现这些可视化也很有用。<br>VisuAlgo不是从一开始就设计为在小触摸屏（例如智能手机）上工作良好，因为需要满足许多复杂的算法可视化，需要大量的像素和点击并拖动手势进行交互。一个令人尊敬的用户体验的最低屏幕分辨率为1024x768，并且只有着陆页相对适合移动设备。<br>VisuAlgo是一个正在进行的项目，更复杂的可视化仍在开发中。<br>最令人兴奋的发展是自动问题生成器和验证器（在线测验系统），允许学生测试他们的基本数据结构和算法的知识。这些问题是通过一些规则随机生成的，学生的答案会在提交给我们的评分服务器后立即自动分级。这个在线测验系统，当它被更多的世界各地的CS教师采用，应该技术上消除许多大学的典型计算机科学考试手动基本数据结构和算法问题。通过在通过在线测验时设置小（但非零）的重量，CS教练可以（显着地）增加他/她的学生掌握这些基本问题，因为学生具有几乎无限数量的可以立即被验证的训练问题他们参加在线测验。培训模式目前包含12个可视化模块的问题。我们将很快添加剩余的8个可视化模块，以便VisuAlgo中的每个可视化模块都有在线测验组件。<br>另一个积极的发展分支是VisuAlgo的国际化子项目。我们要为VisuAlgo系统中出现的所有英语文本准备一个CS术语的数据库。这是一个很大的任务，需要众包。一旦系统准备就绪，我们将邀请VisuAlgo游客贡献，特别是如果你不是英语母语者。目前，我们还以各种语言写了有关VisuAlgo的公共注释：<br>
+<a href="https://weibo.com/p/230418436e9ee80102v4rk" target='_blank'><u>zh</u></a>, <a href='https://www.facebook.com/notes/steven-halim/httpidvisualgonet-visualisasi-struktur-data-dan-algoritma-dengan-animasi/10153236934439689' target='_blank'><u>id</u></a>, <a href="https://blog.naver.com/visualgo_nus" target='_blank'><u>kr</u></a>, <a href='https://www.facebook.com/groups/163215593699283/permalink/824003417620494/' target='_blank'><u>vn</u></a>, <a href='http://pantip.com/topic/32736343' target='_blank'><u>th</u></a>.</p>
+</div>
+</div>
+
+<script src="../js/jquery-3.3.1.min.js"></script>
+<script>
+      var PHP_DOMAIN = "";
+
+      // surprise colour!
+      // Referenced to in  home.js and viz.js also
+      var colourArray = ["#52bc69", "#d65775"/*"#ed5a7d"*/, "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"]; // green, pink, blue, red, yellow, indigo, orange, lime
+
+      function disableScroll() { $('html').css('overflow', 'hidden'); }
+
+      function enableScroll() { $('html').css('overflow', 'visible'); }
+
+      function replaceAll(find, replace, str) { return str.replace(new RegExp(find, 'g'), replace); }
+
+      function getColours() {
+        var generatedColours = new Array();
+        while (generatedColours.length < 4) {
+          var n = (Math.floor(Math.random() * colourArray.length));
+          if ($.inArray(n, generatedColours) == -1)
+            generatedColours.push(n);
+        }
+        return generatedColours;
+      }
+
+      function isOn(value, position) {
+        return (value>>position) & 1 === 1;
+      }
+
+      function customAlert(msg) {
+        $('#custom-alert p').html(msg);
+        var m = -1 * ($('#custom-alert').outerHeight()/2);
+        $('#custom-alert').css('margin-top', m+'px');
+        $('#dark-overlay').fadeIn(function() {
+          $('#custom-alert').fadeIn(function() {
+            setTimeout(function() {
+              $('#custom-alert').fadeOut(function() {
+                $('#dark-overlay').fadeOut();
+              });
+            }, 1000);
+          });
+        });
+      }
+
+      function showLoadingScreen() {
+        $('#loading-overlay').show();
+        $('#loading-message').show();
+      }
+
+      function hideLoadingScreen() {
+        $('#loading-overlay').hide();
+      }
+
+      function commonAction(retval, msg) {
+        //setTimeout(function() {
+          if (retval) { // mode == "exploration" && // now not only for exploration mode, but check if this opens other problems
+            $('#current-action').show();
+            $('#current-action').html(mode == "exploration" ? msg : ("e-Lecture Example (auto play until done)<br>" + msg));
+            $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+            triggerRightPanels();
+            isPlaying = true;
+          }
+        //}, 500);
+      }
+
+      function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable)
+            return decodeURIComponent(pair[1]);
+        }
+        return "";
+      }
+
+      var generatedColours = getColours();
+      var surpriseColour = colourArray[generatedColours[0]];
+      var colourTheSecond = colourArray[generatedColours[1]];
+      var colourTheThird = colourArray[generatedColours[2]];
+      var colourTheFourth = colourArray[generatedColours[3]];
+
+      $(function() {
+        $('.links').css('background', surpriseColour);
+        $('.right-links').css('background', surpriseColour);
+        $('#login-go').css('background', surpriseColour);
+
+        $('.colour').css("color", surpriseColour); // name
+        $('h4').css("background-color", surpriseColour); // about, contact us etc. button background
+
+        // title
+        $('#title a').click(function() {
+          $('#title a').removeClass('selected-viz');
+          $(this).addClass('selected-viz');
+          // temporary quick fix for Google Chrome Aug 2016 issue...
+          setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 100); // force resize/redraw...
+          setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        });
+
+        // overlays stuffs
+        $('#trigger-about').click(function() {
+          if ($(window).width() > 600) {
+            $('#dark-overlay').fadeIn(function() {
+              $('#about').fadeIn();
+            });
+          }
+          else
+            alert('Sorry, this dialog is too big. Please load it on bigger screen');
+        });
+
+        $('.close-overlay').click(function() {
+          $('.overlays').fadeOut(function() {
+            $('#dark-overlay').fadeOut();
+          });
+        });
+
+        $('#dark-overlay').click(function() {
+          $('.overlays').fadeOut();
+          $('#dark-overlay').fadeOut();
+        });
+      });
+    </script>
+
+<script src="../js/jquery-ui.min.js"></script>
+
+<script src="../js/d3.min.js"></script>
+<script src="../js/viz-1.0.3.js"></script>
+<script src="../js/visualgo_print.js"></script>
+<script src="../js/graph_library.js"></script>
+<script>
+      function runSlide(slide) {
+        if (slide == '1') {
+          $("#e-lecture").html("slide " + slide + " (" + 12 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2') {
+          $("#e-lecture").html("slide " + slide + " (" + 25 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3') {
+          $("#e-lecture").html("slide " + slide + " (" + 37 + "%)");
+          
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4') {
+          $("#e-lecture").html("slide " + slide + " (" + 50 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99') {
+          $("#e-lecture").html("slide " + slide + " (" + 62 + "%)");
+          
+          hideEntireActionsPanel();
+ 
+          showStatusPanel();
+          showCodetracePanel();
+      
+        }
+        if (slide == '99-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 75 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 87 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 100 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+      }
+
+      window.onpopstate = function(event) {
+        var slide = event.state['slide'];
+        openSlide(slide, function() {
+          runSlide(slide);
+        });
+      };
+
+      function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'), sParameterName, i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+          if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+      };
+
+      function pushState(slideValue) {
+        var url = '/zh/bitmask';
+        if (typeof slideValue != 'undefined' && slideValue != null) url += '?slide=' + slideValue;
+        window.history.pushState({slide: slideValue}, "slide " + slideValue, url);
+      }
+
+      function showPopup(callback) {
+        $('#popup').fadeIn(100, callback);
+      }
+
+      function hidePopup(callback) {
+        $('#popup').fadeOut(100, callback);
+      }
+
+      function showOverlay() {
+        $('#overlay').css('opacity', 0.5); 
+        $('#overlay').show();
+      }
+
+      function hideOverlay() {
+        $('#overlay').hide();
+        $("#e-lecture").html("");
+      }
+
+      function makeOverlayTransparent() {
+        $('#overlay').css('opacity', 0);
+      }
+
+      function hideSlide(callback) {
+        isPlaying = true;
+        closeSlide(cur_slide, function() {
+          makeOverlayTransparent();
+          setTimeout(callback, 700); // don't immediately run the animation, wait for 500ms+ first
+        });
+      }
+
+      function showSlide() {
+        isPlaying = false;
+        openSlide(cur_slide);
+        showOverlay();
+      }
+
+      $(function() {
+        var slide = getUrlParameter('slide');
+        
+        $.get('/hasvisited' + '/bitmask', function(data) {
+          var hasVisited = data['hasvisited'] == '1';
+          if (!hasVisited) {
+            var postData = {
+              '_token': 'kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh',
+              'page': '/bitmask'.substring(1),
+            };
+
+            $.post("/visitpage", postData, function(data) {
+              // non critical request...
+            });
+
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+            }
+
+            $("#mode-menu a").trigger("click");
+          }
+          else {
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+              $('#mode-menu a').click();
+            }    
+          }
+        }).fail(function() {
+          if (typeof slide != undefined && slide != null) {
+            cur_slide = slide;
+            $('#mode-menu a').click();
+          }
+        });
+
+        $('.mcq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#mcq-answer-' + questionId).val();
+          var userAnswer = $('input[type=radio][name=mcq-'+questionId+'-choice]:checked').val();
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green"><b>Correct!</b></font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red"><b>Wrong Answer! Try again...</b></font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('.msq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#msq-answer-' + questionId).val();
+
+          var answers = [];
+          $('input[type=checkbox][class=msq-choice]:checked').each(function() {
+            answers.push($(this).attr('id').split('-')[3]);
+          });
+          answers.sort();
+          var userAnswer = answers.join(',');
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green">Correct!</font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red">Wrong Answer! Try again...</font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('select.lecture-dropdown').change(function() {
+          var nextSlide = $(this).val();
+          openSlide(nextSlide, function() {
+            runSlide(nextSlide);
+            pushState(nextSlide);
+          });
+        });
+
+        $('#hide-popup').click(function() {
+          hidePopup();
+        });
+
+        $('#popup').hover(function() {
+          $('#hide-popup').show();
+        }, function() {
+          $('#hide-popup').hide();
+        });
+
+        $('#electure-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+        $('#electure-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('1');
+          pushState('1');
+        });
+      
+        $('#electure-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+        $('#electure-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+        $('#electure-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+      
+        $('#electure-99 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+        $('#electure-99 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+      
+        $('#electure-99-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+        $('#electure-99-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+      
+        $('#electure-99-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-3');
+          pushState('99-3');
+        });
+        $('#electure-99-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+      
+        $('#electure-99-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+      
+ 
+
+        // temporary quick fix for Google Chrome Aug 2016 issue..., put at last part so that everything else has been loaded
+        // setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 500);
+        // setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        // I turn it off on 14 June 2018, seems 'ok'?
+      });
+
+
+      function adjustPopupToImageSize() {
+        var width = $('#popup-image').prop('width');
+        var height = $('#popup-image').prop('height');
+        $('#popup').width(width + 20);
+        $('#popup').height(height + 20);
+        if (width == 0 && height == 0) {
+          setTimeout(adjustPopupToImageSize, 200);
+        } else {
+          showPopup();  
+        }
+      }
+
+      function POPUP_IMAGE(url) {
+        $('#popup-content').html('<img id="popup-image" src="' + url + '">');
+        adjustPopupToImageSize();
+      }
+
+      function URL(url) {
+        window.open(url, '_blank');
+      }
+
+      // Implement these functions in each visualisation
+      // This function will be called before entering e-Lecture Mode
+      function ENTER_LECTURE_MODE() {}
+
+      // This function will be called before returning to Explore Mode
+      function ENTER_EXPLORE_MODE() {}
+
+      // Lecture action functions
+      function CUSTOM_ACTION(action, data, mode) {}
+    </script>
+<script type="text/javascript">
+// Bitmask Widget
+// original author: Rose Marie Tan Zhao Yun
+
+var BitmaskWidget = function() {
+  // bit object
+  var Bit = function(v, h) {
+    this.val = v;
+    this.highlight = h;
+  }
+
+  // CONSTANTS
+  var STATUS = 3;
+  var LINE = 4;
+
+  // attributes (default)
+  var flags = 0;
+  var mask = 0;
+  var op = "";
+  var result = 0;
+
+  var statelist = new Array();
+  var transitionTime = 500;
+  var currentStep = 0;
+  var animInterval;
+  var issPlaying; //so named so as not to mess with the isPlaying in viz.js
+
+  this.init = function(flagsToSet) {
+    if (flagsToSet === undefined)
+      flags = 42;
+    else
+      flags = parseInt(flagsToSet);
+    mask = 0;
+    result = this.calculateResult();
+
+    var basicState = this.createBasicState();
+    drawState(basicState);
+    $('#op-text').html("");
+    $('#result-text').html("");
+  };
+
+  // misc methods
+  this.toBinary = function(v) { // input: integer, output: string
+    if (v >= 0)
+      return v.toString(2);
+    else {
+      v = (v<<1) >>> 1;
+      vStr = v.toString(2);
+      return vStr.substr(-this.getCurrentBinLength());
+    }
+  }
+
+  this.getCurrentBinLength = function() { return this.toBinary(flags).toString().length; }
+
+  this.calculateResult = function() {
+    switch (op) {
+      case "set"   : return flags | mask;
+      case "check" : return flags & mask;
+      case "toggle": return flags ^ mask; //XOR
+      case "clear" : return flags & mask;
+      case "lsone" : return flags & mask;
+    }
+  }
+
+  // creating state objects
+  this.getFlagsState = function() {
+    var flagsStr = this.toBinary(flags); // flagsStr is a string
+    var flagsArr = new Array(); // flagsArr is an array of Bit objects
+    for (var i = 0; i < flagsStr.length; i++) {
+      var newBit = new Bit(flagsStr.charAt(i), false);
+      flagsArr.push(newBit);
+    }
+    return flagsArr;
+  }
+
+  this.getMaskState = function() {
+    var maskStr = this.toBinary(mask); // maskStr is a string
+    var maskArr = new Array(); // maskArr is an array of Bit objects
+    for (var i = 0; i < maskStr.length; i++) {
+      var newBit = new Bit(maskStr.charAt(i), false);
+      maskArr.push(newBit);
+    }
+    var padAmt = this.getCurrentBinLength() - maskStr.length//padAmt is an int
+    for (var i = padAmt; i > 0; i--) {
+      maskArr.unshift(new Bit(0, false));
+    }
+    return maskArr;
+  }
+
+  this.getResultState = function() {
+    var resultStr = this.toBinary(result); // resultStr is a string
+    var resultArr = new Array(); // resultArr is an array of Bit objects
+    for (var i = 0; i < resultStr.length; i++) {
+      var newBit = new Bit(resultStr.charAt(i), false);
+      resultArr.push(newBit);
+    }
+    var padAmt = this.getCurrentBinLength() - resultStr.length//padAmt is an int
+    for (var i = padAmt; i > 0; i--)
+      resultArr.unshift(new Bit(0, false));
+    return resultArr;
+  }
+
+  this.createBasicState = function() {
+    var basicState = new Array();
+    basicState.push(this.getFlagsState()); //index 0
+    basicState.push(this.getMaskState()); //index 1
+    basicState.push(this.getResultState()); //index 2
+    return basicState;
+  }
+
+  // drawing functions
+  drawState = function(stateArr) {
+    $('#viz').html("");
+    var f = stateArr[0];
+    var m = stateArr[1];
+    var r = stateArr[2];
+    var length = f.length;
+    var totalwidth = length*32 + (length-1)*3;
+    var startx = (900-totalwidth) / 2;
+
+    // for flags
+    for (var i = 0; i < length; i++) {
+      var left = (startx + (35*i));
+      var val = (f[i].val == 1 ? "I" : "0");
+      var bgCol = (f[i].highlight ? surpriseColour : "#ddd");
+      var col = (f[i].highlight ? "white" : "black");
+      var padding = (f[i].val == 1 ? "4px 13px" : "4px 11px");
+      $('#viz').append('<span class="bit" style="top: 100px; left:' + left + 'px; background:' + bgCol + '; padding:' + padding + '; color:' + col + ';">' + val + '</span>');
+    }
+
+    // for mask
+    for (var i = 0; i < length; i++) {
+      var left = (startx + (35 * i));
+      var val = (m[i].val == 1 ? "I" : "0");
+      var bgCol = (m[i].highlight ? surpriseColour : "#ddd");
+      var col = (m[i].highlight ? "white" : "black");
+      var padding = (m[i].val == 1 ? "4px 13px" : "4px 11px");
+      $('#viz').append('<span class="bit" style="top: 135px; left:' + left + 'px; background:' + bgCol + '; padding:' + padding + '; color:' + col + ';">' + val + '</span>');
+    }
+
+    // for result
+    for (var i = 0; i < length; i++) {
+      var left = (startx + (35 * i));
+      var val = (r[i].val == 1 ? "I" : "0");
+      var bgCol = (r[i].highlight ? surpriseColour : "#ddd");
+      var col = (r[i].highlight ? "white" : "black");
+      var padding = (r[i].val == 1 ? "4px 13px" : "4px 11px");
+      $('#viz').append('<span class="bit" style="top: 186px; left:' + left + 'px; background:' + bgCol + '; padding:' + padding + '; color:' + col + ';">' + val + '</span>');
+    }
+
+    // for operation
+    var logicalOp = "";
+    var SText = "= S";
+    var jText = "= j";
+    var resultText = '= 创建 S';
+    switch (op) {
+      case "set"   : logicalOp = "OR" ; break;
+      case "check" : logicalOp = "AND"; break;
+      case "toggle": logicalOp = "XOR"; break;
+      case "clear" : logicalOp = "AND"; break;
+      case "lsone" : logicalOp = "AND"; resultText = '= 结果'; break;
+    }
+    $('#viz').append('<span class="viz-text" id="op-text" style="top: 139px; left:' + (startx-90) + 'px;">' + logicalOp + '</span>');
+    $('#viz').append('<span class="viz-text" id="S-text" style="left:' + (startx+totalwidth+20) + 'px;">' + SText + '</span>');
+    $('#viz').append('<span class="viz-text" id="j-text" style="left:' + (startx+totalwidth+20) + 'px;">' + jText + '</span>');
+    $('#viz').append('<span class="viz-text" id="result-text" style="left:' + (startx+totalwidth+20) + 'px;">' + resultText + '</span>');
+    $('#viz').append('<span id="divider" style="top: 175px; left:' + (startx-60) + 'px; width:' + (totalwidth+60) + 'px;"></span>');
+
+    $('#status p').html(stateArr[STATUS]);
+    highlightLine(stateArr[LINE]);
+  }
+
+  // main bitmask functions
+  this.checkSetToggle = function(j, opp) { // j is an int
+    if (j >= this.getCurrentBinLength()) {
+      $('#' + opp + '-err').html('You cannot {opp} a bit that is not within range!'.replace("{opp}", opp));
+      return false;
+    }
+    mask = 1;
+    op = opp;
+    result = this.calculateResult();
+    var basicState = this.createBasicState();
+    basicState[1][basicState[1].length-1].highlight = true;
+    basicState[STATUS] = '将j向左移位{j}位。<br>'.replace("{j}", j);
+    basicState[LINE] = 1;
+    statelist.push(basicState);
+
+    for (var i = 2; i <= j; i++) {
+      mask <<= 1;
+      result = this.calculateResult();
+
+      basicState = this.createBasicState();
+      basicState[1][basicState[1].length-i].highlight = true;
+      basicState[STATUS] = '将j向左移位{j}位。<br>'.replace("{j}", j);
+      basicState[LINE] = 1;
+      statelist.push(basicState);
+    }
+
+    if (j > 0) {
+      mask <<= 1;
+      result = this.calculateResult();
+      basicState = this.createBasicState();
+    }
+
+    basicState[0][basicState[0].length-j-1].highlight = true;
+    basicState[1][basicState[1].length-j-1].highlight = true;
+    basicState[2][basicState[2].length-j-1].highlight = true;
+    var logicalOpp = "OR";
+    if (opp == "check")
+      logicalOpp = "AND";
+    else if (opp == "toggle")
+      logicalOpp = "XOR";
+    basicState[STATUS] = '{flags} {logicalOpp} {mask}的结果为{result}'.replace("{flags}", flags).replace("{logicalOpp}", logicalOpp).replace("{mask}", mask).replace("{result}", result);
+    basicState[LINE] = 2;
+    statelist.push(basicState);
+
+    populateCodetrace(opp);
+    this.play();
+    return true;
+  }
+
+  this.setFlags = function(f) {
+    f = parseInt(f);
+    var intRegex = /^\d+$/;
+    if (!intRegex.test(f)) {
+      $('#setFlags-err').html('请输入一个1到32767的整数。');
+      return false;
+    }
+    else {
+      if (f > 32767) {
+        $('#setFlags-err').html('S 超过了16位有符号整数的最大值 (2^15-1 或 32767)');
+        return false;
+      }
+      else {
+        flags = f;
+        mask = 0;
+        result = 0;
+
+        var basicState = this.createBasicState();
+        drawState(basicState);
+        $('#op-text').html("");
+        $('#result-text').html("");
+
+        return true;
+      }
+    }
+  }
+
+  this.clear = function(j) {
+    if (j >= this.getCurrentBinLength()) {
+      $('#clear-err').html('你不能请出不在范围内的位');
+      return false;
+    }
+
+    // shifting left
+    mask = 1;
+    op = "clear";
+    result = this.calculateResult();
+    var basicState = this.createBasicState();
+    basicState[1][basicState[1].length-1].highlight = true;
+    basicState[STATUS] = '将j向左移位{j}位。<br>'.replace("{j}", j);
+    basicState[LINE] = 1;
+    statelist.push(basicState);
+
+    for (var i = 2; i <= j; i++) {
+      mask <<= 1;
+      result = this.calculateResult();
+
+      basicState = this.createBasicState();
+      basicState[1][basicState[1].length-i].highlight = true;
+      basicState[STATUS] = '将j向左移位{j}位。<br>'.replace("{j}", j);
+      basicState[LINE] = 1;
+      statelist.push(basicState);
+    }
+
+    if (j > 0) {
+      mask <<= 1;
+      result = this.calculateResult();
+      basicState = this.createBasicState();
+      basicState[1][basicState[1].length-j-1].highlight = true;
+      basicState[STATUS] = '将j向左移位{j}位。<br>'.replace("{j}", j);
+      basicState[LINE] = 1;
+      statelist.push(basicState);
+    }
+
+    // invert mask
+    mask = ~mask;
+    result = this.calculateResult();
+    basicState = this.createBasicState();
+    for (var i = 0; i < basicState[1].length; i++)
+      basicState[1][i].highlight = true;
+    basicState[STATUS] = '插入 j 是 {mask}.'.replace("{mask}", mask);
+    basicState[LINE] = 2;
+    statelist.push(basicState);
+
+    // highlight result
+    basicState = this.createBasicState();
+    basicState[0][basicState[0].length-j-1].highlight = true;
+    basicState[1][basicState[1].length-j-1].highlight = true;
+    basicState[2][basicState[2].length-j-1].highlight = true;
+    basicState[STATUS] = '{flags} {logicalOpp} {mask}的结果为{result}'.replace("{flags}", flags).replace("{logicalOpp}", "AND").replace("{mask}", mask).replace("{result}", result);
+    basicState[LINE] = 3;
+    statelist.push(basicState);
+
+    populateCodetrace("clear");
+    this.play();
+    return true;
+  }
+
+  this.LSOne = function() {
+    mask = (~flags) + 1;
+    op = "lsone";
+    result = this.calculateResult();
+    var basicState = this.createBasicState();
+    for (var i = 0; i < basicState[1].length; i++)
+      basicState[1][i].highlight = true;
+    basicState[STATUS] = 'j 是<span style="white-space: normal;">{mask}.</span>'.replace("{mask}", mask);
+    basicState[LINE] = 1;
+    statelist.push(basicState);
+
+    basicState = this.createBasicState();
+    for (var i = basicState[2].length-1; i >= 0; i--) {
+      if (basicState[2][i].val == 0)
+        continue;
+      else { // the 1
+        basicState[2][i].highlight = true;
+        basicState[0][i].highlight = true;
+        basicState[STATUS] = '{flags} {logicalOpp} {mask}的结果为{result}'.replace("{flags}", flags).replace("{logicalOpp}", "AND").replace("{mask}", mask).replace("{result}", result);
+        basicState[LINE] = 2;
+        statelist.push(basicState);
+      }
+    }
+
+    populateCodetrace("lsone");
+    this.play();
+    return true;
+  }
+
+  // animation functions
+  drawCurrentState = function() {
+    $('#progress-bar').slider("value", currentStep);
+    drawState(statelist[currentStep]);
+    if (currentStep == (statelist.length-1)) {
+      pause(); // in html file
+      $('#play img').attr('src', 'img/replay.png').attr('alt', 'replay').attr('title', 'replay');
+    }
+    else
+      $('#play img').attr('src', 'img/play.png').attr('alt', 'play').attr('title', 'play');
+  }
+
+  this.getAnimationDuration = function() { return transitionTime; }
+
+  this.setAnimationDuration = function(x) {
+    transitionTime = x;
+    if (issPlaying) {
+      clearInterval(animInterval);
+      animInterval = setInterval(function() {
+        drawCurrentState();
+        if (currentStep < (statelist.length-1))
+          currentStep++;
+        else
+          clearInterval(animInterval);
+      }, transitionTime);
+    }
+  }
+
+  this.getCurrentIteration = function() { return currentStep; }
+
+  this.getTotalIteration = function() { return statelist.length; }
+
+  this.forceNext = function() {
+    if ((currentStep+1) < (statelist.length))
+      currentStep++;
+    drawCurrentState();
+  }
+
+  this.forcePrevious = function() {
+    if ((currentStep-1) >= 0)
+      currentStep--;
+    drawCurrentState();
+  }
+
+  this.jumpToIteration = function(n) {
+    currentStep = n;
+    drawCurrentState();
+  }
+
+  this.play = function() {
+    issPlaying = true;
+    drawCurrentState();
+    animInterval = setInterval(function() {
+      drawCurrentState();
+      if (currentStep < (statelist.length-1))
+        currentStep++;
+      else
+        clearInterval(animInterval);
+    }, transitionTime);
+  }
+
+  this.pause = function() {
+    issPlaying = false;
+    clearInterval(animInterval);
+  }
+
+  this.replay = function() {
+    issPlaying = true;
+    currentStep = 0;
+    drawCurrentState();
+    animInterval = setInterval(function() {
+      drawCurrentState();
+      if (currentStep < (statelist.length-1))
+        currentStep++;
+      else
+        clearInterval(animInterval);
+    }, transitionTime);
+  }
+
+  this.stop = function() {
+    issPlaying = false;
+    statelist = new Array(); //clear statelist
+    currentStep = 0;
+  }
+
+  // codetrace stuff
+  function populateCodetrace(n) {
+    switch (n) {
+      case "lsone":
+        $('#code1').html("j = NOT(S)+1");
+        $('#code2').html("S AND j");
+        $('#code3').html('// <b><a href="https://cpbook.net/#downloads" target="_blank">ch2_03_bit_manipulation.cpp/java</a></b>');
+        $('#code4').html("");
+        $('#code5').html("");
+        $('#code6').html("");
+        $('#code7').html("");
+        break;
+      case "clear":
+        $('#code1').html('左移 j');
+        $('#code2').html('反转 j');
+        $('#code3').html("S AND j");
+        $('#code4').html('// <b><a href="https://cpbook.net/#downloads" target="_blank">ch2_03_bit_manipulation.cpp/java</a></b>');
+        $('#code5').html("");
+        $('#code6').html("");
+        $('#code7').html("");
+        break;
+      case "set":
+        $('#code1').html('左移 j');
+        $('#code2').html("S OR j");
+        $('#code3').html('// <b><a href="https://cpbook.net/#downloads" target="_blank">ch2_03_bit_manipulation.cpp/java</a></b>');
+        $('#code4').html("");
+        $('#code5').html("");
+        $('#code6').html("");
+        $('#code7').html("");
+        break;
+      case "check":
+        $('#code1').html('左移 j');
+        $('#code2').html("S AND j");
+        $('#code3').html('// <b><a href="https://cpbook.net/#downloads" target="_blank">ch2_03_bit_manipulation.cpp/java</a></b>');
+        $('#code4').html("");
+        $('#code5').html("");
+        $('#code6').html("");
+        $('#code7').html("");
+        break;
+      case "toggle":
+        $('#code1').html('左移 j');
+        $('#code2').html("S XOR j");
+        $('#code3').html('// <b><a href="https://cpbook.net/#downloads" target="_blank">ch2_03_bit_manipulation.cpp/java</a></b>');
+        $('#code4').html("");
+        $('#code5').html("");
+        $('#code6').html("");
+        $('#code7').html("");
+        break;
+    }
+  }
+}
+
+
+
+// Bitmask Actions
+// actions panel stuff
+var actionsWidth = 150;
+var statusCodetraceWidth = 350;
+
+var isSetFlagsOpen = false;
+var isSetOpen = false;
+var isCheckOpen = false;
+var isToggleOpen = false;
+var isClearOpen = false;
+var isLSOneOpen = false;
+
+function openSetFlags() {
+  if (!isSetFlagsOpen){
+    $('.setFlags').fadeIn('fast');
+    isSetFlagsOpen = true;
+  }
+}
+
+function closeSetFlags() {
+  if (isSetFlagsOpen){
+    $('.setFlags').fadeOut('fast');
+    $('#setFlags-err').html("");
+    isSetFlagsOpen = false;
+  }
+}
+
+function openSet() {
+  if (!isSetOpen) {
+    $('.set').fadeIn('fast');
+    isSetOpen = true;
+  }
+}
+
+function closeSet() {
+  if (isSetOpen) {
+    $('.set').fadeOut('fast');
+    $('#set-err').html("");
+    isSetOpen = false;
+  }
+}
+
+function openCheck() {
+  if (!isCheckOpen) {
+    $('.check').fadeIn('fast');
+    isCheckOpen = true;
+  }
+}
+
+function closeCheck() {
+  if (isCheckOpen) {
+    $('.check').fadeOut('fast');
+    $('#check-err').html("");
+    isCheckOpen = false;
+  }
+}
+
+function openToggle() {
+  if (!isToggleOpen) {
+    $('.toggle').fadeIn('fast');
+    isToggleOpen = true;
+  }
+}
+
+function closeToggle() {
+  if (isToggleOpen) {
+    $('.toggle').fadeOut('fast');
+    $('#toggle-err').html("");
+    isToggleOpen = false;
+  }
+}
+
+function openClear() {
+  if (!isClearOpen) {
+    $('.clear').fadeIn('fast');
+    isClearOpen = true;
+  }
+}
+
+function closeClear() {
+  if (isClearOpen) {
+    $('.clear').fadeOut('fast');
+    $('#clear-err').html("");
+    isClearOpen = false;
+  }
+}
+
+function openLSOne() {
+  if (!isLSOneOpen) {
+    $('.lsone').fadeIn('fast');
+    isLSOneOpen = true;
+  }
+}
+
+function closeLSOne() {
+  if (isLSOneOpen) {
+    $('.lsone').fadeOut('fast');
+    $('#lsone-err').html("");
+    isLSOneOpen = false;
+  }
+}
+
+function hideEntireActionsPanel() {
+  closeSetFlags();
+  closeSet();
+  closeCheck();
+  closeToggle();
+  closeClear();
+  closeLSOne();
+  hideActionsPanel();
+}
+
+
+
+// local
+var gw;
+
+$(function() {
+  $('#play').hide();
+  gw = new BitmaskWidget();
+  gw.init();
+  var flags = getQueryVariable("s");
+  if (flags.length > 0)
+    gw.init(flags);
+  var mode = getQueryVariable("mode");
+  var bit = getQueryVariable("bit");
+
+  switch (mode) {
+    case "OR":
+      $('#set').click();
+      $('#set-j').val(bit);
+      break;
+    case "AND":
+      $('#check').click();
+      $('#check-j').val(bit);
+      break;
+    case "XOR":
+      $('#toggle').click();
+      $('#toggle-j').val(bit);
+      break;
+  }
+
+  $('#setFlags').click(function() {
+    closeSet();
+    closeCheck();
+    closeToggle();
+    closeClear();
+    closeLSOne();
+    openSetFlags();
+  });
+
+  $('#set').click(function() {
+    closeSetFlags();
+    closeCheck();
+    closeToggle();
+    closeClear();
+    closeLSOne();
+    openSet();
+  });
+
+  $('#check').click(function() {
+    closeSetFlags();
+    closeSet();
+    closeToggle();
+    closeClear();
+    closeLSOne();
+    openCheck();
+  });
+
+  $('#toggle').click(function() {
+    closeSetFlags();
+    closeSet();
+    closeCheck();
+    closeClear();
+    closeLSOne();
+    openToggle();
+  });
+
+  $('#clear').click(function() {
+    closeSetFlags();
+    closeSet();
+    closeCheck();
+    closeToggle();
+    closeLSOne();
+    openClear();
+  });
+
+  $('#lsone').click(function() {
+    closeSetFlags();
+    closeSet();
+    closeCheck();
+    closeToggle();
+    closeClear();
+    openLSOne();
+  });
+});
+
+function setFlags() {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if ((mode == "exploration") && gw.setFlags($('#setS').val())) {
+      $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+      closeSetFlags();
+      isPlaying = true;
+    }
+  }, 500);
+}
+
+function set() {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if ((mode == "exploration") && gw.checkSetToggle($('#set-j').val(), "set")) {
+      $('#current-action').show();
+      $('#current-action p').html('设置字节<span style="white-space: normal;">{j}</span>'.replace("{j}", $('#set-j').val()));
+      $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+      closeSet();
+      triggerRightPanels();
+      isPlaying = true;
+    }
+  }, 500);
+}
+
+function check() {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if ((mode == "exploration") && gw.checkSetToggle($('#check-j').val(), "check")) {
+      $('#current-action').show();
+      $('#current-action p').html('选择字节<span style="white-space: normal;">{j}</span>'.replace("{j}", $('#check-j').val()));
+      $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+      closeCheck();
+      triggerRightPanels();
+      isPlaying = true;
+    }
+  }, 500);
+}
+
+function toggle() {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if ((mode == "exploration") && gw.checkSetToggle($('#toggle-j').val(), "toggle")) {
+      $('#current-action').show();
+      $('#current-action p').html('切换字节<span style="white-space: normal;">{j}</span>'.replace("{j}", $('#toggle-j').val()));
+      $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+      closeToggle();
+      triggerRightPanels();
+      isPlaying = true;
+    }
+  }, 500);
+}
+
+function clearBit() {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if ((mode == "exploration") && gw.clear($('#clear-j').val())) {
+      $('#current-action').show();
+      $('#current-action p').html('清除字节<span style="white-space: normal;">{j}</span>'.replace("{j}", $('#clear-j').val()));
+      $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+      closeClear();
+      triggerRightPanels();
+      isPlaying = true;
+    }
+  }, 500);
+}
+
+function LSOne() {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if ((mode == "exploration") && gw.LSOne()) {
+      $('#current-action').show();
+      $('#current-action p').html('查找最低有效位');
+      $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+      $('#lsone-err').html("");
+      closeSetFlags();
+      closeSet();
+      closeCheck();
+      closeToggle();
+      closeClear();
+      triggerRightPanels();
+      isPlaying = true;
+    }
+  }, 500);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="Assume that you have a function f: S &amp;rightarrow; S and any initial value x0 &amp;in; S(in this visualization, we are restricted to f(x) = (A*x^2 + B*x + C) % M and x0 % M hence the function f has domain and range &amp;in; [0..M-1]).The sequence of iterated function values:{x0, x1 = f(x0), x2 = f(x1), ..., xi = f(xi-1), ...}must eventually use the same value twice (cycle), i.e. a &ne; b such that xa = xb.Afterwards, the sequence must continue by repeating the cycle of values from xa to xb-1.Let mu (μ) be the smallest index and let lambda (λ) (the cycle length) be the smallest positive integer such that xμ = xμ+λ.The cycle-finding problem: Find such μ and λ, given f and x0.">
+<meta name="keywords" content="循环寻找Floyd Tortoise Hare Brent Pollard rho&lt;br&gt;">
+ 
+<meta name="csrf-token" content="kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<meta property="og:image" content="../img/png/cyclefinding.png">
+<title>VisuAlgo - 循环查找 (Floyd&#39;s/Tortoise-Hare Algorithm)</title>
+<link rel="icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="114x114" href="../img/favicon.png">
+<link rel="stylesheet" type="text/css" href="../fonts/silkscreen/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="../css/common.css">
+<link rel="stylesheet" href="../css/viz-1.0.1.css">
+<link rel="stylesheet" href="../css/visual.css">
+<link rel="stylesheet" href="../css/drawgraph.css">
+<style>
+      #e-lecture {
+        top: 45px;
+        right: 130px;
+        width: 400px;
+        display: block;
+        background: none;
+        /*overflow: normal;*/
+        white-space: normal;
+        text-align: right;
+        color: black; font-weight: bold; font-size: 20px;
+      }
+      .electure-prev, .electure-next { /* force update, copied from viz.css */
+        position: absolute;
+        /* bottom: -12px; */
+        top: -20px;
+        /*bottom: '';*/
+        padding: 3px 8px;
+        background: #999;
+        color: white;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .electure-prev {
+        left: -10px;
+        /* right: 30px; */
+      }
+      .electure-next {
+        right: -10px;
+        color: white;
+      }
+    </style>
+<style>
+#createuserdefined-input input {
+  width: 15px;
+  padding: 8px 8px 7px; 
+  margin-right: 12px;
+  float:left;
+}
+
+#createuserdefined-go p { 
+  padding: 8px 8px 7px; 
+  float:right;
+}
+
+.function {
+  font-style: italic;
+  font-size: 25px;
+  margin-left: 100px;
+  margin-top: 200px;
+}
+
+.create { bottom: 60px; }
+  #create-random { padding: 11px 8px 8px; bottom: 60px; } 
+  #create-input input {
+    width: 25px;
+    padding: 10px 8px 5px;
+  }
+  #create-input-arr input {
+    width: 100px;
+    padding: 10px 8px 5px;
+  }
+  #create-custom { bottom: 96px; padding: 11px 8px 8px; /* 7px 30px 8px; */ }
+</style>
+<script>
+      function changeURL() {
+        var URL = window.location.href.split('/');
+        var val = document.getElementById("Language").value;
+        URL[3] = val;
+        window.location.assign(URL.join('/'));
+      }
+    </script>
+</head>
+<body>
+<div id="top-bar">
+<a id="home" href="/">Visu<span class="colour">Algo</span><span style="font-size: 40%">.net</span></a>
+/
+<select id="Language" onchange="changeURL()">
+<option value="zh" selected>zh</option>
+</select>
+/cyclefinding
+<span id="title">
+<a id='title-cyclefinding' class='selected-viz'>弗洛伊德的乌龟 - 兔子循环寻找<br></a>
+</span>
+<div id="mode-menu">
+<div id='mode-button' title='exploration'>示例模式 &#9663;</div>
+<div id='other-modes'>
+<a title='e-Lecture'>电子讲座模式</a>
+</div>
+</div>
+</div>
+<div id="dark-overlay"></div>
+<div id="status" class="panel"><p></p></div>
+<div id="status-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide status panel" /></div>
+<div id="codetrace" class="panel">
+<p id="code1" style="padding-top: 10px;"></p>
+<p id="code2"></p>
+<p id="code3"></p>
+<p id="code4"></p>
+<p id="code5"></p>
+<p id="code6"></p>
+<p id="code7" style="padding-bottom: 10px;"></p>
+</div>
+<div id="codetrace-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide codetrace panel" /></div>
+<div id="left-bar"></div>
+<div id="right-bar"></div>
+<div id="media-controls">
+<div id='speed-control'>减速<div id='speed-input'></div>加速</div>
+<span id="go-to-beginning" class="media-control-button" title="go to beginning" onclick=goToBeginning()><img src="../img/goToBeginning.png" alt="go to beginning"></span>
+<span id="previous" class="media-control-button" title="step backward" onclick=stepBackward()><img src="../img/prevFrame.png" alt="previous frame"></span>
+<span id="pause" class="media-control-button" title="pause" onclick=pause()><img src="../img/pause.png" alt="pause"></span>
+<span id="play" class="media-control-button" title="play" onclick=play()><img src="../img/play.png" alt="play"></span>
+<span id="next" class="media-control-button" title="step forward" onclick=stepForward()><img src="../img/nextFrame.png" alt="next frame"></span>
+<span id="go-to-end" class="media-control-button" title="go to end" onclick=goToEnd()><img src="../img/goToEnd.png" alt="go to end"></span>
+<div id="progress-bar" class="media-control-button"></div>
+</div>
+<div id='viz'></div>
+<div id='current-action' class='panel'></div>
+<div id='e-lecture' class='panel'></div>
+<div id="overlay" hidden></div>
+<div id="dropdown-temp-holder" hidden></div>
+<div id="electure-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>Assume that you have a function <b>f: S &rightarrow; S</b> and any initial value <b>x<sub>0</sub> &in; S</b><br>(in this visualization, we are restricted to <b>f(x) = (A*x^2 + B*x + C) % M</b> and <b>x<sub>0</sub> % M</b> hence the function <b>f</b> has domain and range &in; [0..<b>M</b>-1]).</p><br><p>The sequence of iterated function values:<br><b>{x<sub>0</sub>, x<sub>1</sub> = f(x<sub>0</sub>), x<sub>2</sub> = f(x<sub>1</sub>), ..., x<sub>i</sub> = f(x<sub>i-1</sub>), ...}</b><br>must eventually use the same value twice (cycle), i.e. <b>a &ne; b</b> such that <b>x<sub>a</sub> = x<sub>b</sub></b>.<br>Afterwards, the sequence must continue by repeating the cycle of values from <b>x<sub>a</sub></b> to <b>x<sub>b-1</sub></b>.</p><br><p>Let <b>mu (μ)</b> be the smallest index and let <b>lambda (λ)</b> (the cycle length) be the smallest positive integer such that <b>x<sub>μ</sub> = x<sub>μ+λ</sub></b>.</p><br><p>The cycle-finding problem: Find such <b>μ</b> and <b>λ</b>, given <b>f</b> and <b>x<sub>0</sub></b>.</p>
+<hr>
+<p><b>Remarks</b>: By default, we show e-Lecture Mode for first time (or non logged-in) visitor.<br>
+Please <a href="login"><u>login</u></a> if you are a repeated visitor or <a href="login"><u>register</u></a> for an (optional) free account first.</p>
+<div id='electure-dropdown'>
+<select class="lecture-dropdown" style="width:100%">
+<option value="1">1. Cycle Finding Problem</option>
+<option value="2">2. Custom Input</option>
+<option value="3">3. Floyd&#39;s Tortoise-Hare Algorithm</option>
+<option value="3-1">&nbsp;&nbsp;&nbsp;3-1. The Visualization</option>
+<option value="3-2">&nbsp;&nbsp;&nbsp;3-2. Finding kλ (a multiple of λ)</option>
+<option value="3-3">&nbsp;&nbsp;&nbsp;3-3. Finding μ (the start of the cycle)</option>
+<option value="3-4">&nbsp;&nbsp;&nbsp;3-4. Finding λ (the length of the cycle)</option>
+<option value="4">4. Try the Animation!</option>
+<option value="5">5. Implementation</option>
+<option value="99">99. 状态面板</option>
+<option value="99-1">&nbsp;&nbsp;&nbsp;99-1. 代码追踪面板</option>
+<option value="99-2">&nbsp;&nbsp;&nbsp;99-2. 媒体控制</option>
+<option value="99-3">&nbsp;&nbsp;&nbsp;99-3. 返回 ”探索模式“</option>
+</select>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-next' data-nextid="2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2" class="electure-dialog" style="bottom:110px;left:60px;width:610px;">
+<p>You can define custom function <b>f(x) = (A*x<sup>2</sup> + B*x + C) % M</b> here.</p><ol><li>Random: The function will be <b>f(x) = (x<sup>2</sup> - 1) % M</b> and only <b>M</b> and the <b>x<sub>0</sub></b> are randomly generated.</li><li>Custom: You can specify the coefficients <b>A</b>, <b>B</b>, <b>C</b> of <b>f(x)</b> (ranging from -999 to 999), the modulo value <b>M</b> (ranging from 10 to 1000) and the initial value <b>x<sub>0</sub></b> (ranging from 0 to <b>M-1</b>).</li></ol><p>You can also set custom <b>x<sub>0</sub></b>, which must be &in; [0..<b>M</b>-1].</p>
+<hr>
+<p>Pro-tip: Since you are not <a href="login"><u>logged-in</u></a>, you may be a first time visitor who are not aware of the following keyboard shortcuts to navigate this e-Lecture mode: <b>[PageDown]</b> to advance to the next slide, <b>[PageUp]</b> to go back to the previous slide, <b>[Esc]</b> to toggle between this e-Lecture mode and exploration mode.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3" class="electure-dialog" style="bottom:170px;left:50%;margin-left:-250px;width:500px;">
+<p>Floyd&#39;s Tortoise-Hare Cycle-Finding is one algorithm that can solve this problem efficiently in both time and space complexities.</p><br><p>It just requires O(<b>μ+λ</b>) time and O(<b>1</b>) space to do the job.</p>
+<hr>
+<p>Another pro-tip: We designed this visualization and this e-Lecture mode to look good on 1366x768 resolution <b>or larger</b> (typical modern laptop resolution in 2017). We recommend using Google Chrome to access VisuAlgo. Go to full screen mode (<b>F11</b>) to enjoy this setup. However, you can use zoom-in (<b>Ctrl +</b>) or zoom-out (<b>Ctrl -</b>) to calibrate this.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-1" class="electure-dialog" style="bottom:170px;left:50%;margin-left:-250px;width:500px;">
+<p>This is <span style="color: red;">the visualization</span> of Floyd&#39;s Tortoise-Hare Cycle-Finding algorithm.</p><br><p>The shape of <b>rho (ρ)</b> of the sequence of iterated function values defined by <b>f(x)</b> and <b>x<sub>0</sub></b> nicely visualizes <b>μ</b> and <b>λ</b>.</p><br><p>VisuAlgo uses <span style="color: green;">green vertices to represent the tortoise (t)</span> and <span style="color: orange;">orange vertices to represent the hare (h)</span>.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-2" class="electure-dialog" style="bottom:170px;left:50%;margin-left:-250px;width:500px;">
+<p>We start from <b>x<sub>0</sub></b>.</p><br><p>While <b>tortoise&#39;s pointer</b> != <b>hare&#39;s pointer</b>, we advance <b>tortoise/hare</b> by one step/two steps to their next values by calling <b>f(tortoise)/f(f(hare))</b>.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-3" class="electure-dialog" style="bottom:170px;left:50%;margin-left:-250px;width:500px;">
+<p>We reset hare back to <b>x<sub>0</sub></b> and keep tortoise at its current position.</p><br><p>Then, we iteratively advance both pointers to their next values by one step as this maintains the gap of tortoise and hare by <b>kλ</b>.</p><br><p>The first time both pointers are equal tells us the value of <b>μ</b>.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3-4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3-4" class="electure-dialog" style="bottom:170px;left:50%;margin-left:-250px;width:500px;">
+<p>Again, we let tortoise stays in its current position and set hare next to it.</p><br><p>Then, we iteratively move hare to the next value by one step.</p><br><p>The first time both pointers are equal tells us the value of <b>λ</b>.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4" class="electure-dialog" style="bottom:170px;left:50%;margin-left:-250px;width:500px;">
+<p>The animation of this algorithm should clear up most questions involving this algorithm.</p><br><p>We will expand this e-Lecture slides to contain more information about this algorithm later.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3-4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>You are allowed to use/modify our implementation code for Floyd Cycle-Finding Algorithm:<br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch5/UVa00350.cpp" target="_blank"><u>UVa00350.cpp</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch5/UVa00350.java" target="_blank"><u>UVa00350.java</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch5/UVa00350.py" target="_blank"><u>UVa00350.py</u></a><br><a href="https://github.com/stevenhalim/cpbook-code/blob/master/ch5/UVa00350.ml" target="_blank"><u>UVa00350.ml</u></a><br></p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99" class="electure-dialog" style="right:150px;bottom:335px;width:500px;">
+当操作进行时，状态面板将会有每个步骤的描述。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-1" class="electure-dialog" style="right:170px;bottom:275px;width:180px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-2" class="electure-dialog" style="bottom:70px;left:50%;margin-left:-120px;width:260px;">
+使用用户控件控制动画！可用的快捷键有：<div>空格键：绘制／停止／重绘</div><div>左／右箭头：上一步／下一步</div><div>-／+：减缓／增加速度</div><div><br></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-3" class="electure-dialog" style="top:70px;right:60px;width:300px;">
+<p>Return to &#39;Exploration Mode&#39; to start exploring!</p><br><p>Note that if you notice any bug in this visualization or if you want to request for a new visualization feature, do not hesitate to drop an email to the project leader: Dr Steven Halim via his email address: stevenhalim at gmail dot com.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-2">上一个 <u>PgUp</u></div>
+</div>
+<div id="popup" hidden>
+<div id="popup-content"></div>
+<span id="hide-popup" hidden>X <u>关闭</u></span>
+</div>
+<div id="actions" class="panel">
+<p id="create">创建</p>
+</div>
+<div id="actions-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide actions panel" /></div>
+<div id="actions-extras">
+<div class="create action-menu-pullout">
+<div id="create-random" class="execAction new-menu-option coloured-menu-option" onClick=random()><p>随机</p></div>
+<div id="create-custom" class="execAction new-menu-option coloured-menu-option">
+Custom, f(x) = (<input type="text" size="3" id="v-create-arr-square" title="Enter the coefficient of x^2" autocomplete="off" placeholder="A" value="3">*x<sup>2</sup> +
+<input type="text" size="3" id="v-create-arr-x" title="Enter the coefficient of x" autocomplete="off" placeholder="B" value="7">*x +
+<input type="text" size="3" id="v-create-arr-constant" title="Enter the constant" autocomplete="off" placeholder="C" value="5">) %
+<input type="text" size="3" id="v-create-arr-modulo" title="Enter the modulo" autocomplete="off" placeholder="M" value="97">, x<sub>0</sub> =
+<input type="text" size="3" id="v-create-arr-x0" title="Enter the starting value" autocomplete="off" placeholder="x0" value="62">
+<span id="createuserdefined-go" class="execAction coloured-menu-option" onClick=userDefined()>执行</span>
+</div>
+<div id="create-err" class="err"></div>
+</div>
+</div>
+<div id="bottom-bar">
+<a id="trigger-about">关于</a>
+</div>
+<div id="about" class="overlays">
+<h4>关于</h4><span class='close-overlay'>&#x2715;</span>
+<div class='content'>
+VisuAlgo在2011年由Steven Halim博士概念化，作为一个工具，帮助他的学生更好地理解数据结构和算法，让他们自己和自己的步伐学习基础。<br>VisuAlgo包含许多高级算法，这些算法在Steven Halim博士的书（“竞争规划”，与他的兄弟Felix Halim博士合作）和其他书中讨论。今天，一些高级算法的可视化/动画只能在VisuAlgo中找到。<br>虽然专门为新加坡国立大学（NUS）学生采取各种数据结构和算法类（例如CS1010，CS1020，CS2010，CS2020，CS3230和CS3230），作为在线学习的倡导者，我们希望世界各地的好奇心发现这些可视化也很有用。<br>VisuAlgo不是从一开始就设计为在小触摸屏（例如智能手机）上工作良好，因为需要满足许多复杂的算法可视化，需要大量的像素和点击并拖动手势进行交互。一个令人尊敬的用户体验的最低屏幕分辨率为1024x768，并且只有着陆页相对适合移动设备。<br>VisuAlgo是一个正在进行的项目，更复杂的可视化仍在开发中。<br>最令人兴奋的发展是自动问题生成器和验证器（在线测验系统），允许学生测试他们的基本数据结构和算法的知识。这些问题是通过一些规则随机生成的，学生的答案会在提交给我们的评分服务器后立即自动分级。这个在线测验系统，当它被更多的世界各地的CS教师采用，应该技术上消除许多大学的典型计算机科学考试手动基本数据结构和算法问题。通过在通过在线测验时设置小（但非零）的重量，CS教练可以（显着地）增加他/她的学生掌握这些基本问题，因为学生具有几乎无限数量的可以立即被验证的训练问题他们参加在线测验。培训模式目前包含12个可视化模块的问题。我们将很快添加剩余的8个可视化模块，以便VisuAlgo中的每个可视化模块都有在线测验组件。<br>另一个积极的发展分支是VisuAlgo的国际化子项目。我们要为VisuAlgo系统中出现的所有英语文本准备一个CS术语的数据库。这是一个很大的任务，需要众包。一旦系统准备就绪，我们将邀请VisuAlgo游客贡献，特别是如果你不是英语母语者。目前，我们还以各种语言写了有关VisuAlgo的公共注释：<br>
+<a href="https://weibo.com/p/230418436e9ee80102v4rk" target='_blank'><u>zh</u></a>, <a href='https://www.facebook.com/notes/steven-halim/httpidvisualgonet-visualisasi-struktur-data-dan-algoritma-dengan-animasi/10153236934439689' target='_blank'><u>id</u></a>, <a href="https://blog.naver.com/visualgo_nus" target='_blank'><u>kr</u></a>, <a href='https://www.facebook.com/groups/163215593699283/permalink/824003417620494/' target='_blank'><u>vn</u></a>, <a href='http://pantip.com/topic/32736343' target='_blank'><u>th</u></a>.</p>
+</div>
+</div>
+
+<script src="../js/jquery-3.3.1.min.js"></script>
+<script>
+      var PHP_DOMAIN = "";
+
+      // surprise colour!
+      // Referenced to in  home.js and viz.js also
+      var colourArray = ["#52bc69", "#d65775"/*"#ed5a7d"*/, "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"]; // green, pink, blue, red, yellow, indigo, orange, lime
+
+      function disableScroll() { $('html').css('overflow', 'hidden'); }
+
+      function enableScroll() { $('html').css('overflow', 'visible'); }
+
+      function replaceAll(find, replace, str) { return str.replace(new RegExp(find, 'g'), replace); }
+
+      function getColours() {
+        var generatedColours = new Array();
+        while (generatedColours.length < 4) {
+          var n = (Math.floor(Math.random() * colourArray.length));
+          if ($.inArray(n, generatedColours) == -1)
+            generatedColours.push(n);
+        }
+        return generatedColours;
+      }
+
+      function isOn(value, position) {
+        return (value>>position) & 1 === 1;
+      }
+
+      function customAlert(msg) {
+        $('#custom-alert p').html(msg);
+        var m = -1 * ($('#custom-alert').outerHeight()/2);
+        $('#custom-alert').css('margin-top', m+'px');
+        $('#dark-overlay').fadeIn(function() {
+          $('#custom-alert').fadeIn(function() {
+            setTimeout(function() {
+              $('#custom-alert').fadeOut(function() {
+                $('#dark-overlay').fadeOut();
+              });
+            }, 1000);
+          });
+        });
+      }
+
+      function showLoadingScreen() {
+        $('#loading-overlay').show();
+        $('#loading-message').show();
+      }
+
+      function hideLoadingScreen() {
+        $('#loading-overlay').hide();
+      }
+
+      function commonAction(retval, msg) {
+        //setTimeout(function() {
+          if (retval) { // mode == "exploration" && // now not only for exploration mode, but check if this opens other problems
+            $('#current-action').show();
+            $('#current-action').html(mode == "exploration" ? msg : ("e-Lecture Example (auto play until done)<br>" + msg));
+            $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+            triggerRightPanels();
+            isPlaying = true;
+          }
+        //}, 500);
+      }
+
+      function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable)
+            return decodeURIComponent(pair[1]);
+        }
+        return "";
+      }
+
+      var generatedColours = getColours();
+      var surpriseColour = colourArray[generatedColours[0]];
+      var colourTheSecond = colourArray[generatedColours[1]];
+      var colourTheThird = colourArray[generatedColours[2]];
+      var colourTheFourth = colourArray[generatedColours[3]];
+
+      $(function() {
+        $('.links').css('background', surpriseColour);
+        $('.right-links').css('background', surpriseColour);
+        $('#login-go').css('background', surpriseColour);
+
+        $('.colour').css("color", surpriseColour); // name
+        $('h4').css("background-color", surpriseColour); // about, contact us etc. button background
+
+        // title
+        $('#title a').click(function() {
+          $('#title a').removeClass('selected-viz');
+          $(this).addClass('selected-viz');
+          // temporary quick fix for Google Chrome Aug 2016 issue...
+          setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 100); // force resize/redraw...
+          setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        });
+
+        // overlays stuffs
+        $('#trigger-about').click(function() {
+          if ($(window).width() > 600) {
+            $('#dark-overlay').fadeIn(function() {
+              $('#about').fadeIn();
+            });
+          }
+          else
+            alert('Sorry, this dialog is too big. Please load it on bigger screen');
+        });
+
+        $('.close-overlay').click(function() {
+          $('.overlays').fadeOut(function() {
+            $('#dark-overlay').fadeOut();
+          });
+        });
+
+        $('#dark-overlay').click(function() {
+          $('.overlays').fadeOut();
+          $('#dark-overlay').fadeOut();
+        });
+      });
+    </script>
+
+<script src="../js/jquery-ui.min.js"></script>
+<script src="../js/d3.min.js"></script>
+<script src="../js/viz-1.0.3.js"></script>
+<script src="../js/visualgo_print.js"></script>
+<script src="../js/graph_library.js"></script>
+<script>
+      function runSlide(slide) {
+        if (slide == '1') {
+          $("#e-lecture").html("slide " + slide + " (" + 7 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2') {
+          $("#e-lecture").html("slide " + slide + " (" + 15 + "%)");
+          
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3') {
+          $("#e-lecture").html("slide " + slide + " (" + 23 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 30 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 38 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 46 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3-4') {
+          $("#e-lecture").html("slide " + slide + " (" + 53 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4') {
+          $("#e-lecture").html("slide " + slide + " (" + 61 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5') {
+          $("#e-lecture").html("slide " + slide + " (" + 69 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99') {
+          $("#e-lecture").html("slide " + slide + " (" + 76 + "%)");
+          
+          hideEntireActionsPanel();
+ 
+          showStatusPanel();
+          showCodetracePanel();
+      
+        }
+        if (slide == '99-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 84 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 92 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 100 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+      }
+
+      window.onpopstate = function(event) {
+        var slide = event.state['slide'];
+        openSlide(slide, function() {
+          runSlide(slide);
+        });
+      };
+
+      function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'), sParameterName, i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+          if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+      };
+
+      function pushState(slideValue) {
+        var url = '/zh/cyclefinding';
+        if (typeof slideValue != 'undefined' && slideValue != null) url += '?slide=' + slideValue;
+        window.history.pushState({slide: slideValue}, "slide " + slideValue, url);
+      }
+
+      function showPopup(callback) {
+        $('#popup').fadeIn(100, callback);
+      }
+
+      function hidePopup(callback) {
+        $('#popup').fadeOut(100, callback);
+      }
+
+      function showOverlay() {
+        $('#overlay').css('opacity', 0.5); 
+        $('#overlay').show();
+      }
+
+      function hideOverlay() {
+        $('#overlay').hide();
+        $("#e-lecture").html("");
+      }
+
+      function makeOverlayTransparent() {
+        $('#overlay').css('opacity', 0);
+      }
+
+      function hideSlide(callback) {
+        isPlaying = true;
+        closeSlide(cur_slide, function() {
+          makeOverlayTransparent();
+          setTimeout(callback, 700); // don't immediately run the animation, wait for 500ms+ first
+        });
+      }
+
+      function showSlide() {
+        isPlaying = false;
+        openSlide(cur_slide);
+        showOverlay();
+      }
+
+      $(function() {
+        var slide = getUrlParameter('slide');
+        
+        $.get('/hasvisited' + '/cyclefinding', function(data) {
+          var hasVisited = data['hasvisited'] == '1';
+          if (!hasVisited) {
+            var postData = {
+              '_token': 'kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh',
+              'page': '/cyclefinding'.substring(1),
+            };
+
+            $.post("/visitpage", postData, function(data) {
+              // non critical request...
+            });
+
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+            }
+
+            $("#mode-menu a").trigger("click");
+          }
+          else {
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+              $('#mode-menu a').click();
+            }    
+          }
+        }).fail(function() {
+          if (typeof slide != undefined && slide != null) {
+            cur_slide = slide;
+            $('#mode-menu a').click();
+          }
+        });
+
+        $('.mcq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#mcq-answer-' + questionId).val();
+          var userAnswer = $('input[type=radio][name=mcq-'+questionId+'-choice]:checked').val();
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green"><b>Correct!</b></font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red"><b>Wrong Answer! Try again...</b></font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('.msq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#msq-answer-' + questionId).val();
+
+          var answers = [];
+          $('input[type=checkbox][class=msq-choice]:checked').each(function() {
+            answers.push($(this).attr('id').split('-')[3]);
+          });
+          answers.sort();
+          var userAnswer = answers.join(',');
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green">Correct!</font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red">Wrong Answer! Try again...</font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('select.lecture-dropdown').change(function() {
+          var nextSlide = $(this).val();
+          openSlide(nextSlide, function() {
+            runSlide(nextSlide);
+            pushState(nextSlide);
+          });
+        });
+
+        $('#hide-popup').click(function() {
+          hidePopup();
+        });
+
+        $('#popup').hover(function() {
+          $('#hide-popup').show();
+        }, function() {
+          $('#hide-popup').hide();
+        });
+
+        $('#electure-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+        $('#electure-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('1');
+          pushState('1');
+        });
+      
+        $('#electure-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-1');
+          pushState('3-1');
+        });
+        $('#electure-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-3-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-2');
+          pushState('3-2');
+        });
+        $('#electure-3-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+      
+        $('#electure-3-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-3');
+          pushState('3-3');
+        });
+        $('#electure-3-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-1');
+          pushState('3-1');
+        });
+      
+        $('#electure-3-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3-4');
+          pushState('3-4');
+        });
+        $('#electure-3-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-2');
+          pushState('3-2');
+        });
+      
+        $('#electure-3-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+        $('#electure-3-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-3');
+          pushState('3-3');
+        });
+      
+        $('#electure-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+        $('#electure-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3-4');
+          pushState('3-4');
+        });
+      
+        $('#electure-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+        $('#electure-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+      
+        $('#electure-99 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+        $('#electure-99 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+      
+        $('#electure-99-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+        $('#electure-99-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+      
+        $('#electure-99-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-3');
+          pushState('99-3');
+        });
+        $('#electure-99-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+      
+        $('#electure-99-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+      
+ 
+
+        // temporary quick fix for Google Chrome Aug 2016 issue..., put at last part so that everything else has been loaded
+        // setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 500);
+        // setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        // I turn it off on 14 June 2018, seems 'ok'?
+      });
+
+
+      function adjustPopupToImageSize() {
+        var width = $('#popup-image').prop('width');
+        var height = $('#popup-image').prop('height');
+        $('#popup').width(width + 20);
+        $('#popup').height(height + 20);
+        if (width == 0 && height == 0) {
+          setTimeout(adjustPopupToImageSize, 200);
+        } else {
+          showPopup();  
+        }
+      }
+
+      function POPUP_IMAGE(url) {
+        $('#popup-content').html('<img id="popup-image" src="' + url + '">');
+        adjustPopupToImageSize();
+      }
+
+      function URL(url) {
+        window.open(url, '_blank');
+      }
+
+      // Implement these functions in each visualisation
+      // This function will be called before entering e-Lecture Mode
+      function ENTER_LECTURE_MODE() {}
+
+      // This function will be called before returning to Explore Mode
+      function ENTER_EXPLORE_MODE() {}
+
+      // Lecture action functions
+      function CUSTOM_ACTION(action, data, mode) {}
+    </script>
+<script type="text/javascript">
+// Cycle Finding Widget
+// original author: Wang Zi, then modified and maintained by Steven Halim
+
+var BACK_EDGE_CONST = 5000;
+
+// Floyd's Cycle-Finding Algorithm
+var Floyd = function() {
+  var self = this;
+  var graphWidget = new GraphWidget();
+  var maxSize = 36;
+
+  var valueRange = [0, 999];
+  var vertexClassNumberCounter = 9;
+
+  var internalList = {};
+  internalList["root"] = null;
+
+  var amountVertex = 0;
+
+  var start = 0, mod = 0;
+  var mu = 0, lambda = 0;
+  var A = 0, B = 0, C = 0;
+  var beforeCycle = 0;
+  var startCycle = 0;
+
+  this.getGraphWidget = function() { return graphWidget; }
+
+  this.widgetRecalculatePosition = function() { recalculatePosition(); }
+
+  this.getMod = function() { return mod; }
+  this.getStart = function() { return start; }
+   
+  function f(x) { return (A*x*x + B*x + C) % mod; }
+
+  function floydCycleFinding(x0) { // basically we want to visualize this short piece of code...
+    var tortoise = f(x0), hare = f(f(x0));
+    while (tortoise != hare) { tortoise = f(tortoise); hare = f(f(hare)); }
+    mu = 0; hare = x0;
+    while (tortoise != hare) { tortoise = f(tortoise); hare = f(hare); mu++; }
+    lambda = 1; hare = f(tortoise);
+    while (tortoise != hare) { hare = f(hare); lambda++; }
+  }
+  
+  function prepare() {
+    var initArr = new Array();
+    initArr[0] = start;
+    for (var i = 1; i < (mu+lambda); i++)
+      initArr[i] = f(initArr[i-1]);
+
+    if (mu >= 1) {
+      beforeCycle = initArr[mu-1];
+      startCycle = initArr[mu];
+    }
+
+    init(initArr);
+    populatePseudocode();
+    floydFind(initArr);
+  }
+
+  this.generateRandom = function(){
+    A = 1; B = 0; C = -1; // so f(x) = (x^2 - 1) % mod;
+
+    do {
+      mod = Math.floor(Math.random()*899) + 100; // [100 .. 999]
+      start = Math.floor(Math.random()*999); // [0..999]
+      floydCycleFinding(start);
+    }
+    while (mu > 8 || lambda > 15); // not good enough for visualization, generate another one...
+
+    prepare();
+    return true;
+  }
+
+  this.generateUserDefined = function(inputArr) {
+    A = parseInt(inputArr[0]);
+    B = parseInt(inputArr[1]);
+    C = parseInt(inputArr[2]);
+    if (A == 0 && B == 0 && C == 0) {
+      $('#create-err').html('系数A，B或C中的至少一个必须非零<br>');
+      return false;
+    }
+    mod = parseInt(inputArr[3]);
+    if (mod < 10 || mod > 1000) {
+      $('#create-err').html('M的值必须在[10..1000]<br>');
+      return false;
+    }
+    start = parseInt(inputArr[4]);
+    if (start < 0 || start >= mod) {
+      $('#create-err').html('x0的值必须在[0..M-1]之间，在这种情况下为[0 .. {upper}]<br>'.replace("{upper}", mod-1));
+      return false;
+    }
+    floydCycleFinding(start);
+    
+    prepare();
+    return true;
+  }
+
+  var tortoisePhase1 = internalList["root"];
+  var tortoisePhase2 = internalList["root"];
+
+  function floydFind(initArr) {
+    var stateList = [];
+    var tortoiseTraversed = {};
+    var hareTraversed = {};
+    var edgeTraversed = {};
+    var initPoint = internalList["root"];
+    var currentTortoise = internalList[initPoint]["rightChild"];
+    var currentHare = internalList[currentTortoise]["rightChild"];
+    var cs = createState(internalList);
+    var currentTortoiseClass;
+    var currentHareClass;
+    var key;
+
+    cs = createState(internalList, tortoiseTraversed, hareTraversed, edgeTraversed);
+    currentTortoiseClass = internalList[currentTortoise]["vertexClassNumber"];
+    cs["vl"][currentTortoiseClass]["state"] = VERTEX_GREEN_FILL;
+    currentHareClass = internalList[currentHare]["vertexClassNumber"];
+    cs["vl"][currentHareClass]["state"] = VERTEX_HIGHLIGHTED;
+    cs["status"] = '设置乌龟和兔子参考<br>t = {currentTortoise}和h = {currentHare}<br>'
+                    .replace("{currentTortoise}", currentTortoise)
+                    .replace("{currentHare}", currentHare);
+    cs["lineNo"] = 1;
+    stateList.push(cs);
+
+    cs = createState(internalList, tortoiseTraversed, hareTraversed, edgeTraversed);
+    currentTortoiseClass = internalList[currentTortoise]["vertexClassNumber"];
+    cs["vl"][currentTortoiseClass]["state"] = VERTEX_GREEN_FILL;
+    tortoiseTraversed[currentTortoise] = true;
+    currentHareClass = internalList[currentHare]["vertexClassNumber"];
+    cs["vl"][currentHareClass]["state"] = VERTEX_HIGHLIGHTED;
+    hareTraversed[currentHare] = true;
+    cs["status"] = '阶段1：通过让hare movex比乌龟快2倍来找到k *λ<br>t = {currentTortoise}和h = {currentHare}<br>'
+                    .replace("{currentTortoise}", currentTortoise)
+                    .replace("{currentHare}", currentHare);
+    cs["lineNo"] = 2;
+    stateList.push(cs);
+
+    while (parseInt(currentHare) != parseInt(currentTortoise)) {
+      cs = createState(internalList, tortoiseTraversed, hareTraversed, edgeTraversed);
+      currentTortoise = internalList[currentTortoise]["rightChild"];
+      currentTortoiseClass = internalList[currentTortoise]["vertexClassNumber"];
+      cs["vl"][currentTortoiseClass]["state"] = VERTEX_GREEN_FILL;
+      tortoiseTraversed[currentTortoise] = true;
+      currentHare = internalList[internalList[currentHare]["rightChild"]]["rightChild"]; // move 2x
+      currentHareClass = internalList[currentHare]["vertexClassNumber"];
+      cs["vl"][currentHareClass]["state"] = VERTEX_HIGHLIGHTED;
+      hareTraversed[currentHare] = true;
+      tortoiseParent = internalList[currentTortoise]["parent"];
+
+/*
+// edge highlight buggy at mu :(
+      var edgeHighlighted = internalList[tortoiseParent]["vertexClassNumber"];
+      edgeTraversed[edgeHighlighted] = true;
+      cs["el"][edgeHighlighted]["animateHighlighted"] = true;
+      cs["el"][edgeHighlighted]["state"] = EDGE_TRAVERSED;
+*/
+      if (parseInt(currentHare) != parseInt(currentTortoise))
+        cs["status"] = '乌龟和野兔指针没有遇到（t = {当前龟甲}和h = {当前野兔}）<br>乌龟向前移动一个顶点，兔子向前移动两个顶点<br>'
+                        .replace("{currentTortoise}", currentTortoise)
+                        .replace("{currentHare}", currentHare);
+      else
+        cs["status"] = '乌龟和野兔指针刚刚遇到（t = {currentTortoise}和h = {currentHare}）<br>让我们停止第一个循环<br>'
+                        .replace("{currentTortoise}", currentTortoise)
+                        .replace("{currentHare}", currentHare);
+      cs["lineNo"] = 2;
+      stateList.push(cs);
+    }
+
+    tortoisePhase1 = currentTortoise; 
+    cs = createState(internalList);
+    cs["vl"][currentHareClass]["state"] = VERTEX_HIGHLIGHTED; // highlight the meeting point
+    cs["status"] = '完成Floyd的循环寻找算法阶段1（找到k *λ）<br>龟和野兔在{tortoisePhase1}<br>'.replace("{tortoisePhase1}", parseInt(tortoisePhase1));
+    cs["lineNo"] = 0;
+    stateList.push(cs);
+
+    hareTraversed = {};
+    tortoiseTraversed = {};
+    edgeTraversed = {};
+    currentTortoise = tortoisePhase1;
+    currentHare = internalList["root"];
+    cs = createState(internalList);
+    var mu = 0;
+    cs = createState(internalList, tortoiseTraversed, hareTraversed, edgeTraversed);
+    currentTortoiseClass = internalList[currentTortoise]["vertexClassNumber"];
+    cs["vl"][currentTortoiseClass]["state"] = VERTEX_GREEN_FILL;
+    currentHareClass = internalList[currentHare]["vertexClassNumber"];
+    cs["vl"][currentHareClass]["state"] = VERTEX_HIGHLIGHTED;
+    cs["status"] = '将野兔设置回x0<br>让草龟停留在第1阶段的停止点<br>';
+    cs["lineNo"] = 3;
+    stateList.push(cs);
+
+    cs = createState(internalList, tortoiseTraversed, hareTraversed, edgeTraversed);
+    currentTortoiseClass = internalList[currentTortoise]["vertexClassNumber"];
+    cs["vl"][currentTortoiseClass]["state"] = VERTEX_GREEN_FILL;
+    tortoiseTraversed[currentTortoise] = true;
+    currentHareClass = internalList[currentHare]["vertexClassNumber"];
+    cs["vl"][currentHareClass]["state"] = VERTEX_HIGHLIGHTED; 
+    hareTraversed[currentHare] = true;
+    cs["status"] = '阶段2：阶段1后，乌龟和野兔由k *λ分隔<br>现在两者以相同的速度移动; 当他们再次相遇时，我们得到μ<br>';
+    cs["lineNo"] = 4;
+    stateList.push(cs);
+
+    while (parseInt(currentHare) != parseInt(currentTortoise)) {
+      currentTortoise = internalList[currentTortoise]["rightChild"];
+      currentHare = internalList[currentHare]["rightChild"];
+      cs = createState(internalList, tortoiseTraversed, hareTraversed, edgeTraversed);
+      tortoiseParent = internalList[currentTortoise]["parent"];
+      currentTortoiseClass = internalList[currentTortoise]["vertexClassNumber"];
+      cs["vl"][currentTortoiseClass]["state"] = VERTEX_GREEN_FILL;
+      tortoiseTraversed[currentTortoise] = true;
+      currentHareClass = internalList[currentHare]["vertexClassNumber"];
+      hareTraversed[currentHare] = true;
+      cs["vl"][currentHareClass]["state"] = VERTEX_HIGHLIGHTED;
+      if (parseInt(currentHare) != parseInt(currentTortoise))
+        cs["status"] = '乌龟和野兔指针没有遇到（t = {currentTortoise}和h = {currentHare}）<br>这一次，乌龟和兔子向前移动一个顶点<br>'
+                        .replace("{currentTortoise}", currentTortoise)
+                        .replace("{currentHare}", currentHare);
+      else
+        cs["status"] = '乌龟和野兔指针刚刚遇到（t = {currentTortoise}和h = {currentHare}）<br>让我们停止第二个循环<br>'
+                        .replace("{currentTortoise}", currentTortoise)
+                        .replace("{currentHare}", currentHare);
+      cs["lineNo"] = 4;
+      stateList.push(cs);
+
+      mu++;
+    }
+
+    tortoisePhase2 = currentTortoise;
+    cs = createState(internalList);
+    cs["vl"][currentHareClass]["state"] = VERTEX_HIGHLIGHTED; // highlight the meeting point
+    cs["status"] = 'Floyd的循环寻找算法阶段2（找到μ）完成<br>μ= {μ}，即，值将从x {μ}向前循环<br>'.replace("{mu}", mu).replace("{mu}", mu);
+    cs["lineNo"] = 4;
+    stateList.push(cs);
+
+    hareTraversed = {};
+    tortoiseTraversed = {};
+    edgeTraversed = {};
+    currentTortoise = tortoisePhase2;
+    currentHare = internalList[currentTortoise]["rightChild"];
+    cs = createState(internalList);
+    var lambda = 1;
+    cs = createState(internalList, tortoiseTraversed, hareTraversed, edgeTraversed);
+    currentTortoiseClass = internalList[currentTortoise]["vertexClassNumber"];
+    cs["vl"][currentTortoiseClass]["state"] = VERTEX_GREEN_FILL;
+    currentHareClass = internalList[currentHare]["vertexClassNumber"];
+    cs["vl"][currentHareClass]["state"] = VERTEX_HIGHLIGHTED;
+    cs["status"] = '在乌龟的阶段2停止点后，将野兔设置到下一个顶点<br>让乌龟停留在第2阶段停止点<br>';
+    cs["lineNo"] = 5;
+    hareParent = internalList[currentHare]["parent"];
+    stateList.push(cs);
+
+    cs = createState(internalList, tortoiseTraversed, hareTraversed, edgeTraversed);
+    currentTortoiseClass = internalList[currentTortoise]["vertexClassNumber"];
+    cs["vl"][currentTortoiseClass]["state"] = VERTEX_GREEN_FILL;
+    currentHareClass = internalList[currentHare]["vertexClassNumber"];
+    cs["vl"][currentHareClass]["state"] = VERTEX_HIGHLIGHTED;
+    tortoiseTraversed[currentTortoise] = true;
+    hareTraversed[currentHare] = true;
+    cs["status"] = '阶段3：在阶段2之后，乌龟停留在μ和兔子移动<br>当它们再次相遇时，我们得到循环长度λ<br>';
+    cs["lineNo"] = 6;
+    var edgeHighlighted = internalList[hareParent]["vertexClassNumber"];
+    edgeTraversed[edgeHighlighted] = true;
+    cs["el"][edgeHighlighted]["animateHighlighted"] = true;
+    cs["el"][edgeHighlighted]["state"] = EDGE_TRAVERSED;
+    stateList.push(cs);
+        
+    while (parseInt(currentHare) != parseInt(currentTortoise)) {
+      currentHare = internalList[currentHare]["rightChild"];
+      cs = createState(internalList, tortoiseTraversed, hareTraversed, edgeTraversed);
+      hareParent = internalList[currentHare]["parent"];
+      currentTortoiseClass = internalList[currentTortoise]["vertexClassNumber"];
+      cs["vl"][currentTortoiseClass]["state"] = VERTEX_GREEN_FILL;
+      hareTraversed[currentHare] = true;
+      currentHareClass = internalList[currentHare]["vertexClassNumber"];
+      cs["vl"][currentHareClass]["state"] = VERTEX_HIGHLIGHTED;
+      if (parseInt(currentHare) != parseInt(currentTortoise))
+        cs["status"] = '乌龟和野兔指针没有遇到（t = {currentTortoise}和h = {currentHare}）<br>这一次，只有野兔向前移动一个顶点; λ= {lambda}<br>'
+                        .replace("{currentTortoise}", currentTortoise)
+                        .replace("{currentHare}", currentHare)
+                        .replace("{lambda}", lambda);
+      else
+        cs["status"] = '乌龟和野兔指针刚刚遇到（t = {currentTortoise}和h = {currentHare}）<br>让我们停止第三个循环'
+                        .replace("{currentTortoise}", currentTortoise)
+                        .replace("{currentHare}", currentHare);
+      cs["lineNo"] = 6;
+      // this time it is good to highlight the edges to show lambda :)
+      var edgeHighlighted = internalList[hareParent]["vertexClassNumber"];
+      edgeTraversed[edgeHighlighted] = true;
+      cs["el"][edgeHighlighted]["animateHighlighted"] = true;
+      cs["el"][edgeHighlighted]["state"] = EDGE_TRAVERSED;
+      stateList.push(cs);
+
+      lambda++;
+    }
+ 
+    cs = createState(internalList, tortoiseTraversed, hareTraversed, edgeTraversed);
+    cs["vl"][currentTortoiseClass]["state"] = VERTEX_GREEN_FILL; // I want mu is highlighted with green and lambda by the orange edges
+    cs["status"] = '完成Floyd的循环寻找算法阶段3（计算λ）<br>λ= {lambda}<br>'.replace("{lambda}", lambda);
+    cs["lineNo"] = 6;
+    stateList.push(cs);
+
+    cs = createState(internalList, tortoiseTraversed, hareTraversed, edgeTraversed);
+    cs["vl"][currentTortoiseClass]["state"] = VERTEX_GREEN_FILL; // I want mu is highlighted with green and lambda by the orange edges
+    cs["status"] = '完成Floyd的循环寻找算法阶段3（计算λ）<br>λ= {lambda}<br>'
+                    .replace("{mu}", mu)
+                    .replace("{lambda}", lambda);
+    cs["lineNo"] = 7;
+    stateList.push(cs);
+
+    graphWidget.startAnimation(stateList);
+    populatePseudocode();
+    return true;
+  }    
+
+  function clearScreen() {
+    var key;
+    //console.log('clearscreen internalList  -->  ', internalList);
+    for (key in internalList) {
+      if (key == "root") continue;
+      graphWidget.removeEdge(internalList[key]["vertexClassNumber"]+BACK_EDGE_CONST);
+      graphWidget.removeEdge(internalList[key]["vertexClassNumber"]);
+    }
+    graphWidget.removeEdge(-1);
+    graphWidget.removeEdge(-2);
+
+    for (key in internalList) {
+      if (key == "root") continue;
+      graphWidget.removeVertex(internalList[key]["vertexClassNumber"]);
+    }
+
+    internalList = {};
+    internalList["root"] = null;
+    amountVertex = 0;
+  }
+
+  function init(initArr) {
+    var i;
+    amountVertex = mu+lambda;
+    clearScreen();
+
+    var start = parseInt(initArr[mu]);
+    var end = parseInt(initArr[initArr.length-1]);
+
+    for (i = 0; i < initArr.length; i++) {
+      var parentVertex = internalList["root"];
+      var newVertex = parseInt(initArr[i]);
+
+    if (parentVertex == null) {
+        internalList["root"] = parseInt(newVertex);
+        internalList[newVertex] = {
+        "parent": null,
+        "leftChild": null,
+        "rightChild": null,
+          "vertexClassNumber": amountVertex
+        };
+      }
+      else if (i < initArr.length-1) {
+        while(true){
+          if (internalList[parentVertex]["rightChild"] == null) break;
+          parentVertex = internalList[parentVertex]["rightChild"];
+        }
+        internalList[parentVertex]["rightChild"] = newVertex;
+        internalList[newVertex] = {
+          "parent": parentVertex,
+          "leftChild": null,
+          "rightChild": null,
+          "vertexClassNumber": amountVertex
+        }
+      } 
+      else {
+        while (true) {
+          if (internalList[parentVertex]["rightChild"] == null) break;
+          parentVertex = internalList[parentVertex]["rightChild"];
+        }
+        internalList[parentVertex]["rightChild"] = newVertex;
+        internalList[newVertex] = {
+          "parent": parentVertex,
+          "leftChild":null,
+          "rightChild": null,
+          "vertexClassNumber": amountVertex
+        }
+        parentVertex = internalList[parentVertex]["rightChild"];
+
+        internalList[parentVertex]["rightChild"] = start;
+        if (lambda != 2)
+          internalList[start]["parent"] = parentVertex;
+      }
+      amountVertex++;
+    }
+
+    recalculatePosition(internalList["root"]);
+
+    for (key in internalList) {
+      if (key == "root") continue;
+    graphWidget.addVertex(internalList[key]["cx"], internalList[key]["cy"], key, internalList[key]["vertexClassNumber"], true);
+    }
+
+    for (key in internalList) {
+      if (key == "root") continue;
+      if (mu != 0 && key == internalList["root"]) continue;
+      var parentVertex = internalList[key]["parent"];
+        
+      graphWidget.addEdge(internalList[parentVertex]["vertexClassNumber"], internalList[key]["vertexClassNumber"], internalList[parentVertex]["vertexClassNumber"], EDGE_TYPE_DE, 1, true);
+      if (lambda == 2 && key == end)
+        graphWidget.addEdge(internalList[key]["vertexClassNumber"], internalList[parentVertex]["vertexClassNumber"], internalList[parentVertex]["vertexClassNumber"]+BACK_EDGE_CONST, EDGE_TYPE_DE, 1, true);
+ 
+      if (mu != 0 && lambda !=  2 && key == startCycle)
+        graphWidget.addEdge(internalList[beforeCycle]["vertexClassNumber"], internalList[key]["vertexClassNumber"], -1, EDGE_TYPE_DE, 1, true);
+    }
+  }
+
+  function createState(internalListObject, tortoiseTraversed, hareTraversed, edgeTraversed) {
+    if (tortoiseTraversed == null || tortoiseTraversed == undefined || !(tortoiseTraversed instanceof Object))
+      tortoiseTraversed = {};
+    if (hareTraversed == null || hareTraversed == undefined || !(hareTraversed instanceof Object))
+      hareTraversed = {};
+    if (edgeTraversed == null || edgeTraversed == undefined || !(edgeTraversed instanceof Object))
+      edgeTraversed = {};
+
+    var state = {
+      "vl":{},
+      "el":{}
+    };
+
+    var key;
+    var vertexClass;
+
+    for (key in internalListObject){
+      if (key != "root") {
+        vertexClass = internalListObject[key]["vertexClassNumber"]
+
+        state["vl"][vertexClass] = {};
+        state["vl"][vertexClass]["cx"] = internalListObject[key]["cx"];
+        state["vl"][vertexClass]["cy"] = internalListObject[key]["cy"];
+        state["vl"][vertexClass]["text"] = key;  
+        state["vl"][vertexClass]["state"] = VERTEX_DEFAULT;
+        state["vl"][vertexClass]["extratext"] = vertexClass;
+      }
+
+      if (internalListObject[key]["rightChild"] == null) continue;
+
+      parentChildEdgeId = internalListObject[key]["vertexClassNumber"];
+
+      state["el"][parentChildEdgeId] = {};
+      state["el"][parentChildEdgeId]["vertexA"] = internalListObject[key]["vertexClassNumber"];
+      state["el"][parentChildEdgeId]["vertexB"] = internalListObject[internalListObject[key]["rightChild"]]["vertexClassNumber"];
+      state["el"][parentChildEdgeId]["type"] = EDGE_TYPE_DE;
+      state["el"][parentChildEdgeId]["weight"] = 1;
+      state["el"][parentChildEdgeId]["state"] = EDGE_DEFAULT;
+      state["el"][parentChildEdgeId]["animateHighlighted"] = false;
+    }
+
+    for (key in hareTraversed) {
+      vertexClass = internalListObject[key]["vertexClassNumber"];
+      state["vl"][vertexClass]["state"] = VERTEX_TRAVERSED;
+    }
+
+    for (key in tortoiseTraversed) {
+      vertexClass = internalListObject[key]["vertexClassNumber"];
+      state["vl"][vertexClass]["state"] = VERTEX_GREEN_OUTLINE;
+    }
+
+    for (key in edgeTraversed)
+      state["el"][key]["state"] = EDGE_TRAVERSED;
+
+    return state;
+  }
+
+  function recalculatePosition(currentVertex) {
+    var x_ratio = 30, y_ratio = 35;
+    if (mu < 6) {
+      x_ratio = 40;
+      y_ratio = 55;
+    }
+    if (mu != 0) {
+      var first_x = 360 - mu*x_ratio;
+      var first_y = 200 + mu*y_ratio;
+      for (var i = 0; i < mu; i++) {
+        internalList[currentVertex]["cx"] = first_x + i*x_ratio;
+        internalList[currentVertex]["cy"] = first_y - i*y_ratio;
+        currentVertex = internalList[currentVertex]["rightChild"];
+      }
+     
+      var radius = 0;
+      if (lambda <= 9)
+        radius = lambda*15+5;
+      else
+        radius = 130;
+
+      var centerx = 360+radius;
+      var centery = 200;
+      for (var i = 0; i < lambda; i++) {
+        internalList[currentVertex]["cx"] = centerx - radius*Math.cos((i/lambda)*Math.PI*2);
+        internalList[currentVertex]["cy"] = centery - radius*Math.sin((i/lambda)*Math.PI*2);
+        currentVertex = internalList[currentVertex]["rightChild"];
+      }   
+    }
+    else {
+      var radius_cir = lambda*15+5;
+      var center_x = 450;
+      var center_y = 280;
+      for (var i = 0; i < lambda; i++) {
+        internalList[currentVertex]["cx"] = center_x - radius_cir*Math.cos((i/lambda)*Math.PI*2);
+        internalList[currentVertex]["cy"] = center_y - radius_cir*Math.sin((i/lambda)*Math.PI*2);
+        currentVertex = internalList[currentVertex]["rightChild"];
+      }  
+    }
+  }
+
+  function populatePseudocode() {
+    $('#code1').html('int t=f(x<sub>0</sub>), h=f(f(x<sub>0</sub>)); // t=tortoise, h=hare');
+    $('#code2').html('<b>Phase 1:</b> while (t!=h) { t=f(t); h=f(f(h)); }');
+    $('#code3').html('<b>Phase 2:</b> mu=0; h=x<sub>0</sub>;');
+    $('#code4').html('&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspwhile (t!=h) { t=f(t); h=f(h); mu++; }');
+    $('#code5').html('<b>Phase 3:</b> lambda=1; h=f(t);');
+    $('#code6').html('&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbspwhile (t!=h) { h=f(h); lambda++; }');
+    $('#code7').html('return pair(mu, lambda);');
+  }
+}
+
+
+
+// Cycle Finding action
+var actionsWidth = 150;
+var statusCodetraceWidth = 410;
+
+var isCreateOpen = false;
+
+function openCreate() {
+  if (!isCreateOpen) {
+    $('.create').fadeIn('fast');
+    isCreateOpen = true;
+  }
+}
+
+function closeCreate() {
+  if (isCreateOpen) {
+    $('.create').fadeOut('fast');
+    $('#create-err').html("");
+    isCreateOpen = false;
+  }
+}
+
+function hideEntireActionsPanel() {
+  closeCreate();
+  hideActionsPanel();
+}
+
+
+
+// local
+$('#play').hide();
+var floydWidget = new Floyd();
+var gw = floydWidget.getGraphWidget();
+
+$(document).ready(function() {
+  userDefined();
+  setTimeout(function() {
+    goToBeginning(); // pause(); // then pause
+  }, 750);
+
+  $('#create').click(function() {
+    openCreate();
+  });
+});
+
+function random() {
+  if (isPlaying) { stop(); }
+  setTimeout(function() {
+    if ((mode == "exploration") && floydWidget.generateRandom()) {
+      $('#current-action p').html("f(x) = (x<sup>2</sup> - 1) % " + floydWidget.getMod() + ", x<sub>0</sub> = " + floydWidget.getStart());
+      $('#progress-bar').slider( "option", "max", gw.getTotalIteration()-1);
+      triggerRightPanels();
+      closeCreate();
+      isPlaying = true;
+    }
+  }, 500)
+  hideStatusPanel();
+  hideCodetracePanel();
+}
+
+function userDefined() {
+  if (isPlaying) { stop(); }
+  setTimeout(function() {
+    var A = $('#v-create-arr-square').val();
+    var B = $('#v-create-arr-x').val();
+    var C = $('#v-create-arr-constant').val();
+    var mod = $('#v-create-arr-modulo').val();
+    var x0 = $('#v-create-arr-x0').val();
+
+    var input = [A, B, C, mod, x0];
+    if ((mode == "exploration") && floydWidget.generateUserDefined(input)) {
+      var fx = "f(x) = (";
+      if (A != 0) { // has to print ?x^2
+             if (A ==  1) fx += "x<sup>2</sup>";
+        else if (A == -1) fx += "-x<sup>2</sup>";
+        else              fx += A + "x<sup>2</sup>";
+      }
+      if (B != 0) { // has to print ?x
+             if (B ==  1) fx += "+ x";
+        else if (B == -1) fx += "- x";
+        else if (B >   1) fx += "+ " + B + "x";
+        else              fx += "- " + (-B) + "x";
+      }
+      // has to print constant
+      if (C >= 0) fx += " + " + C;
+      else        fx += " - " + (-C);
+      
+      $('#current-action p').html(fx + ") % " + mod + ", x<sub>0</sub> = " + x0);
+      $('#progress-bar').slider( "option", "max", gw.getTotalIteration()-1);
+      triggerRightPanels();
+      closeCreate();
+      isPlaying = true;
+    }
+  }, 500)
+  hideStatusPanel();
+  hideCodetracePanel();
+}
+</script>
+</body>
+</html>

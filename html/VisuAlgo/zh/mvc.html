@@ -1,0 +1,3153 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="A Vertex Cover (VC) of a connected undirected (un)weighted graph G is a subset of vertices V of G such that for every edge in G, at least one of its endpoints is in V. A Minimum Vertex Cover (MVC) of G is a VC that has the smallest cardinality (if unweighted) or total weight (if weighted) among all possible VCs. A graph can have multiple VC but the value of MVC is unique.There is another problem called Maximum Independent Set (MIS) that attempts to find the largest subset of vertices in a (un)weighted graph G without any adjacent vertices in the subset. Interestingly, the complement of an MVC of a graph is an MIS.At the end of every visualization, when an algorithm highlights an MVC solution to a graph, it will also highlight its MIS (which is its complement) with light blue color.">
+<meta name="keywords" content="Approximation, DP, Greedy, Bruteforce">
+ 
+<meta name="csrf-token" content="kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh">
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE">
+<meta property="og:image" content="../img/png/mvc.png">
+<title>VisuAlgo - Minimum Vertex Cover (Bruteforce, Approximation, DP, Greedy)</title>
+<link rel="icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="shortcut icon" href="../img/favicon.png" type="image/x-icon">
+<link rel="apple-touch-icon" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="72x72" href="../img/favicon.png">
+<link rel="apple-touch-icon" sizes="114x114" href="../img/favicon.png">
+<link rel="stylesheet" type="text/css" href="../fonts/silkscreen/stylesheet.css">
+<link rel="stylesheet" type="text/css" href="../css/common.css">
+<link rel="stylesheet" href="../css/viz-1.0.1.css">
+<link rel="stylesheet" href="../css/visual.css">
+<link rel="stylesheet" href="../css/drawgraph.css">
+<style>
+      #e-lecture {
+        top: 45px;
+        right: 130px;
+        width: 400px;
+        display: block;
+        background: none;
+        /*overflow: normal;*/
+        white-space: normal;
+        text-align: right;
+        color: black; font-weight: bold; font-size: 20px;
+      }
+      .electure-prev, .electure-next { /* force update, copied from viz.css */
+        position: absolute;
+        /* bottom: -12px; */
+        top: -20px;
+        /*bottom: '';*/
+        padding: 3px 8px;
+        background: #999;
+        color: white;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+      .electure-prev {
+        left: -10px;
+        /* right: 30px; */
+      }
+      .electure-next {
+        right: -10px;
+        color: white;
+      }
+    </style>
+<style>
+.draw { bottom: 200px; }
+
+.examples { bottom: 173px; }
+  #example1 p { padding: 5px 8px; }
+  #example2 p { padding: 5px 8px; }
+  #example3 p { padding: 5px 8px; }
+  #example4 p { padding: 5px 8px; }
+  #example5 p { padding: 5px 8px; }
+  #example6 p { padding: 5px 8px; }
+  #example7 p { padding: 5px 8px; }
+  #example8 p { padding: 5px 8px; }
+
+.bruteforce { bottom: 146px; }
+  #bruteforce-go p { padding: 5px 8px; }
+  #bruteforce-err { padding: 5px 8px; }
+
+.on_tree { bottom: 119px; }
+  #dp_on_tree-go p { padding: 5px 8px; }
+  #greedy_on_tree-go p { padding: 5px 8px; }
+  #on_tree-err { padding: 5px 8px; }
+
+.on_bipartite { bottom: 92px; }
+  #konig-go p { padding: 5px 8px; }
+  #on_bipartite-err { padding: 5px 8px; }
+
+.approximations { bottom: 65px; }
+  #deterministic_two_opt-go p { padding: 5px 8px; }
+  #probabilistic_two_opt-go p { padding: 5px 8px; }
+  #approximation-err { padding: 5px 8px; }
+</style>
+<script>
+      function changeURL() {
+        var URL = window.location.href.split('/');
+        var val = document.getElementById("Language").value;
+        URL[3] = val;
+        window.location.assign(URL.join('/'));
+      }
+    </script>
+</head>
+<body>
+<div id="top-bar">
+<a id="home" href="/">Visu<span class="colour">Algo</span><span style="font-size: 40%">.net</span></a>
+/
+<select id="Language" onchange="changeURL()">
+<option value="zh" selected>zh</option>
+</select>
+/mvc
+<span id="title">
+<a id='menu-unweighted' class='selected-viz'>Unweighted Minimum Vertex Cover</a>
+<a id='menu-weighted'>Weighted MVC</a>
+</span>
+<div id="mode-menu">
+<div id='mode-button' title='exploration'>示例模式 &#9663;</div>
+<div id='other-modes'>
+<a title='e-Lecture'>电子讲座模式</a>
+</div>
+</div>
+</div>
+<div id="dark-overlay"></div>
+<div id="status" class="panel"><p></p></div>
+<div id="status-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide status panel" /></div>
+<div id="codetrace" class="panel">
+<p id="code1" style="padding-top: 10px;"></p>
+<p id="code2"></p>
+<p id="code3"></p>
+<p id="code4"></p>
+<p id="code5"></p>
+<p id="code6"></p>
+<p id="code7" style="padding-bottom: 10px;"></p>
+</div>
+<div id="codetrace-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="show/hide codetrace panel" /></div>
+<div id="left-bar"></div>
+<div id="right-bar"></div>
+<div id="media-controls">
+<div id='speed-control'>减速<div id='speed-input'></div>加速</div>
+<span id="go-to-beginning" class="media-control-button" title="go to beginning" onclick=goToBeginning()><img src="../img/goToBeginning.png" alt="go to beginning"></span>
+<span id="previous" class="media-control-button" title="step backward" onclick=stepBackward()><img src="../img/prevFrame.png" alt="previous frame"></span>
+<span id="pause" class="media-control-button" title="pause" onclick=pause()><img src="../img/pause.png" alt="pause"></span>
+<span id="play" class="media-control-button" title="play" onclick=play()><img src="../img/play.png" alt="play"></span>
+<span id="next" class="media-control-button" title="step forward" onclick=stepForward()><img src="../img/nextFrame.png" alt="next frame"></span>
+<span id="go-to-end" class="media-control-button" title="go to end" onclick=goToEnd()><img src="../img/goToEnd.png" alt="go to end"></span>
+<div id="progress-bar" class="media-control-button"></div>
+</div>
+<div id='viz'></div>
+<div id='current-action' class='panel'></div>
+<div id='e-lecture' class='panel'></div>
+<div id="overlay" hidden></div>
+<div id="dropdown-temp-holder" hidden></div>
+<div id="electure-1" class="electure-dialog" style="top:60px;left:60px;width:500px;">
+<p>A <b>Vertex Cover</b> (VC) of a connected undirected (un)weighted graph <b>G</b> is a <b>subset of vertices V</b> of <b>G</b> such that <b>for every edge</b> in <b>G</b>, <b>at least one of its endpoints is in V</b>. A <b>Minimum Vertex Cover (MVC)</b> of <b>G</b> is a VC that has the smallest cardinality (if unweighted) or total weight (if weighted) among all possible VCs. A graph can have multiple VC but the value of MVC is unique.</p><br><p>There is another problem called <b>Maximum Independent Set</b> (MIS) that attempts to find the <b>largest</b> subset of vertices in a (un)weighted graph <b>G</b> without any adjacent vertices in the subset. Interestingly, the <b>complement of an MVC of a graph is an MIS</b>.</p><br><p>At the end of every visualization, when an algorithm highlights an MVC solution to a graph, it will also highlight its MIS (which is its complement) with <span style="background-color: white;"><font color="lightblue">light blue color</font></span>.</p>
+<hr>
+<p><b>Remarks</b>: By default, we show e-Lecture Mode for first time (or non logged-in) visitor.<br>
+Please <a href="login"><u>login</u></a> if you are a repeated visitor or <a href="login"><u>register</u></a> for an (optional) free account first.</p>
+<div id='electure-dropdown'>
+<select class="lecture-dropdown" style="width:100%">
+<option value="1">1. Vertex Cover</option>
+<option value="1-1">&nbsp;&nbsp;&nbsp;1-1. Two Modes</option>
+<option value="2">2. Visualization</option>
+<option value="3">3. Input</option>
+<option value="4">4. Bruteforce</option>
+<option value="5">5. DP on Tree</option>
+<option value="6">6. Greedy MVC on Tree</option>
+<option value="7">7. Kőnig&#39;s Theorem</option>
+<option value="8">8. Approximation Algorithms</option>
+<option value="99">99. 状态面板</option>
+<option value="99-1">&nbsp;&nbsp;&nbsp;99-1. 代码追踪面板</option>
+<option value="99-2">&nbsp;&nbsp;&nbsp;99-2. 媒体控制</option>
+<option value="99-3">&nbsp;&nbsp;&nbsp;99-3. 返回 ”探索模式“</option>
+</select>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-next' data-nextid="1-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-1-1" class="electure-dialog" style="top:60px;left:250px;width:500px;">
+<p>There are two available modes: Unweighted (default) and Weighted. You can switch between the two modes by clicking the respective tab.</p><br><p>There are algorithms that work in both modes and there are algorithms that only work in a certain mode.</p>
+<hr>
+<p>Pro-tip: Since you are not <a href="login"><u>logged-in</u></a>, you may be a first time visitor who are not aware of the following keyboard shortcuts to navigate this e-Lecture mode: <b>[PageDown]</b> to advance to the next slide, <b>[PageUp]</b> to go back to the previous slide, <b>[Esc]</b> to toggle between this e-Lecture mode and exploration mode.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-2" class="electure-dialog" style="top:270px;left:50%;margin-left:-200px;width:400px;">
+<p>View the visualisation of the selected MVC algorithms here.</p><br><p>Originally, all vertices and edges in the input graph are colored with the standard black outline. As the visualization goes on, the color <span style="background-color: white;"><font color="lightblue">light blue</font></span> will be used to denote covered edges and the color <span style="color: rgb(255, 165, 0);">orange</span> on edge will be used to show traversed edges.</p><br><p>At the end of the selected MVC algorithm, if it finds a <b>minimum</b> VC, it will highlight the MVC vertices with <font color="orange">orange</font> color and the non MVC vertices (a.k.a. the MIS vertices) with <span style="background-color:white;"><font color="lightblue">lightblue</font></span>; color. Otherwise, if the found vertex cover is not proven to be the minimal one (e.g. the algorithm used is an approximation algorithm), it will highlight the vertices that belong to the found vertex cover with <span style="color: rgb(255, 165, 0);">orange</span> color without highlighting the MIS vertices.</p>
+<hr>
+<p>Another pro-tip: We designed this visualization and this e-Lecture mode to look good on 1366x768 resolution <b>or larger</b> (typical modern laptop resolution in 2017). We recommend using Google Chrome to access VisuAlgo. Go to full screen mode (<b>F11</b>) to enjoy this setup. However, you can use zoom-in (<b>Ctrl +</b>) or zoom-out (<b>Ctrl -</b>) to calibrate this.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="1-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-3" class="electure-dialog" style="bottom:240px;left:60px;width:500px;">
+<p>There are two different sources for specifying an input graph:</p><ol><li><b>Draw Graph</b>: You can draw <strong>any</strong> connected (un)directed weighted graph as the input graph.</li><li><b>Example Graphs</b>: You can select from the list of example connected undirected weighted graphs to get you started.</li></ol>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="2">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="4">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-4" class="electure-dialog" style="bottom:240px;left:60px;width:500px;">
+<p><b>Bruteforce</b>: It tries all possible 2^<b>V</b> subset of vertices. In every iteration, it checks whether the currently selected subset of vertices is a valid vertex cover by iterating over all <b>E</b> edges and check whether there is any edge that is not covered by the vertices in the currently selected subset. This bruteforce algorithm keeps the smallest size of the valid vertex cover as the answer.</p><br><p>This bruteforce algorithm is available in both weighted and unweighted version.</p><br><p>Its time complexity is O(2^<b>V</b> &times; <b>E</b>), i.e. very slow.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="3">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="5">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-5" class="electure-dialog" style="bottom:240px;left:60px;width:500px;">
+<p><b>DP on Tree</b>: If the graph is a <b>tree</b>, the MVC problem can be formulated as a Dynamic Programming problem where the states are (position, take_current_vertex).</p><br><p>Then, it can be seen that:<br>DP(u, take) = cost[u] + sum(min(DP(v, take), DP(v, not_take))) &forall;child v of u, and<br>DP(u, not take) = sum(DP(v, take)) &forall;child v of u</p><br><p>This DP algorithm is available in both weighted and unweighted version.</p><br><p>Its time complexity is O(<b>V</b>), i.e. very fast, if the input graph is a tree.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="4">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="6">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-6" class="electure-dialog" style="bottom:240px;left:60px;width:500px;">
+<p><b>Greedy MVC on Tree</b>: Again, if the graph is an <b>unweighted</b> <b>tree</b>, it can be solved greedily by observing that if there is any MVC solution that takes a leaf vertex, we can obtain a "not worse" solution by taking the parent of that leaf vertex instead. After removing all covered vertices, we can apply the same observation and repeat it until every vertex is covered.</p><br><p>This greedy MVC algorithm is only available in unweighted mode.</p><br><p>Its time complexity is O(<b>V</b>), i.e. very fast, if the input graph is an unweighted tree.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="5">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="7">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-7" class="electure-dialog" style="bottom:240px;left:60px;width:500px;">
+<p><b>Kőnig&#39;s Theorem</b>: From Kőnig&#39;s Theorem, the size of MVC in an <b>unweighted bipartite</b> graph is equal to the cardinality of the maximum matching of the bipartite graph. In the case of <b>weighted bipartite</b> graph, we can see that this theorem also holds true, with a tweak in how we construct the graph. In this visualization, we use a reduction to max flow problem to get the value of the MVC.</p><br><p>This algorithm is available in both weighted and unweighted version.</p><br><p>Its time complexity is O(<b>V</b> &times; <b>E</b>) (for unweighted version; can be smaller with pre-processing) or O(<b>E</b>^2 &times; <b>V</b>)/O(<b>V</b>^2 &times; <b>E</b>) (for weighted version, depending on the max flow algorithm used).</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="6">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="8">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-8" class="electure-dialog" style="bottom:240px;left:60px;width:500px;">
+<p>There are several known approximation algorithms for MVC:</p><ol><li>For unweighted version, we have either the deterministic 2-approximation or probabilistic 2-approximation (in expectation),</li><li>For weighted version whe have the Bar-Yehuda and Even&#39;s 2-approximation algorithm.</li></ol><p>Note that these algorithms only yield an "approximated" MVC, meaning that they are not a true <b>minimum</b> vertex cover, but a good enough one.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="7">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99" class="electure-dialog" style="right:150px;bottom:335px;width:500px;">
+当操作进行时，状态面板将会有每个步骤的描述。
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="8">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-1">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-1" class="electure-dialog" style="right:170px;bottom:275px;width:180px;">
+<div style="background-color: white; color: black;">
+<p>e-Lecture: The content of this slide is hidden and only available for legitimate CS lecturer worldwide. Drop an email to visualgo.info at gmail dot com if you want to activate this CS lecturer-only feature <b>and you are really a CS lecturer (show your University staff profile)</b>.</p>
+</div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-2">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-2" class="electure-dialog" style="bottom:70px;left:50%;margin-left:-120px;width:260px;">
+使用用户控件控制动画！可用的快捷键有：<div>空格键：绘制／停止／重绘</div><div>左／右箭头：上一步／下一步</div><div>-／+：减缓／增加速度</div><div><br></div>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-1">上一个 <u>PgUp</u></div>
+<div class='electure-next' data-nextid="99-3">下一个 <u>PgDn</u></div>
+</div>
+<div id="electure-99-3" class="electure-dialog" style="top:70px;right:60px;width:300px;">
+<p>Return to &#39;Exploration Mode&#39; to start exploring!</p><br><p>Note that if you notice any bug in this visualization or if you want to request for a new visualization feature, do not hesitate to drop an email to the project leader: Dr Steven Halim via his email address: stevenhalim at gmail dot com.</p>
+<div class='electure-end'>X <u>Esc</u></div>
+<div class='electure-prev' data-nextid="99-2">上一个 <u>PgUp</u></div>
+</div>
+<div id="popup" hidden>
+<div id="popup-content"></div>
+ <span id="hide-popup" hidden>X <u>关闭</u></span>
+</div>
+<div id="actions" class="panel">
+<p id="draw" onclick=drawGraph()>绘制图表</p>
+<p id="examples" class="execAction">图示</p>
+<p id="bruteforce" class="execAction" onclick=bruteforce()>Bruteforce</p>
+<p id="on_tree" class="execAction">MVC on Tree</p>
+<p id="on_bipartite" class="execAction">MVC on Bipartite Graph</p>
+<p id="approximations" class="execAction">估计</p>
+</div>
+<div id="actions-hide" class="panel-hide"><img src="../img/arrow_white_right.png" alt=">" title="显示/隐藏 动作面板" /></div>
+<div id="actions-extras">
+<div class="examples action-menu-pullout">
+<div id="example1" class="execAction new-menu-option coloured-menu-option" onclick="example(CP3_4_26_2)"><p>General Graph</p></div>
+<div id="example2" class="execAction new-menu-option coloured-menu-option" onclick="example(LINEAR_CHAIN)"><p>Linear Chain</p></div>
+<div id="example3" class="execAction new-menu-option coloured-menu-option" onclick="example(MVC_U_TWO_APPROX_KILLER)"><p>Unweighted 2-approx Killer</p></div>
+<div id="example4" class="execAction new-menu-option coloured-menu-option" onclick="example(MVC_W_TWO_APPROX_KILLER)"><p>Weighted 2-approx Killer</p></div>
+<div id="example5" class="execAction new-menu-option coloured-menu-option" onclick="example(EXAMPLE_VERTEX_WEIGHTED_TREE)"><p>Tree</p></div>
+<div id="example6" class="execAction new-menu-option coloured-menu-option" onclick="example(K5)"><p>K5</p></div>
+<div id="example7" class="execAction new-menu-option coloured-menu-option" onclick="example(INTERESTING_BIPARTITE)"><p>Bipartite Graph</p></div>
+<div id="example8" class="execAction new-menu-option coloured-menu-option" onclick="example(CS4234_SAMPLE)"><p>CS4234 Sample</p></div>
+<div id="examples-err" class="err"></div>
+</div>
+<div class="bruteforce action-menu-pullout">
+<div id="bruteforce-err" class="err"></div>
+</div>
+<div class="on_tree action-menu-pullout">
+<div id="dp_on_tree-go" class="weighted unweighted execAction coloured-menu-option" onclick=dp_on_tree()><p>DP on Tree</p></div>
+<div id="greedy_on_tree-go" class="unweighted execAction coloured-menu-option" onclick=greedy()><p>Greedy MVC on Tree</p></div>
+<div id="on_tree-err" class="err"></div>
+</div>
+<div class="on_bipartite action-menu-pullout">
+<div id="konig-go" class="weighted unweighted execAction coloured-menu-option" onclick=konig()><p>Kőnig&#39;s Theorem</p></div>
+<div id="on_bipartite-err" class="err"></div>
+</div>
+<div class="approximations action-menu-pullout">
+<div id="deterministic_two_opt-go" class="weighted unweighted execAction coloured-menu-option" onclick=deterministic_two_opt()><p>Deterministic 2-opt</p></div>
+<div id="probabilistic_two_opt-go" class="unweighted execAction coloured-menu-option" onclick=probabilistic_two_opt()><p>Probabilistic 2-opt</p></div>
+<div id="approximation-err" class="err"></div>
+</div>
+</div>
+<div id="drawgraph" class="overlays"></div>
+<div id="bottom-bar">
+<a id="trigger-about">关于</a>
+</div>
+<div id="about" class="overlays">
+<h4>关于</h4><span class='close-overlay'>&#x2715;</span>
+<div class='content'>
+VisuAlgo在2011年由Steven Halim博士概念化，作为一个工具，帮助他的学生更好地理解数据结构和算法，让他们自己和自己的步伐学习基础。<br>VisuAlgo包含许多高级算法，这些算法在Steven Halim博士的书（“竞争规划”，与他的兄弟Felix Halim博士合作）和其他书中讨论。今天，一些高级算法的可视化/动画只能在VisuAlgo中找到。<br>虽然专门为新加坡国立大学（NUS）学生采取各种数据结构和算法类（例如CS1010，CS1020，CS2010，CS2020，CS3230和CS3230），作为在线学习的倡导者，我们希望世界各地的好奇心发现这些可视化也很有用。<br>VisuAlgo不是从一开始就设计为在小触摸屏（例如智能手机）上工作良好，因为需要满足许多复杂的算法可视化，需要大量的像素和点击并拖动手势进行交互。一个令人尊敬的用户体验的最低屏幕分辨率为1024x768，并且只有着陆页相对适合移动设备。<br>VisuAlgo是一个正在进行的项目，更复杂的可视化仍在开发中。<br>最令人兴奋的发展是自动问题生成器和验证器（在线测验系统），允许学生测试他们的基本数据结构和算法的知识。这些问题是通过一些规则随机生成的，学生的答案会在提交给我们的评分服务器后立即自动分级。这个在线测验系统，当它被更多的世界各地的CS教师采用，应该技术上消除许多大学的典型计算机科学考试手动基本数据结构和算法问题。通过在通过在线测验时设置小（但非零）的重量，CS教练可以（显着地）增加他/她的学生掌握这些基本问题，因为学生具有几乎无限数量的可以立即被验证的训练问题他们参加在线测验。培训模式目前包含12个可视化模块的问题。我们将很快添加剩余的8个可视化模块，以便VisuAlgo中的每个可视化模块都有在线测验组件。<br>另一个积极的发展分支是VisuAlgo的国际化子项目。我们要为VisuAlgo系统中出现的所有英语文本准备一个CS术语的数据库。这是一个很大的任务，需要众包。一旦系统准备就绪，我们将邀请VisuAlgo游客贡献，特别是如果你不是英语母语者。目前，我们还以各种语言写了有关VisuAlgo的公共注释：<br>
+<a href="https://weibo.com/p/230418436e9ee80102v4rk" target='_blank'><u>zh</u></a>, <a href='https://www.facebook.com/notes/steven-halim/httpidvisualgonet-visualisasi-struktur-data-dan-algoritma-dengan-animasi/10153236934439689' target='_blank'><u>id</u></a>, <a href="https://blog.naver.com/visualgo_nus" target='_blank'><u>kr</u></a>, <a href='https://www.facebook.com/groups/163215593699283/permalink/824003417620494/' target='_blank'><u>vn</u></a>, <a href='http://pantip.com/topic/32736343' target='_blank'><u>th</u></a>.</p>
+</div>
+</div>
+
+<script src="../js/jquery-3.3.1.min.js"></script>
+<script>
+      var PHP_DOMAIN = "";
+
+      // surprise colour!
+      // Referenced to in  home.js and viz.js also
+      var colourArray = ["#52bc69", "#d65775"/*"#ed5a7d"*/, "#2ebbd1", "#d9513c", "#fec515", "#4b65ba", "#ff8a27", "#a7d41e"]; // green, pink, blue, red, yellow, indigo, orange, lime
+
+      function disableScroll() { $('html').css('overflow', 'hidden'); }
+
+      function enableScroll() { $('html').css('overflow', 'visible'); }
+
+      function replaceAll(find, replace, str) { return str.replace(new RegExp(find, 'g'), replace); }
+
+      function getColours() {
+        var generatedColours = new Array();
+        while (generatedColours.length < 4) {
+          var n = (Math.floor(Math.random() * colourArray.length));
+          if ($.inArray(n, generatedColours) == -1)
+            generatedColours.push(n);
+        }
+        return generatedColours;
+      }
+
+      function isOn(value, position) {
+        return (value>>position) & 1 === 1;
+      }
+
+      function customAlert(msg) {
+        $('#custom-alert p').html(msg);
+        var m = -1 * ($('#custom-alert').outerHeight()/2);
+        $('#custom-alert').css('margin-top', m+'px');
+        $('#dark-overlay').fadeIn(function() {
+          $('#custom-alert').fadeIn(function() {
+            setTimeout(function() {
+              $('#custom-alert').fadeOut(function() {
+                $('#dark-overlay').fadeOut();
+              });
+            }, 1000);
+          });
+        });
+      }
+
+      function showLoadingScreen() {
+        $('#loading-overlay').show();
+        $('#loading-message').show();
+      }
+
+      function hideLoadingScreen() {
+        $('#loading-overlay').hide();
+      }
+
+      function commonAction(retval, msg) {
+        //setTimeout(function() {
+          if (retval) { // mode == "exploration" && // now not only for exploration mode, but check if this opens other problems
+            $('#current-action').show();
+            $('#current-action').html(mode == "exploration" ? msg : ("e-Lecture Example (auto play until done)<br>" + msg));
+            $('#progress-bar').slider("option", "max", gw.getTotalIteration()-1);
+            triggerRightPanels();
+            isPlaying = true;
+          }
+        //}, 500);
+      }
+
+      function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split('&');
+        for (var i = 0; i < vars.length; i++) {
+          var pair = vars[i].split('=');
+          if (decodeURIComponent(pair[0]) == variable)
+            return decodeURIComponent(pair[1]);
+        }
+        return "";
+      }
+
+      var generatedColours = getColours();
+      var surpriseColour = colourArray[generatedColours[0]];
+      var colourTheSecond = colourArray[generatedColours[1]];
+      var colourTheThird = colourArray[generatedColours[2]];
+      var colourTheFourth = colourArray[generatedColours[3]];
+
+      $(function() {
+        $('.links').css('background', surpriseColour);
+        $('.right-links').css('background', surpriseColour);
+        $('#login-go').css('background', surpriseColour);
+
+        $('.colour').css("color", surpriseColour); // name
+        $('h4').css("background-color", surpriseColour); // about, contact us etc. button background
+
+        // title
+        $('#title a').click(function() {
+          $('#title a').removeClass('selected-viz');
+          $(this).addClass('selected-viz');
+          // temporary quick fix for Google Chrome Aug 2016 issue...
+          setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 100); // force resize/redraw...
+          setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        });
+
+        // overlays stuffs
+        $('#trigger-about').click(function() {
+          if ($(window).width() > 600) {
+            $('#dark-overlay').fadeIn(function() {
+              $('#about').fadeIn();
+            });
+          }
+          else
+            alert('Sorry, this dialog is too big. Please load it on bigger screen');
+        });
+
+        $('.close-overlay').click(function() {
+          $('.overlays').fadeOut(function() {
+            $('#dark-overlay').fadeOut();
+          });
+        });
+
+        $('#dark-overlay').click(function() {
+          $('.overlays').fadeOut();
+          $('#dark-overlay').fadeOut();
+        });
+      });
+    </script>
+
+<script src="../js/jquery-ui.min.js"></script>
+<script src="../js/d3.min.js"></script>
+<script src="../js/viz-1.0.3.js"></script>
+<script src="../js/visualgo_print.js"></script>
+<script src="../js/graph_library.js"></script>
+<script>
+      function runSlide(slide) {
+        if (slide == '1') {
+          $("#e-lecture").html("slide " + slide + " (" + 7 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '1-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 15 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '2') {
+          $("#e-lecture").html("slide " + slide + " (" + 23 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '3') {
+          $("#e-lecture").html("slide " + slide + " (" + 30 + "%)");
+          closeAll();
+$("#draw").addClass("menu-highlighted");
+$("#examples").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '4') {
+          $("#e-lecture").html("slide " + slide + " (" + 38 + "%)");
+          closeAll();
+$("#bruteforce").addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '5') {
+          $("#e-lecture").html("slide " + slide + " (" + 46 + "%)");
+          closeAll();
+$("#on_tree").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '6') {
+          $("#e-lecture").html("slide " + slide + " (" + 53 + "%)");
+          closeAll();
+$("#on_tree").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '7') {
+          $("#e-lecture").html("slide " + slide + " (" + 61 + "%)");
+          closeAll();
+$("#on_bipartite").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '8') {
+          $("#e-lecture").html("slide " + slide + " (" + 69 + "%)");
+          closeAll();
+$("#approximations").click().addClass("menu-highlighted");
+          showActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99') {
+          $("#e-lecture").html("slide " + slide + " (" + 76 + "%)");
+          
+          hideEntireActionsPanel();
+ 
+          showStatusPanel();
+          showCodetracePanel();
+      
+        }
+        if (slide == '99-1') {
+          $("#e-lecture").html("slide " + slide + " (" + 84 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-2') {
+          $("#e-lecture").html("slide " + slide + " (" + 92 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+        if (slide == '99-3') {
+          $("#e-lecture").html("slide " + slide + " (" + 100 + "%)");
+          
+          hideEntireActionsPanel();
+          hideStatusPanel();
+          hideCodetracePanel();
+      
+        }
+      }
+
+      window.onpopstate = function(event) {
+        var slide = event.state['slide'];
+        openSlide(slide, function() {
+          runSlide(slide);
+        });
+      };
+
+      function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'), sParameterName, i;
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          sParameterName = sURLVariables[i].split('=');
+          if (sParameterName[0] === sParam) return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+      };
+
+      function pushState(slideValue) {
+        var url = '/zh/mvc';
+        if (typeof slideValue != 'undefined' && slideValue != null) url += '?slide=' + slideValue;
+        window.history.pushState({slide: slideValue}, "slide " + slideValue, url);
+      }
+
+      function showPopup(callback) {
+        $('#popup').fadeIn(100, callback);
+      }
+
+      function hidePopup(callback) {
+        $('#popup').fadeOut(100, callback);
+      }
+
+      function showOverlay() {
+        $('#overlay').css('opacity', 0.5); 
+        $('#overlay').show();
+      }
+
+      function hideOverlay() {
+        $('#overlay').hide();
+        $("#e-lecture").html("");
+      }
+
+      function makeOverlayTransparent() {
+        $('#overlay').css('opacity', 0);
+      }
+
+      function hideSlide(callback) {
+        isPlaying = true;
+        closeSlide(cur_slide, function() {
+          makeOverlayTransparent();
+          setTimeout(callback, 700); // don't immediately run the animation, wait for 500ms+ first
+        });
+      }
+
+      function showSlide() {
+        isPlaying = false;
+        openSlide(cur_slide);
+        showOverlay();
+      }
+
+      $(function() {
+        var slide = getUrlParameter('slide');
+        
+        $.get('/hasvisited' + '/mvc', function(data) {
+          var hasVisited = data['hasvisited'] == '1';
+          if (!hasVisited) {
+            var postData = {
+              '_token': 'kaTPcaTtnnJPvGspW7LRTya6UONjjAL7yXZSCSBh',
+              'page': '/mvc'.substring(1),
+            };
+
+            $.post("/visitpage", postData, function(data) {
+              // non critical request...
+            });
+
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+            }
+
+            $("#mode-menu a").trigger("click");
+          }
+          else {
+            if (typeof slide != undefined && slide != null) {
+              cur_slide = slide;
+              $('#mode-menu a').click();
+            }    
+          }
+        }).fail(function() {
+          if (typeof slide != undefined && slide != null) {
+            cur_slide = slide;
+            $('#mode-menu a').click();
+          }
+        });
+
+        $('.mcq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#mcq-answer-' + questionId).val();
+          var userAnswer = $('input[type=radio][name=mcq-'+questionId+'-choice]:checked').val();
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green"><b>Correct!</b></font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red"><b>Wrong Answer! Try again...</b></font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('.msq-submit').click(function() {
+          var questionId = parseInt($(this).attr('id').split('-')[1]);
+          var answer = $('#msq-answer-' + questionId).val();
+
+          var answers = [];
+          $('input[type=checkbox][class=msq-choice]:checked').each(function() {
+            answers.push($(this).attr('id').split('-')[3]);
+          });
+          answers.sort();
+          var userAnswer = answers.join(',');
+
+          if (answer === userAnswer) {
+            $('#answer-status-' + questionId).html('<font color="green">Correct!</font>');
+          }
+          else {
+            $('#answer-status-' + questionId).html('<font color="red">Wrong Answer! Try again...</font>');
+          }
+          $('#answer-status-' + questionId).show();
+          setTimeout(function() {
+            $('#answer-status-' + questionId).fadeOut(1000);
+          }, 1000);
+        });
+
+        $('select.lecture-dropdown').change(function() {
+          var nextSlide = $(this).val();
+          openSlide(nextSlide, function() {
+            runSlide(nextSlide);
+            pushState(nextSlide);
+          });
+        });
+
+        $('#hide-popup').click(function() {
+          hidePopup();
+        });
+
+        $('#popup').hover(function() {
+          $('#hide-popup').show();
+        }, function() {
+          $('#hide-popup').hide();
+        });
+
+        $('#electure-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('1-1');
+          pushState('1-1');
+        });
+      
+        $('#electure-1-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+        $('#electure-1-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('1');
+          pushState('1');
+        });
+      
+        $('#electure-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+        $('#electure-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('1-1');
+          pushState('1-1');
+        });
+      
+        $('#electure-3 .electure-next').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+        $('#electure-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('2');
+          pushState('2');
+        });
+      
+        $('#electure-4 .electure-next').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+        $('#electure-4 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('3');
+          pushState('3');
+        });
+      
+        $('#electure-5 .electure-next').click(function() {
+          hidePopup();
+          runSlide('6');
+          pushState('6');
+        });
+        $('#electure-5 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('4');
+          pushState('4');
+        });
+      
+        $('#electure-6 .electure-next').click(function() {
+          hidePopup();
+          runSlide('7');
+          pushState('7');
+        });
+        $('#electure-6 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('5');
+          pushState('5');
+        });
+      
+        $('#electure-7 .electure-next').click(function() {
+          hidePopup();
+          runSlide('8');
+          pushState('8');
+        });
+        $('#electure-7 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('6');
+          pushState('6');
+        });
+      
+        $('#electure-8 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+        $('#electure-8 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('7');
+          pushState('7');
+        });
+      
+        $('#electure-99 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+        $('#electure-99 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('8');
+          pushState('8');
+        });
+      
+        $('#electure-99-1 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+        $('#electure-99-1 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99');
+          pushState('99');
+        });
+      
+        $('#electure-99-2 .electure-next').click(function() {
+          hidePopup();
+          runSlide('99-3');
+          pushState('99-3');
+        });
+        $('#electure-99-2 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-1');
+          pushState('99-1');
+        });
+      
+        $('#electure-99-3 .electure-prev').click(function() {
+          hidePopup();
+          runSlide('99-2');
+          pushState('99-2');
+        });
+      
+ 
+
+        // temporary quick fix for Google Chrome Aug 2016 issue..., put at last part so that everything else has been loaded
+        // setTimeout(function(){ document.body.style.zoom = "100.1%"; }, 500);
+        // setTimeout(function(){ document.body.style.zoom = "100%"; }, 600);
+        // I turn it off on 14 June 2018, seems 'ok'?
+      });
+
+
+      function adjustPopupToImageSize() {
+        var width = $('#popup-image').prop('width');
+        var height = $('#popup-image').prop('height');
+        $('#popup').width(width + 20);
+        $('#popup').height(height + 20);
+        if (width == 0 && height == 0) {
+          setTimeout(adjustPopupToImageSize, 200);
+        } else {
+          showPopup();  
+        }
+      }
+
+      function POPUP_IMAGE(url) {
+        $('#popup-content').html('<img id="popup-image" src="' + url + '">');
+        adjustPopupToImageSize();
+      }
+
+      function URL(url) {
+        window.open(url, '_blank');
+      }
+
+      // Implement these functions in each visualisation
+      // This function will be called before entering e-Lecture Mode
+      function ENTER_LECTURE_MODE() {}
+
+      // This function will be called before returning to Explore Mode
+      function ENTER_EXPLORE_MODE() {}
+
+      // Lecture action functions
+      function CUSTOM_ACTION(action, data, mode) {}
+    </script>
+<script type="text/javascript">
+// MVC Widget
+// original author: Muhammad Rais Fathin Mudzakir
+
+var MVC = function() {
+  var self = this;
+  var gw = new GraphWidget();
+
+  var iVL = {};
+  var iEL = {};
+  var amountVertex = 0;
+  var amountEdge = 0;
+
+  this.getGraphWidget = function() { return gw; }
+
+  fixJSON = function() {
+    amountVertex = 0;
+    amountEdge = 0;
+    for (var key in iVL) amountVertex++;
+    for (var key in iEL) amountEdge++;
+    if (isWeighted) {
+      for (var key in iVL) {
+        if (iVL[key]["w"] === undefined) {
+          iVL[key]["w"] = 1;
+        }
+      }
+    }
+  }
+
+  takeJSON = function(graph) {
+    if (graph == null) return;
+    graph = JSON.parse(graph);
+    iVL = graph["vl"];
+    iEL = graph["el"];
+    fixJSON();
+  }
+
+  statusChecking = function() {
+    $("#draw-status p").html("Draw a <b>connected undirected unweighted</b> graph, preferably <b>V &gt 7</b>, <b>minimize edge crossing</b>, and make it <b>challenging for Prim's/Kruskal's algorithm</b>");
+  }
+
+  warnChecking = function() {
+    var warn = "";
+    if (amountVertex >= 17) warn += "Too much vertex on screen, consider drawing smaller graph. ";
+    if (warn == "") $("#draw-warn p").html("No Warning");
+    else            $("#draw-warn p").html(warn);
+  }
+
+  errorChecking = function() {
+    if (amountVertex == 0) {
+      $("#draw-err p").html("Graph cannot be empty. ");
+      return;
+    }
+
+    $("#draw-err p").html("No Error");
+  }
+
+  var intervalID;
+
+  this.startLoop = function() {
+    intervalID = setInterval(function() {
+      takeJSON(JSONresult);
+      warnChecking();
+      errorChecking();
+      statusChecking();
+    }, 100);
+  }
+
+  this.stopLoop = function() {
+    clearInterval(intervalID);
+  }
+
+  this.draw = function() {
+    if ($("#draw-err p").html() != "No Error")
+      return false;
+    if ($("#submit").is(':checked'))
+      this.submit(JSONresult);
+    if ($("#copy").is(':checked'))
+      window.prompt("Copy to clipboard:", JSONresult);
+
+    graph = createState({iVL: iVL, iEL: iEL});
+    gw.updateGraph(graph, 500);
+    return true;
+  }
+
+  this.importjson = function(text) {
+    takeJSON(text);
+    statusChecking();
+    graph = createState({iVL: iVL, iEL: iEL});
+    gw.updateGraph(graph, 500);
+  }
+
+  this.getV = function() {
+    return amountVertex;
+  }
+
+  this.refreshView = function() {
+    fixJSON();
+    var newState = createState({iVL: iVL, iEL: iEL});
+    gw.updateGraph(newState, 500);
+  }
+
+  this.examples = function(id) {
+    vertices = getExampleGraph(id, VL);
+    var hasWeight = false;
+    for (var key in vertices) {
+      if (vertices[key]["w"] !== undefined) {
+        hasWeight = true;
+      }
+    }
+    iVL = getExampleGraph(id, VL);
+    iEL = getExampleGraph(id, EL);
+    fixJSON();
+    var newState = createState({iVL: iVL, iEL: iEL});
+    gw.updateGraph(newState, 500);
+    return true;
+  }
+
+  this.getIVL = function() { return iVL; }
+
+  var amountLeftSet = -1;
+  biColor = function(iVL, iEL) {
+    if (iVL.length === 0) return [];
+    var V = 0;
+    for (var key in iVL) V++;
+    var AdjList = [];
+    for (var i in iVL) {
+      AdjList[i] = [];
+    }
+    for (var key in iEL) {
+      var u = iEL[key]["u"], v = iEL[key]["v"];
+      AdjList[u].push(v);
+      // add the reverse to check directed graph
+      AdjList[v].push(u);
+    }
+    var stack = [];
+    var colors = {};
+    for (var i = 0; i < V; i++) {
+      if (colors[i] !== undefined) {
+        continue;
+      }
+      colors[i] = 0;
+      stack.push(i);
+      while (stack.length > 0) {
+        var u = stack.pop();
+        for (var i in AdjList[u]) {
+          var v = AdjList[u][i];
+          if (colors[v] === undefined) {
+            colors[v] = 1 - colors[u];
+            stack.push(v);
+          } else if (colors[v] === colors[u]) {
+            return undefined;
+          }
+        }
+      }
+    }
+    var result = [[], []];
+    amountLeftSet = 0;
+    for (var i = 0; i < V; i++) {
+      result[colors[i]].push(i);
+      if (colors[i] === 0) {
+        amountLeftSet++;
+      }
+    }
+    return result;
+  }
+
+  relayoutBipartite = function(colors) {
+    var colors = biColor(iVL, iEL);
+    if (colors === undefined) {
+      alert("PANIC PANIC PANIC");
+      alert("WHY IS COLOR = UNDEFINED?");
+      return;
+    }
+    var amountRightSet = amountVertex - amountLeftSet;
+    for (var i = 1; i <= amountLeftSet; i++) {
+      iVL[colors[0][i - 1]]["x"] = 200;
+      iVL[colors[0][i - 1]]["y"] = (300 + (i - (amountLeftSet+1) / 2) * (amountLeftSet == 1 ? 0 : 200 / (amountLeftSet-1)));
+    }
+
+    for (var i = 1; i <= amountRightSet; ++i) {
+      iVL[colors[1][i - 1]]["x"] = 400;
+      iVL[colors[1][i - 1]]["y"] = (300 + (i - (amountRightSet+1) / 2) * (amountRightSet == 1 ? 0 : 200 / (amountRightSet-1)));
+    }
+  }
+
+  this.konig = function() {
+    if (isWeighted) {
+      return konigWeighted();
+    } else {
+      return konigUnweighted();
+    }
+  }
+
+  // returns a 'hashmap' / javascript object containing the amount of flow that goes through each edge
+  function edmondsKarp(flowGraph, source, sink) {
+    // figure out the number of vertices
+    var n = 0;
+    for (var key in flowGraph['vl']) n++;
+
+    // create 2D array containing the residual capacity
+    var res = [];
+    for (var i = 0; i < n; i++) {
+      res[i] = [];
+      for (var j = 0; j < n; j++) {
+        res[i][j] = 0;
+      }
+    }
+
+    for (var key in flowGraph['el']) {
+      var u = flowGraph['el'][key]['u'];
+      var v = flowGraph['el'][key]['v'];
+      res[u][v] = +flowGraph['el'][key]['w'];
+    }
+
+    var q = [];
+    var dist = [];
+    var mf = 0;
+    while (true) {
+      for (var i = 0; i < n; i++) dist[i] = 1000;
+      var bfsParent = [];
+      var qh = 0, qt = 0;
+      q[qt++] = 0;
+      dist[0] = 0;
+      while (qh < qt) {
+        var u = q[qh++];
+        for (var v = 0; v < n; v++) {
+          if (res[u][v] > 0 && dist[v] > dist[u] + 1) {
+            bfsParent[v] = u;
+            dist[v] = dist[u] + 1;
+            q[qt++] = v;
+          }
+        }
+      }
+      if (bfsParent[n - 1] === undefined) {
+        break;
+      }
+      var curFlow = 1000;
+      for (var i = n - 1; i !== 0; i = bfsParent[i]) {
+        var par = bfsParent[i];
+        if (res[par][i] < curFlow) {
+          curFlow = res[par][i];
+        }
+      }
+      for (var i = n - 1; i !== 0; i = bfsParent[i]) {
+        var par = bfsParent[i];
+        res[par][i] -= curFlow;
+        res[i][par] += curFlow;
+      }
+      mf += curFlow;
+    }
+
+    var flows = {};
+    for (var key in flowGraph['el']) {
+      var u = flowGraph['el'][key]['u'];
+      var v = flowGraph['el'][key]['v'];
+      flows[key] = res[v][u];
+    }
+
+    return flows;
+  }
+
+  function findSComponent(flowGraph, flows) {
+    // figure out the number of vertices
+    var n = 0;
+    for (var key in flowGraph['vl']) n++;
+
+    // create 2D array containing the residual capacity
+    var res = [];
+    for (var i = 0; i < n; i++) {
+      res[i] = [];
+      for (var j = 0; j < n; j++) {
+        res[i][j] = 0;
+      }
+    }
+
+    for (var key in flowGraph['el']) {
+      var u = +flowGraph['el'][key]['u'];
+      var v = +flowGraph['el'][key]['v'];
+      var flow = +flows[key];
+      res[u][v] = (+flowGraph['el'][key]['w']) - flow;
+      res[v][u] = flow;
+    }
+    
+    var visited = {};
+    var q = [];
+    var qh = 0, qt = 0;
+    q[qt++] = 0;
+    visited[0] = true;
+    while (qh < qt) {
+      var u = q[qh++];
+      for (var v = 0; v < n; v++) {
+        if (res[u][v] > 0 && visited[v] === undefined) {
+          visited[v] = true;
+          q[qt++] = v;
+        }
+      }
+    }
+
+    var sComponent = [];
+    for (var key in visited) {
+      sComponent.push(+key);
+    }
+
+    return sComponent;
+  }
+
+  function konigWeighted() {
+    var colors = biColor(iVL, iEL);
+    if (colors === undefined) {
+      $('#on_bipartite-err').html('ERROR: Not a bipartite graph');
+      return false;
+    }
+    relayoutBipartite(colors);
+
+    function convertToFlowGraph() {
+      var flowGraph = {'vl': {}, 'el': {}};
+      var source = 0, sink = amountVertex + 1;
+      flowGraph['vl'][source] = {};
+      flowGraph['vl'][source]['x'] = 100;
+      flowGraph['vl'][source]['y'] = 300;
+      for (var i = 0; i < amountVertex; i++) {
+        flowGraph['vl'][i + 1] = {};
+        flowGraph['vl'][i + 1]['x'] = iVL[i]['x'];
+        flowGraph['vl'][i + 1]['y'] = iVL[i]['y'];
+      }
+      flowGraph['vl'][sink] = {};
+      flowGraph['vl'][sink]['x'] = 500;
+      flowGraph['vl'][sink]['y'] = 300;
+      var edgeCounter = 0;
+      var isZero = {};
+      for (var i = 0; i < colors[0].length; i++) {
+        isZero[colors[0][i]] = true;
+      }
+      for (var i in iEL) {
+        var u = iEL[i]['u'];
+        var v = iEL[i]['v'];
+        if (isZero[u] === undefined) {
+          var tmp = u;
+          u = v;
+          v = tmp;
+        }
+        flowGraph['el'][edgeCounter] = {};
+        flowGraph['el'][edgeCounter]['u'] = u + 1;
+        flowGraph['el'][edgeCounter]['v'] = v + 1;
+        flowGraph['el'][edgeCounter]['w'] = 1000;
+        edgeCounter++;
+      }
+      for (var i = 0; i < colors[0].length; i++) {
+        flowGraph['el'][edgeCounter] = {};
+        flowGraph['el'][edgeCounter]['u'] = source;
+        flowGraph['el'][edgeCounter]['v'] = colors[0][i] + 1;
+        flowGraph['el'][edgeCounter]['w'] = iVL[colors[0][i]]['w'];
+        edgeCounter++;
+      }
+      for (var i = 0; i < colors[1].length; i++) {
+        flowGraph['el'][edgeCounter] = {};
+        flowGraph['el'][edgeCounter]['u'] = colors[1][i] + 1;
+        flowGraph['el'][edgeCounter]['v'] = sink;
+        flowGraph['el'][edgeCounter]['w'] = iVL[colors[1][i]]['w'];
+        edgeCounter++;
+      }
+      return flowGraph;
+    }
+
+    var stateList = [], cs;
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL
+    });
+    cs['status'] = 'Construct the flow graph (note that the indices are shifted by one so that source is always vertex 0).';
+    cs['lineNo'] = 1;
+    stateList.push(cs);
+
+    var flowGraph = convertToFlowGraph();
+
+    cs = createState({
+      iVL: flowGraph['vl'],
+      iEL: flowGraph['el'],
+      displayVertexWeight: false,
+      displayEdgeWeight: true,
+    });
+    cs['status'] = 'Construct the flow graph (note that the indices are shifted by one so that source is always vertex 0).';
+    cs['lineNo'] = 1;
+    stateList.push(cs);
+
+    var flows = edmondsKarp(flowGraph);
+    var sComponent = findSComponent(flowGraph, flows);
+
+    var isInSComponent = {};
+    for (var i in sComponent) {
+      var realId = sComponent[i] - 1;
+      if (realId >= 0 && realId < amountVertex) {
+        isInSComponent[realId] = true;
+      }
+    }
+
+    var isInMVC = {};
+    for (var i in colors[0]) {
+      var vertex = colors[0][i];
+      if (isInSComponent[vertex] === undefined) {
+        isInMVC[vertex] = true;
+      }
+    }
+    for (var i in colors[1]) {
+      var vertex = colors[1][i];
+      if (isInSComponent[vertex] !== undefined) {
+        isInMVC[vertex] = true;
+      }
+    }
+
+    var flowGraphJSON = JSON.stringify(flowGraph);
+
+    for (var key in flowGraph['el']) {
+      var flow = flows[key];
+      flowGraph['el'][key]['w'] = flow + '/' + flowGraph['el'][key]['w'];
+    }
+
+    cs = createState({
+      iVL: flowGraph['vl'],
+      iEL: flowGraph['el'],
+      displayVertexWeight: false,
+      displayEdgeWeight: true,
+    });
+    cs['status'] = 'Calculate the max flow and find S component ';
+    cs['lineNo'] = 1;
+    stateList.push(cs);
+
+    var vertexTraversed = {};
+    for (var key in sComponent) {
+      vertexTraversed[sComponent[key]] = true;
+    }
+
+    cs = createState({
+      iVL: flowGraph['vl'],
+      iEL: flowGraph['el'],
+      displayVertexWeight: false,
+      displayEdgeWeight: true,
+      vertexTraversed: vertexTraversed
+    });
+    cs['status'] = 'The S component of the flow graph is {s_comp}.'.replace('{s_comp}', JSON.stringify(sComponent));
+    cs['lineNo'] = 1;
+    stateList.push(cs);
+
+    var vertexHighlighted = {};
+    var vertexCovered = {};
+
+    var mvc = [], mis = [];
+    var mvcCost = 0, misCost = 0;
+    for (var i = 0; i < amountVertex; i++) {
+      if (isInMVC[i] !== undefined) {
+        vertexHighlighted[i] = true;
+        mvc.push(i);
+        mvcCost += +iVL[i]['w'];
+      } else {
+        vertexCovered[i] = true;
+        mis.push(i);
+        misCost += +iVL[i]['w'];
+      }
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      vertexHighlighted: vertexHighlighted,
+      vertexCovered: vertexCovered
+    });
+    cs['status'] = '{vertices} form an MVC with cost = {cost}'.replace('{vertices}', JSON.stringify(mvc)).replace('{cost}', mvcCost) + '.' +
+                   '{vertices} form a MIS with cost = {cost}'.replace('{vertices}', JSON.stringify(mis)).replace('{cost}', misCost) + '.' +
+                   ' (Click <a target="_blank" href="maxflow?create={json}"><b><u>here</u></b></a> to see the flow graph construction and flow animation).'.replace('{json}', encodeURIComponent(flowGraphJSON));
+    cs['lineNo'] = [2, 3];
+    stateList.push(cs);
+
+    gw.startAnimation(stateList);
+    populatePseudocode('konig_weighted');
+    return true;
+  }
+
+  function konigUnweighted() {
+    var colors = biColor(iVL, iEL);
+    if (colors === undefined) {
+      $('#on_bipartite-err').html('ERROR: Not a bipartite graph');
+      return false;
+    }
+    var maxLeftSetLabel = -1;
+    for (var key in colors[0]) {
+      var v = colors[0][key];
+      if (+v > maxLeftSetLabel) {
+        maxLeftSetLabel = +v;
+      }
+    }
+    if (maxLeftSetLabel === -1) alert("GRAPH MUST NOT BE EMPTY");
+    if (maxLeftSetLabel + 1 !== amountLeftSet) {
+      // left set is not of the form 0..amountLeftSet-1
+      // -> not bipartite!
+      $('#on_bipartite-err').html('ERROR: A bipartite graph but there is no x such that the left side consists of [0, x]');
+      return false;
+    }
+
+    relayoutBipartite(colors);
+
+    var stateList = [], cs;
+
+    var AdjList = [];
+    for (var key in iVL) {
+      AdjList.push([]);
+    }
+    for (var key in iEL) {
+      var u = iEL[key]["u"], v = iEL[key]["v"];
+      AdjList[u].push(v);
+      AdjList[v].push(u);
+    }
+
+    var leftMatch = {};
+    var rightMatch = {};
+
+    for (var key in colors[0]) {
+      var left = colors[0][key];
+      var visited = {};
+
+      function aug(u) {
+        if (visited[u] !== undefined) {
+          return 0;
+        }
+        visited[u] = true;
+        for (var key in AdjList[u]) {
+          var v = AdjList[u][key];
+          if (leftMatch[v] === undefined || aug(leftMatch[v])) {
+            leftMatch[v] = u;
+            rightMatch[u] = v;
+            return 1;
+          }
+        }
+        return 0;
+      }
+
+      var found = aug(left);
+    }
+
+    var matchingCount = 0;
+    var edgeHighlighted = {};
+    for (var key in iEL) {
+      var u = iEL[key]["u"], v = iEL[key]["v"];
+      if (leftMatch[u] === v || leftMatch[v] === u) {
+        edgeHighlighted[key] = true;
+        matchingCount++;
+      }
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      edgeHighlighted: edgeHighlighted
+    });
+    var bipartiteGraphObject = {"vl": iVL, "el": iEL, "amountLeftSet": amountLeftSet};
+    cs['status'] = 'Found a matching of size {size}. '.replace('{size}', matchingCount);
+    cs['lineNo'] = 1;
+    stateList.push(cs);
+
+    var U = [];
+    var vertexHighlighted = {};
+    for (var i = 0; i < amountLeftSet; i++) {
+      if (rightMatch[i] === undefined) {
+        U.push(i);
+        vertexHighlighted[i] = true;
+      }
+    }
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      vertexHighlighted: vertexHighlighted,
+      edgeHighlighted: edgeHighlighted
+    });
+    cs['status'] = 'Found U = ' + JSON.stringify(U) + '.';
+    cs['lineNo'] = 2;
+    stateList.push(cs);
+
+    var Z = [];
+    {
+      var visited = {};
+      for (var key in colors[0]) {
+        var left = colors[0][key];
+        if (rightMatch[left] !== undefined) {
+          continue;
+        }
+        var stack = [];
+        stack.push(left);
+        visited[left] = true;
+        while (stack.length > 0) {
+          var u = stack.pop();
+          Z.push(u);
+          for (var k in AdjList[u]) {
+            var v = AdjList[u][k];
+            if (leftMatch[v] !== undefined && visited[leftMatch[v]] === undefined) {
+              // v's leftMatch can only be pushed once to the stack
+              // when v's leftMatch is pushed, we can push v also
+              Z.push(v);
+              visited[leftMatch[v]] = true;
+              stack.push(leftMatch[v]);
+            }
+          }
+        }
+      }
+    }
+
+    vertexHighlighted = {};
+    for (var key in Z) {
+      vertexHighlighted[Z[key]] = true;
+    }
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      vertexHighlighted: vertexHighlighted,
+    });
+    cs["status"] = 'Found Z = ' + JSON.stringify(Z) + '.';
+    cs["lineNo"] = [3, 4];
+    stateList.push(cs);
+
+    var MVC = [];
+    var MIS = [];
+
+    for (var key in colors[0]) {
+      var u = colors[0][key];
+      var isInZ = false;
+      for (var i in Z) {
+        if (Z[i] === u) {
+          isInZ = true;
+          break;
+        }
+      }
+      if (!isInZ) {
+        MVC.push(u);
+      } else {
+        MIS.push(u);
+      }
+    }
+
+    for (var key in colors[1]) {
+      var u = colors[1][key];
+      var isInZ = false;
+      for (var i in Z) {
+        if (Z[i] === u) {
+          isInZ = true;
+          break;
+        }
+      }
+      if (isInZ) {
+        MVC.push(u);
+      } else {
+        MIS.push(u);
+      }
+    }
+
+    var vertexHighlighted = {};
+    var vertexCovered = {};
+    var mvcCost = 0, misCost = 0;
+    for (var key in MVC) {
+      vertexHighlighted[MVC[key]] = true;
+      if (isWeighted) mvcCost += iVL[key]["w"];
+      else mvcCost++;
+    }
+    for (var key in MIS) {
+      vertexCovered[MIS[key]] = true;
+      if (isWeighted) misCost += iVL[key]["w"];
+      else misCost++;
+    }
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      vertexHighlighted: vertexHighlighted,
+      vertexCovered: vertexCovered
+    });
+    cs['status'] = '{vertices} form an MVC with cost = {cost}'.replace('{vertices}', JSON.stringify(MVC)).replace('{cost}', mvcCost) + '. ' +
+                   '{vertices} form a MIS with cost = {cost}'.replace('{vertices}', JSON.stringify(MIS)).replace('{cost}', misCost) + '. ' +
+                   'Click <a target="_blank" href="matching?create={json}"><b><u>here</u></b></a> for matching animation.'.replace('{json}', encodeURIComponent(JSON.stringify(bipartiteGraphObject)))
+    cs["lineNo"] = 5;
+    stateList.push(cs);
+
+    gw.startAnimation(stateList);
+    populatePseudocode("konig_unweighted");
+
+    return true;
+  }
+
+  this.bruteforce = function() {
+    var stateList = [];
+
+    if (amountVertex === 0) {
+      $('#bruteforce-err').html('ERROR: Graph cannot be empty.');
+      return;
+    }
+
+    if (amountVertex > 8) {
+      $('#bruteforce-err').html('ERROR: There are too many vertices. Consider drawing smaller graph.');
+      return;
+    }
+
+    var current_best = amountVertex;
+    var best_mask = (1<<amountVertex) - 1;
+
+    var cs = createState({iVL: iVL, iEL: iEL});
+    cs['status'] = 'The value of current_best is {current_best}.'.replace('{current_best}', amountVertex);
+    cs["lineNo"] = 1;
+    stateList.push(cs);
+
+    for (var mask = 0; mask < (1 << amountVertex); mask++) {
+      var valid = true;
+      var cost = 0;
+      var vertexHighlighted = {};
+      var takenVertices = [];
+      for (var i = 0; i < amountVertex; i++) {
+        if (mask & (1 << i)) {
+          takenVertices.push(i);
+          if (isWeighted) cost += iVL[i]["w"];
+          else cost++;
+          vertexHighlighted[i] = true;
+        }
+      }
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted
+      });
+      cs['status'] = 'Trying another subset of vertices with bitmask = {bitmask}. '.replace('{bitmask}', mask) +
+                     'The value of current_best is {current_best}.'.replace('{current_best}', current_best);
+      cs['lineNo'] = 2;
+      stateList.push(cs);
+      var edgeCovered = {};
+      for (var key in iEL) {
+        var u = parseInt(iEL[key]["u"]);
+        var v = parseInt(iEL[key]["v"]);
+        if ((mask & (1 << u)) == 0 && (mask & (1 << v)) == 0) {
+          valid = false;
+        } else {
+          edgeCovered[key] = true;
+        }
+      }
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        edgeCovered: edgeCovered
+      });
+      if (valid) {
+        cs['status'] = '{vertex_set} is a valid vertex cover with cost = {cost}.'.replace('{vertex_set}', takenVertices).replace('{cost}', cost);
+        if (cost < current_best) {
+          cs['status'] += ' Updating current_best to &#39;{cost}&#39;.'.replace('{cost}', cost);
+        }
+        cs["lineNo"] = [3, 4];
+      } else {
+        cs["status"] = '{vertex_set} is not a valid vertex cover as there is an edge not incident to any vertex in S..'.replace('{vertex_set}', takenVertices);
+        cs["lineNo"] = 3;
+      }
+      stateList.push(cs);
+      if (valid && cost < current_best) {
+        current_best = cost;
+        best_mask = mask;
+        for (var key in iVL) {
+          var u = parseInt(key);
+          if ((best_mask & (1 << u)) !== 0) {
+            iVL[key]["extratext"] = "opt";
+          } else {
+            iVL[key]["extratext"] = "";
+          }
+        }
+      }
+    }
+
+    //clear opt extratext
+    for (var key in iVL) {
+      iVL[key]["extratext"] = "";
+    }
+
+    var edgeCovered = {};
+    var vertexHighlighted = {};
+    var vertexCovered = {};
+    var MVC = [], MIS = [];
+    for (var i = 0; i < amountVertex; i++) {
+      if (best_mask & (1 << i)) {
+        vertexHighlighted[i] = true;
+        MVC.push(i);
+      } else {
+        vertexCovered[i] = true;
+        MIS.push(i);
+      }
+    }
+    var mvcCost = 0, misCost = 0;
+    for (var key in MVC) {
+      if (isWeighted) mvcCost += iVL[key]["w"];
+      else mvcCost++;
+    }
+    for (var key in MIS) {
+      if (isWeighted) misCost += iVL[key]["w"];
+      else misCost++;
+    }
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      vertexHighlighted: vertexHighlighted,
+      edgeCovered: edgeCovered,
+      vertexCovered: vertexCovered
+    });
+    cs['status'] = '{vertices} form an MVC with cost = {cost}'.replace('{vertices}', JSON.stringify(MVC)).replace('{cost}', mvcCost) + '.' +
+                   '<br />' +
+                   '{vertices} form a MIS with cost = {cost}'.replace('{vertices}', JSON.stringify(MIS)).replace('{cost}', misCost) + '.';
+    cs["lineNo"] = 5;
+    stateList.push(cs);
+
+    populatePseudocode("bruteforce");
+
+    gw.startAnimation(stateList);
+    return true;
+  }
+
+  relayoutTree = function() {
+    var depth = {};
+    var visited = {};
+    var stack = [0];
+    var parent = {};
+    visited[0] = true;
+    depth[0] = 0;
+    var maxDepth = 0;
+    var isTree = true;
+    var processedVertex = 0;
+    while (stack.length > 0) {
+      var u = stack.pop();
+      processedVertex++;
+      if (depth[u] > maxDepth) {
+        maxDepth = depth[u];
+      }
+      for (var key in iEL) {
+        var eu = iEL[key]["u"], ev = iEL[key]["v"];
+        if (eu === u) {
+          if (visited[ev] === undefined) {
+            visited[ev] = true;
+            parent[ev] = eu;
+            depth[ev] = depth[eu] + 1;
+            stack.push(ev);
+          } else {
+            // back edge
+            var diff = depth[eu] - depth[ev];
+            if (Math.abs(diff) != 1) {
+              isTree = false;
+            }
+          }
+        }
+        if (ev === u) {
+          if (visited[eu] === undefined) {
+            visited[eu] = true;
+            parent[eu] = ev;
+            depth[eu] = depth[ev] + 1;
+            stack.push(eu);
+          } else {
+            // back edge
+            var diff = depth[eu] - depth[ev];
+            if (Math.abs(diff) != 1) {
+              isTree = false;
+            }
+          }
+        }
+      }
+    }
+    if (processedVertex < amountVertex) {
+      isTree = false;
+    }
+    if (isTree === false) {
+      return false;
+    }
+    for (var d = 0; d <= maxDepth; d++) {
+      var vertices = [];
+      for (var i = 0; i < amountVertex; i++) {
+        if (depth[i] === d) {
+          vertices.push(i);
+        }
+      }
+      vertices.sort(function(a, b) {
+        if (iVL[parent[a]]["x"] != iVL[parent[b]]["x"]) {
+          return iVL[parent[a]]["x"] - iVL[parent[b]]["x"];
+        }
+        return a - b;
+      });
+      for (var i = 0; i < vertices.length; i++) {
+        var v = vertices[i];
+        // iVL[v]["x"] = 50 + 100 * i;
+        // iVL[v]["y"] = 50 + 100 * d;
+        var distFromMid = i - Math.floor(vertices.length / 2);
+        iVL[v]["x"] = MAIN_SVG_WIDTH / 2 + 100 * distFromMid + (i < 0 ? -50 : +50) * (d % 2);
+        iVL[v]["y"] = 50 + 50 * d;
+      }
+    }
+    return true;
+  }
+
+  this.greedy = function() {
+    if (relayoutTree() === false) {
+      $('#on_tree-err').html('ERROR: Not a tree');
+      return;
+    }
+
+    var stateList = [], cs;
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL
+    });
+    cs["status"] = 'Rooting the tree at vertex 0';
+    cs["lineNo"] = 1;
+    stateList.push(cs);
+
+    var vertexParent = [];
+    var isInMVC = {};
+    var vertexTraversed = {};
+    var vertexCovered = {};
+    var edgeCovered = {};
+
+    function cover(u) {
+      isInMVC[u] = true;
+      vertexCovered[u] = true;
+      iVL[u]['extratext'] = 'Taken';
+      for (var key in iEL) {
+        var a = iEL[key]['u'];
+        var b = iEL[key]['v'];
+        if (a === u) {
+          vertexCovered[b] = true;
+          edgeCovered[key] = true;
+        }
+        if (b === u) {
+          vertexCovered[a] = true;
+          edgeCovered[key] = true;
+        }
+      }
+    }
+
+    function dfs(u) {
+      // the edge list is not guaranteed to be unique...
+      // put it to a 'hashmap' first to obtain unique children
+      vertexTraversed[u] = true;
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexTraversed: vertexTraversed,
+        edgeCovered: edgeCovered
+      });
+      cs['status'] = 'Visiting vertex {vertex}.'.replace('{vertex}', u);
+      cs['lineNo'] = 2;
+      stateList.push(cs);
+
+      var isChildren = {};
+      for (var key in iEL) {
+        var a = iEL[key]['u'];
+        var b = iEL[key]['v'];
+        if (a === u && b !== vertexParent[u]) {
+          isChildren[b] = true;
+        }
+        if (b === u && a !== vertexParent[u]) {
+          isChildren[a] = true;
+        }
+      }
+      var children = [];
+      for (var key in isChildren) {
+        children.push(+key);
+      }
+      var hasUncoveredEdgeToChildren = false;
+      for (var i in children) {
+        var child = children[i];
+        vertexParent[child] = u;
+        cs = createState({
+          iVL: iVL,
+          iEL: iEL,
+          vertexTraversed: vertexTraversed,
+          edgeCovered: edgeCovered
+        });
+        cs['status'] = 'Processing edge {u} -> {v}.'.replace('{u}', u).replace('{v}', child);
+        cs['lineNo'] = 3;
+        stateList.push(cs);
+        dfs(child);
+        if (isInMVC[child] === undefined) {
+          hasUncoveredEdgeToChildren = true;
+        }
+      }
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexTraversed: vertexTraversed,
+        edgeCovered: edgeCovered
+      });
+      cs['status'] = 'Finished exploring the children of {vertex}.'.replace('{vertex}', u);
+      cs['lineNo'] = 3; //TODO
+      stateList.push(cs);
+      if (vertexCovered[u] === undefined) {
+        cs = createState({
+          iVL: iVL,
+          iEL: iEL,
+          vertexTraversed: vertexTraversed,
+          edgeCovered: edgeCovered
+        });
+        cs['status'] = '{vertex} is not covered.'.replace('{vertex}', u);
+        cs['lineNo'] = 4;
+        stateList.push(cs);
+        if (vertexParent[u] != -1 && !hasUncoveredEdgeToChildren) {
+          cover(vertexParent[u]);
+          cs = createState({
+            iVL: iVL,
+            iEL: iEL,
+            vertexTraversed: vertexTraversed,
+            edgeCovered: edgeCovered
+          });
+          cs['status'] = 'Taking vertex {vertex}.'.replace('{vertex}', vertexParent[u]);
+          cs['lineNo'] = 5;
+          stateList.push(cs);
+        } else {
+          cover(u);
+          cs = createState({
+            iVL: iVL,
+            iEL: iEL,
+            vertexTraversed: vertexTraversed,
+            edgeCovered: edgeCovered
+          });
+          cs['status'] = 'Taking vertex {vertex}.'.replace('{vertex}', u);
+          cs['lineNo'] = 6;
+          stateList.push(cs);
+        }
+      } else {
+        var coveredAdjacent = [];
+        for (var i in children) {
+          var child = children[i];
+          if (isInMVC[child]) {
+            coveredAdjacent.push(child);
+            break;
+          }
+        }
+        cs = createState({
+          iVL: iVL,
+          iEL: iEL,
+          vertexTraversed: vertexTraversed,
+          edgeCovered: edgeCovered
+        });
+        if (isInMVC[u] === undefined) {
+          cs['status'] = '{vertex} is covered. '.replace('{vertex}', u) +
+                        '{vertex} is adjacent to the following taken vertices : {vertex_set}.'.replace('{vertex}', u).replace('{vertex_set}', JSON.stringify(coveredAdjacent));
+        } else {
+          cs['status'] = '{vertex} is covered.'.replace('{vertex}', u);
+        }
+        stateList.push(cs);
+      }
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexTraversed: vertexTraversed,
+        edgeCovered: edgeCovered
+      });
+      cs['status'] = 'Done with vertex {vertex}.'.replace('{vertex}', u);
+      stateList.push(cs);
+      delete vertexTraversed[u];
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      vertexTraversed: vertexTraversed,
+      vertexCovered: vertexCovered,
+      edgeCovered: edgeCovered
+    });
+    cs['lineNo'] = 7;
+    stateList.push(cs);
+
+    vertexParent[0] = -1;
+    dfs(0);
+
+    var isInMIS = {};
+    var mvc = [];
+    var mis = [];
+    for (var i = 0; i < amountVertex; i++) {
+      if (isInMVC[i] !== undefined) {
+        mvc.push(i);
+      } else {
+        mis.push(i);
+        isInMIS[i] = true;
+      }
+    }
+
+    for (var key in iVL) {
+      iVL[key]['extratext'] = '';
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      vertexHighlighted: isInMVC,
+      vertexCovered: isInMIS
+    });
+    cs['status'] = '{vertices} form an MVC with cost = {cost}'.replace('{vertices}', JSON.stringify(mvc)).replace('{cost}', mvc.length) + '.' +
+                   '<br />' +
+                   '{vertices} form a MIS with cost = {cost}'.replace('{vertices}', JSON.stringify(mis)).replace('{cost}', mis.length) + '.';
+    stateList.push(cs);
+
+    populatePseudocode("greedy");
+
+    gw.startAnimation(stateList);
+    return true;
+  }
+
+  this.dp_on_tree = function() {
+    if (relayoutTree() === false) {
+      $('#on_tree-err').html('ERROR: Not a tree');
+      return;
+    }
+
+    var stateList = [], cs;
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL
+    });
+    cs["status"] = 'Rooting the tree at vertex 0';
+    cs["lineNo"] = 1;
+    stateList.push(cs);
+
+    var processOrder = [];
+
+    function dfs(u, par) {
+      var isChildren = {};
+      for (var key in iEL) {
+        var a = iEL[key]['u'];
+        var b = iEL[key]['v'];
+        if (a === u && b !== par) {
+          isChildren[b] = true;
+        }
+        if (b === u && a !== par) {
+          isChildren[a] = true;
+        }
+      }
+      var children = [];
+      for (var key in isChildren) {
+        children.push(+key);
+      }
+      for (var i in children) {
+        var child = children[i];
+        dfs(child, u);
+      }
+      processOrder.push(u);
+    }
+
+    dfs(0, -1);
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL
+    });
+    cs['status'] = 'The postorder traversal of the tree is {postorder}.'.replace('{postorder}', JSON.stringify(processOrder));
+    cs['lineNo'] = 2;
+    stateList.push(cs);
+
+    var positionAtProcessOrder = [];
+    var dp = []; // array to store mvc DP values
+    var dpActions = [];
+    for (var i = 0; i < amountVertex; i++) {
+      positionAtProcessOrder.push(0);
+      dp.push([0, 0]);
+      dpActions.push([[], []]);
+    }
+
+    for (var i = 0; i < amountVertex; i++) {
+      positionAtProcessOrder[processOrder[i]] = i;
+    }
+
+    for (var i = 0; i < amountVertex; i++) {
+      var currentVertex = processOrder[i];
+      var edgeHighlighted = {};
+      var edgeQueued = {};
+      var vertexHighlighted = {};
+      var childrenMarked = {};
+      var children = [];
+
+      vertexHighlighted[currentVertex] = true;
+
+      // highlight edges
+      var childEdgeToEdgeKey = {};
+      for (var key in iEL) {
+        var u = iEL[key]["u"], v = iEL[key]["v"];
+        if (u === currentVertex || v === currentVertex) {
+          var otherVertex = u === currentVertex ? v : u;
+          if (positionAtProcessOrder[otherVertex] < positionAtProcessOrder[currentVertex]) {
+            // There could be more than one edge pointing to the same vertex :(
+            if (childrenMarked[otherVertex] === undefined) {
+              children.push(otherVertex);
+              childEdgeToEdgeKey[otherVertex] = key;
+              childrenMarked[otherVertex] = true;
+            }
+          } else {
+            // edgeQueued[key] = true;
+          }
+        } else {
+          // edgeQueued[key] = true;
+        }
+      }
+
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        edgeHighlighted: edgeHighlighted,
+        edgeQueued: edgeQueued
+      });
+      cs['status'] = 'Visiting vertex {vertex}.'.replace('{vertex}', processOrder[i]);
+      cs["lineNo"] = 3;
+      stateList.push(cs);
+
+      edgeQueued = {};
+
+      var valueTake = isWeighted ? (+iVL[currentVertex]["w"]) : 1;
+      var takeStatus = 'Taking vertex {vertex}'.replace('{vertex}', processOrder[i]) +
+                       ' with cost = {cost}.'.replace('{cost}', (isWeighted ? (+iVL[currentVertex]["w"]) : 1));
+      for (var j = 0; j < children.length; j++) {
+        var child = children[j];
+        edgeHighlighted[childEdgeToEdgeKey[child]] = true;
+        if (dp[child][0] < dp[child][1]) {
+          dpActions[currentVertex][1].push([child, 0]);
+          valueTake += dp[child][0];
+          takeStatus += "Taking dp[" + child + "][0] with cost " + dp[child][0] + ". ";
+        } else {
+          dpActions[currentVertex][1].push([child, 1]);
+          valueTake += dp[child][1];
+          takeStatus += "Taking dp[" + child + "][1] with cost " + dp[child][1] + ". ";
+        }
+        iVL[currentVertex]["extratext"] = valueTake + ", -";
+        dp[currentVertex][1] = valueTake;
+
+        cs = createState({
+          iVL: iVL,
+          iEL: iEL,
+          vertexHighlighted: vertexHighlighted,
+          edgeQueued: edgeQueued,
+          edgeHighlighted: edgeHighlighted
+        });
+        cs["status"] = takeStatus + "dp[" + currentVertex + "][1] = " + valueTake + ".";
+        cs["lineNo"] = 4;
+        stateList.push(cs);
+      }
+      dp[currentVertex][1] = valueTake;
+      takeStatus += "dp[" + currentVertex + "][1] = " + valueTake + ".";
+      iVL[currentVertex]["extratext"] = valueTake + ", -";
+      edgeHighlighted = {};
+
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        edgeQueued: edgeQueued,
+        edgeHighlighted: edgeHighlighted
+      });
+      cs["status"] = takeStatus;
+      cs["lineNo"] = 4;
+      stateList.push(cs);
+
+
+      var valueNotTake = 0;
+      var notTakeStatus = "";
+      for (var j = 0; j < children.length; j++) {
+        var child = children[j];
+        edgeHighlighted[childEdgeToEdgeKey[child]] = true;
+        dpActions[currentVertex][0].push([child, 1]);
+        valueNotTake += dp[child][1];
+        notTakeStatus += "Taking dp[" + child + "][1] with cost " + dp[child][1] + ". ";
+
+        dp[currentVertex][0] = valueNotTake;
+        iVL[currentVertex]["extratext"] = valueTake + ", " + valueNotTake;
+
+        cs = createState({
+          iVL: iVL,
+          iEL: iEL,
+          vertexHighlighted: vertexHighlighted,
+          edgeQueued: edgeQueued,
+          edgeHighlighted: edgeHighlighted
+        });
+        cs["status"] = notTakeStatus + "dp[" + currentVertex + "][0] = " + valueNotTake + ".";
+        cs["lineNo"] = 5;
+        stateList.push(cs);
+      }
+      dp[currentVertex][0] = valueNotTake;
+      notTakeStatus += "dp[" + currentVertex + "][0] = " + valueNotTake + ".";
+      iVL[currentVertex]["extratext"] = valueTake + ", " + valueNotTake;
+      edgeHighlighted = {};
+
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        edgeQueued: edgeQueued,
+        edgeHighlighted: edgeHighlighted
+      });
+      cs["status"] = notTakeStatus;
+      cs["lineNo"] = 5;
+      stateList.push(cs);
+    }
+
+    var shouldTake = {};
+    var vertexHighlighted = {}, vertexCovered = {};
+    var MVC = [], MIS = [];
+
+    shouldTake[0] = dp[0][1] < dp[0][0] ? 1 : 0;
+    var mvcCost = 0, misCost = 0;
+
+    for (var i = amountVertex - 1; i >= 0; i--) {
+      var currentVertex = processOrder[i];
+      if (shouldTake[currentVertex] === undefined) {
+        alert("PANICPANICPANIC, SHOULD WE TAKE " + currentVertex + "?");
+        break;
+      }
+      if (shouldTake[currentVertex]) {
+        vertexHighlighted[currentVertex] = true;
+        MVC.push(currentVertex);
+        if (isWeighted) {
+          mvcCost += iVL[currentVertex]["w"];
+        } else {
+          mvcCost++;
+        }
+      } else {
+        vertexCovered[currentVertex] = true;
+        MIS.push(currentVertex);
+        if (isWeighted) {
+          misCost += iVL[currentVertex]["w"];
+        } else {
+          misCost++;
+        }
+      }
+      var take = shouldTake[currentVertex];
+      for (var j = 0; j < dpActions[currentVertex][take].length; j++) {
+        var affected = dpActions[currentVertex][take][j][0];
+        var action = dpActions[currentVertex][take][j][1];
+        shouldTake[affected] = action;
+      }
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      vertexHighlighted: vertexHighlighted,
+      vertexCovered: vertexCovered
+    });
+    cs['status'] = '{vertices} form an MVC with cost = {cost}'.replace('{vertices}', JSON.stringify(MVC)).replace('{cost}', mvcCost) + '.' +
+                   '<br />' +
+                   '{vertices} form a MIS with cost = {cost}'.replace('{vertices}', JSON.stringify(MIS)).replace('{cost}', misCost) + '.';
+    cs["lineNo"] = 5;
+    stateList.push(cs);
+
+    // clean extratext
+    for (var i = 0; i < amountVertex; i++) {
+      iVL[i]["extratext"] = "";
+    }
+
+    populatePseudocode("dp_on_tree");
+
+    gw.startAnimation(stateList);
+    return true;
+  }
+
+  // helper function used in approximation algos
+  function getMinVertexCoverCost() {
+    var result = -1;
+    for (var mask = 0; mask < (1 << amountVertex); mask++) {
+      var valid = true;
+      var total = 0;
+      for (var i = 0; i < amountVertex; i++) {
+        if (mask & (1 << i)) {
+          if (isWeighted) {
+            total += iVL[i]["w"];
+          } else {
+            total++;
+          }
+        }
+      }
+      for (var key in iEL) {
+        var u = parseInt(iEL[key]["u"]);
+        var v = parseInt(iEL[key]["v"]);
+        if ((mask & (1 << u)) == 0 && (mask & (1 << v)) == 0) {
+          valid = false;
+          break;
+        }
+      }
+      if (valid && (result == -1 || total < result)) {
+        result = total;
+      }
+    }
+    return result == -1 ? 0 : result;
+  }
+
+  this.deterministic_two_opt = function() {
+    if (amountVertex === 0) {
+      $('#approximation-err').html('没有图表运行此项。请首先选择图表。.');
+      return;
+    }
+    if (isWeighted) {
+      return deterministic_two_opt_weighted();
+    } else {
+      return deterministic_two_opt_unweighted();
+    }
+  }
+
+  function deterministic_two_opt_weighted() {
+    var stateList = [];
+    var W = {};
+
+    for (var key in iVL) {
+      if (isWeighted) {
+        W[key] = iVL[key]["w"];
+      } else {
+        W[key] = 1;
+      }
+      iVL[key]["extratext"] = parseInt(W[key]);
+    }
+    cs = createState({iVL: iVL, iEL: iEL});
+    cs["status"] = 'Assigning vertices&apos; weight to array W';
+    cs["lineNo"] = [1, 2];
+    stateList.push(cs);
+
+    for (var key in iEL) {
+      var u = iEL[key]["u"], v = iEL[key]["v"];
+      var w = iEL[key]["w"];
+      var e = W[u] < W[v] ? W[u] : W[v];
+      var edgeHighlighted = {};
+      edgeHighlighted[key] = true;
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        edgeHighlighted: edgeHighlighted,
+      });
+      cs['status'] = 'Processing edge {u} -> {v} with e = {e}.'.replace('{u}', u).replace('{v}', v).replace('{e}', e);
+      cs['lineNo'] = [3, 4];
+      stateList.push(cs);
+      W[u] -= e;
+      W[v] -= e;
+      iVL[u]["extratext"] = parseInt(W[u]);
+      iVL[v]["extratext"] = parseInt(W[v]);
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        edgeHighlighted: edgeHighlighted,
+      });
+      cs['status'] = '{value} has been subtracted from the W entries of the selected edge'.replace('{value}', e) + '. ' +
+                     'W array = {w_array}'.replace('{w_array}', JSON.stringify(W));
+      cs['lineNo'] = [3, 4, 5, 6];
+      stateList.push(cs);
+    }
+
+    var MVC = [];
+    var mvcCost = 0;
+    var vertexHighlighted = {};
+    for (var key in iVL) {
+      if (W[key] === 0) {
+        MVC.push(key);
+        vertexHighlighted[key] = true;
+        if (isWeighted) {
+          mvcCost += iVL[key]["w"];
+        } else {
+          mvcCost++;
+        }
+      }
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      vertexHighlighted: vertexHighlighted
+    });
+    cs['status'] = '{vertex_set} form a vertex cover with cost = {cost}.'.replace('{vertex_set}', JSON.stringify(MVC)).replace('{cost}', mvcCost) +
+                   ' The cost of the minimum vertex cover of this graph is {mvc_cost}'.replace('{mvc_cost}', getMinVertexCoverCost());
+    cs["lineNo"] = 7;
+    stateList.push(cs);
+
+    for (var key in iVL) iVL[key]["extratext"] = "";
+
+    populatePseudocode("deterministic_two_opt_weighted");
+
+    gw.startAnimation(stateList);
+    return true;
+  }
+
+  function deterministic_two_opt_unweighted() {
+    var i, key, cs;
+    var stateList = [];
+    var takenVertices = {};
+    var vertexHighlighted = {}, edgeHighlighted = {}, vertexTraversed = {}, edgeTraversed = {}, edgeQueued = {};
+    var edgeCovered = {};
+
+    for (var key in iEL) {
+      edgeQueued[key] = true;
+    }
+
+    function edgeListToString(from, to) {
+      var ansStr = "";
+      var maxLength = Math.min(to - from + 1, 9);
+      for (var i = 0; i < maxLength; i++) {
+        var key = (i + from).toString();
+        ansStr += "(" + iEL[key]["u"] + ", " + iEL[key]["v"] + ")";
+        if (i < (maxLength - 1))
+          ansStr += ", ";
+      }
+      if (to - from + 1 >= 10)
+        ansStr += " ...";
+      return ansStr;
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL
+    });
+    cs["status"] = 'Assigning arbitrary order to the edges' + edgeListToString(0, iEL.length - 1) + '.';
+    cs["lineNo"] = [1, 2];
+    stateList.push(cs);
+
+    var takenVertices = [];
+
+    numTaken = 0;
+    for (var i = 0; i < amountEdge; i++) {
+      var key = i.toString();
+      var u = iEL[key]["u"], v = iEL[key]["v"];
+
+      // this edge is already removed
+      if (edgeQueued[key] === undefined) {
+        continue;
+      }
+
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        edgeHighlighted: edgeHighlighted,
+        vertexTraversed: vertexTraversed,
+        edgeTraversed: edgeTraversed,
+        edgeQueued: edgeQueued,
+        edgeCovered: edgeCovered
+      });
+      cs['status'] = 'The remaining edge(s) is/are {edges}.'.replace('{edges}', edgeListToString(i, amountEdge - 1));
+      cs['lineNo'] = 3;
+      stateList.push(cs);
+
+      vertexHighlighted[u] = true;
+      vertexHighlighted[v] = true;
+      edgeHighlighted[key] = true;
+
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        edgeHighlighted: edgeHighlighted,
+        vertexTraversed: vertexTraversed,
+        edgeTraversed: edgeTraversed,
+        edgeQueued: edgeQueued,
+        edgeCovered: edgeCovered
+      });
+      cs["status"] = 'If both vertices are not taken.';
+      cs["lineNo"] = 4;
+      stateList.push(cs);
+
+      var shouldTakeVertices = (vertexTraversed[u] === undefined) && (vertexTraversed[v] === undefined);
+
+      delete vertexHighlighted[u];
+      delete vertexHighlighted[v];
+      delete edgeHighlighted[key];
+
+      if (shouldTakeVertices) {
+        vertexTraversed[u] = true;
+        vertexTraversed[v] = true;
+        takenVertices.push(u);
+        takenVertices.push(v);
+        numTaken += 2;
+        for (var nkey in iEL) {
+          if (edgeQueued[nkey] === undefined) {
+            continue;
+          }
+          if (iEL[nkey]["u"] === u || iEL[nkey]["v"] === u ||
+              iEL[nkey]["u"] === v || iEL[nkey]["v"] === v) {
+              edgeCovered[nkey] = true;
+          }
+        }
+        cs = createState({
+          iVL: iVL,
+          iEL: iEL,
+          vertexHighlighted: vertexHighlighted,
+          edgeHighlighted: edgeHighlighted,
+          vertexTraversed: vertexTraversed,
+          edgeTraversed: edgeTraversed,
+          edgeQueued: edgeQueued,
+          edgeCovered: edgeCovered
+        });
+        cs["status"] = 'Taking both vertices and removing edges incident with the chosen vertices';
+        cs["lineNo"] = 5;
+        stateList.push(cs);
+        for (var nkey in iEL) {
+          if (edgeQueued[nkey] === undefined) {
+            continue;
+          }
+          if (iEL[nkey]["u"] === u || iEL[nkey]["v"] === u ||
+              iEL[nkey]["u"] === v || iEL[nkey]["v"] === v) {
+              delete edgeCovered[nkey];
+              delete edgeQueued[nkey];
+          }
+        }
+        cs["status"] = 'Taking both vertices and removing edges incident with the chosen vertices';
+        cs["lineNo"] = 5;
+        stateList.push(cs);
+      } else {
+        delete edgeQueued[key];
+        cs = createState({
+          iVL: iVL,
+          iEL: iEL,
+          vertexHighlighted: vertexHighlighted,
+          edgeHighlighted: edgeHighlighted,
+          vertexTraversed: vertexTraversed,
+          edgeTraversed: edgeTraversed,
+          edgeQueued: edgeQueued,
+          edgeCovered: edgeCovered
+        });
+        cs["status"] = 'Not taking both vertices';
+        cs["lineNo"] = 6;
+        stateList.push(cs);
+      }
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      vertexHighlighted: vertexHighlighted,
+      edgeHighlighted: edgeHighlighted,
+      vertexTraversed: vertexTraversed,
+      edgeTraversed: edgeTraversed,
+      edgeQueued: edgeQueued,
+      edgeCovered: edgeCovered
+    });
+    cs['status'] = '{vertex_set} form a vertex cover with cost = {cost}. '.replace('{vertex_set}', JSON.stringify(takenVertices)).replace('{cost}', numTaken) +
+                   'The cost of the minimum vertex cover of this graph is {mvc_cost}.'.replace('{mvc_cost}', getMinVertexCoverCost());
+    cs['lineNo'] = 7;
+    stateList.push(cs);
+
+    populatePseudocode("deterministic_two_opt_unweighted");
+
+    gw.startAnimation(stateList);
+    return true;
+  }
+
+  this.probabilistic_two_opt = function() {
+    if (amountVertex === 0) {
+      $('#approximation-err').html('没有图表运行此项。请首先选择图表。.');
+      return;
+    }
+    if (isWeighted === true) {
+      $('#approximation-err').html('Probabilistic 2-opt is not applicable to weighted MVC');
+      return;
+    }
+
+    var i, key, totalWeight = 0, cs;
+    var stateList = [];
+    var takenVertices = {};
+    var vertexHighlighted = {}, edgeHighlighted = {}, vertexTraversed = {}, edgeTraversed = {}, edgeQueued = {};
+    var edgeCovered = {};
+
+    for (var key in iEL) {
+      edgeQueued[key] = true;
+    }
+
+    if (amountVertex == 0) { // error check, no graph (maybe via empty JSON or faulty db)
+      $('#probabilistic_two_opt-err').html('没有图表运行此项。请首先选择图表。.');
+      return false;
+    }
+
+    function queuedEdgeToString() {
+      var ansStr = "";
+      var isLargerThanTen = false;
+      var edges = [];
+      for (var key in edgeQueued) {
+        if (edges.length == 9) {
+          isLargerThanTen = true;
+          break;
+        }
+        edges.push("(" + iEL[key]["u"] + ", " + iEL[key]["v"] + ")");
+      }
+      var str = edges.join(", ");
+      if (isLargerThanTen) {
+        str += " ...";
+      }
+      return str;
+    }
+
+    var mvcCost = 0;
+    var VC = [];
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL
+    });
+    cs["status"] = 'Assigning arbitrary order to the edges ' + queuedEdgeToString() + '.';
+    cs["lineNo"] = [1, 2];
+    stateList.push(cs);
+
+    numTaken = 0;
+    for (var i = 0; i < amountEdge; i++) {
+      var key = i.toString();
+      var u = iEL[key]["u"], v = iEL[key]["v"];
+
+      // ignore removed edge
+      if (edgeQueued[key] === undefined) {
+        continue;
+      }
+
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        edgeHighlighted: edgeHighlighted,
+        vertexTraversed: vertexTraversed,
+        edgeTraversed: edgeTraversed,
+        edgeQueued: edgeQueued,
+        edgeCovered: edgeCovered
+      });
+      cs['status'] = 'The remaining edge(s) is/are {edges}.'.replace('{edges}', queuedEdgeToString());
+      cs['lineNo'] = 3;
+      stateList.push(cs);
+
+      vertexHighlighted[u] = true;
+      vertexHighlighted[v] = true;
+      edgeHighlighted[key] = true;
+
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        edgeHighlighted: edgeHighlighted,
+        vertexTraversed: vertexTraversed,
+        edgeTraversed: edgeTraversed,
+        edgeQueued: edgeQueued,
+        edgeCovered: edgeCovered
+      });
+      cs["status"] = 'Taking one endpoint at random';
+      cs["lineNo"] = 4;
+      stateList.push(cs);
+
+      var takenVertex = Math.random() <= 0.5 ? u : v;
+
+      mvcCost++;
+      VC.push(takenVertex);
+
+      if (u !== takenVertex) {
+        delete vertexHighlighted[u];
+      }
+
+      if (v !== takenVertex) {
+        delete vertexHighlighted[v];
+      }
+
+      delete edgeHighlighted[key];
+
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        edgeHighlighted: edgeHighlighted,
+        vertexTraversed: vertexTraversed,
+        edgeTraversed: edgeTraversed,
+        edgeQueued: edgeQueued,
+        edgeCovered: edgeCovered
+      });
+      cs["status"] = 'Taking one endpoint at random';
+      cs["lineNo"] = 4;
+      stateList.push(cs);
+
+      for (var j = 0; j < amountEdge; j++) { // need to optimize?
+        var curKey = j.toString();
+        if (edgeQueued[curKey] !== undefined && (iEL[curKey]["u"] === takenVertex || iEL[curKey]["v"] === takenVertex)) {
+          edgeCovered[curKey] = true;
+        }
+      }
+
+      cs = createState({
+      iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        edgeHighlighted: edgeHighlighted,
+        vertexTraversed: vertexTraversed,
+        edgeTraversed: edgeTraversed,
+        edgeQueued: edgeQueued,
+        edgeCovered: edgeCovered
+      });
+      cs["status"] = 'Remove edges incident to the chosen endpoint.';
+      cs["lineNo"] = 5;
+      stateList.push(cs);
+
+      for (var j = 0; j < amountEdge; j++) {
+        var curKey = j.toString();
+        if (edgeQueued[curKey] !== undefined && (iEL[curKey]["u"] === takenVertex || iEL[curKey]["v"] === takenVertex)) {
+          delete edgeQueued[curKey];
+          delete edgeCovered[curKey];
+        }
+      }
+
+      delete edgeQueued[key];
+      delete vertexHighlighted[takenVertex];
+      vertexTraversed[takenVertex] = true;
+      numTaken++;
+
+      cs = createState({
+        iVL: iVL,
+        iEL: iEL,
+        vertexHighlighted: vertexHighlighted,
+        edgeHighlighted: edgeHighlighted,
+        vertexTraversed: vertexTraversed,
+        edgeTraversed: edgeTraversed,
+        edgeQueued: edgeQueued,
+        edgeCovered: edgeCovered
+      });
+      cs["status"] = 'Done removing.';
+      cs["lineNo"] = 5;
+      stateList.push(cs);
+    }
+
+    cs = createState({
+      iVL: iVL,
+      iEL: iEL,
+      vertexHighlighted: vertexHighlighted,
+      edgeHighlighted: edgeHighlighted,
+      vertexTraversed: vertexTraversed,
+      edgeTraversed: edgeTraversed,
+      edgeCovered: edgeCovered
+    });
+    cs['status'] = '{vertex_set} form a vertex cover with cost = {cost}. '.replace('{vertex_set}', JSON.stringify(VC)).replace('{cost}', mvcCost) +
+                   'The cost of the minimum vertex cover of this graph is {mvc_cost}'.replace('{mvc_cost}', getMinVertexCoverCost());
+    cs['lineNo'] = 7;
+    stateList.push(cs);
+
+    populatePseudocode("probabilistic_two_opt");
+
+    gw.startAnimation(stateList);
+    return true;
+  }
+
+  function createState(options) {
+    var iVLObject = options["iVL"];
+    var iELObject = options["iEL"];
+    var vertexHighlighted = options["vertexHighlighted"];
+    var edgeHighlighted = options["edgeHighlighted"];
+    var vertexTraversed = options["vertexTraversed"];
+    var edgeTraversed = options["edgeTraversed"];
+    var edgeQueued = options["edgeQueued"];
+    var edgeCovered = options["edgeCovered"];
+    var vertexCovered = options["vertexCovered"];
+    var vertexGreyed = options["vertexGreyed"];
+    var displayVertexWeight = options["displayVertexWeight"];
+    var displayEdgeWeight = options["displayEdgeWeight"];
+
+    var isDefaultGrey = true;
+    if ((vertexHighlighted == null) && (edgeHighlighted == null) && (vertexTraversed == null) && (edgeTraversed == null) && (edgeQueued == null) && (vertexGreyed == null))
+      isDefaultGrey = false;
+    if (vertexHighlighted == null) vertexHighlighted = {};
+    if (edgeHighlighted == null) edgeHighlighted = {};
+    if (vertexTraversed == null) vertexTraversed = {};
+    if (edgeTraversed == null) edgeTraversed = {};
+    if (edgeQueued == null) edgeQueued = {};
+    if (vertexGreyed == null) vertexGreyed = {};
+    if (displayVertexWeight == null) displayVertexWeight = isWeighted;
+    if (displayEdgeWeight == null) displayEdgeWeight = false;
+
+    var key;
+    var state = {
+      "vl": {},
+      "el": {}
+    };
+
+    if (isDefaultGrey) {
+      for (key in iVLObject) {
+        state["vl"][key] = {};
+        state["vl"][key]["cx"] = iVLObject[key]["x"];
+        state["vl"][key]["cy"] = iVLObject[key]["y"];
+        state["vl"][key]["text"] = key;
+        if (displayVertexWeight) {
+          if (iVLObject[key]["w"] !== undefined) {
+            state["vl"][key]["text"] += "/" + iVLObject[key]["w"];
+          } else {
+            state["vl"][key]["text"] += "/1";
+          }
+        }
+        state["vl"][key]["state"] = VERTEX_GREY_OUTLINE;
+        state["vl"][key]["extratext"] = iVLObject[key]["extratext"];
+      }
+      for (key in iELObject) {
+        state["el"][key] = {};
+        state["el"][key]["vertexA"] = iELObject[key]["u"];
+        state["el"][key]["vertexB"] = iELObject[key]["v"];
+        state["el"][key]["type"] = EDGE_TYPE_UDE;
+        state["el"][key]["weight"] = iELObject[key]["w"];
+        state["el"][key]["state"] = EDGE_GREY;
+        state["el"][key]["displayWeight"] = displayEdgeWeight;
+        state["el"][key]["animateHighlighted"] = false;
+      }
+    }
+    else {
+      for (key in iVLObject) {
+        state["vl"][key] = {};
+        state["vl"][key]["cx"] = iVLObject[key]["x"];
+        state["vl"][key]["cy"] = iVLObject[key]["y"];
+        state["vl"][key]["text"] = key;
+        if (displayVertexWeight) {
+          if (iVLObject[key]["w"] !== undefined) {
+            state["vl"][key]["text"] += "/" + iVLObject[key]["w"];
+          } else {
+            state["vl"][key]["text"] += "/1";
+          }
+        }
+        state["vl"][key]["state"] = VERTEX_DEFAULT;
+        state["vl"][key]["extratext"] = iVLObject[key]["extratext"];
+      }
+      for (key in iELObject) {
+        state["el"][key] = {};
+        state["el"][key]["vertexA"] = iELObject[key]["u"];
+        state["el"][key]["vertexB"] = iELObject[key]["v"];
+        state["el"][key]["type"] = EDGE_TYPE_UDE;
+        state["el"][key]["weight"] = iELObject[key]["w"];
+        state["el"][key]["state"] = EDGE_DEFAULT;
+        state["el"][key]["displayWeight"] = displayEdgeWeight;
+        state["el"][key]["animateHighlighted"] = false;
+      }
+    }
+
+    for (key in edgeQueued) {
+      key1 = state["el"][key]["vertexA"];
+      key2 = state["el"][key]["vertexB"]
+      state["vl"][key1]["state"] = VERTEX_DEFAULT;
+      state["vl"][key2]["state"] = VERTEX_DEFAULT;
+      state["el"][key]["state"] = EDGE_DEFAULT;
+    }
+
+    for (key in iVLObject) {
+      if (vertexGreyed[key] === undefined) {
+        state["vl"][key]["state"] = VERTEX_DEFAULT;
+      }
+    }
+
+    for (key in edgeCovered) state["el"][key]["state"] = EDGE_BLUE;
+    for (key in vertexCovered) state["vl"][key]["state"] = VERTEX_BLUE_FILL;
+    for (key in vertexHighlighted) state["vl"][key]["state"] = VERTEX_HIGHLIGHTED; // VERTEX_BLUE_FILL;
+    for (key in edgeHighlighted) state["el"][key]["state"] = EDGE_HIGHLIGHTED; // EDGE_BLUE;
+    for (key in vertexTraversed) state["vl"][key]["state"] = VERTEX_TRAVERSED; // VERTEX_GREEN_FILL;
+    for (key in edgeTraversed) state["el"][key]["state"] = EDGE_TRAVERSED; // EDGE_GREEN;
+
+    return state;
+  }
+
+  function populatePseudocode(act) {
+    var codes = [];
+    switch (act) {
+    case "deterministic_two_opt_unweighted":
+      codes.push('Assign arbitrary order to the edges');
+      codes.push('V = {}');
+      codes.push('foreach (edge e in edgeList)');
+      codes.push('&nbsp;&nbsp;If both vertices are not taken');
+      codes.push('&nbsp;&nbsp;&nbsp;&nbsp;Take both vertices and remove incident edges');
+      codes.push('&nbsp;&nbsp;else Ignore both vertices');
+      codes.push('VC = V');
+      break;
+    case 'deterministic_two_opt_weighted':
+      codes.push('foreach (vertex v in vertexList)');
+      codes.push('&nbsp;W[v] = weight[v]');
+      codes.push('foreach (edge e in edgeList)');
+      codes.push('&nbsp;e = min(W[edge[0]], W[edge[1]])');
+      codes.push('&nbsp;W[edge[0]] -= e');
+      codes.push('&nbsp;W[edge[1]] -= e');
+      codes.push('Vertex Cover = {v | v ∈ V, W[v] = 0}');
+      break;
+    case 'probabilistic_two_opt':
+      codes.push('Assign arbitrary order to the edges');
+      codes.push('V = {}');
+      codes.push('foreach (edge e in edgeList)');
+      codes.push('&nbsp;&nbsp;Take one endpoint at random');
+      codes.push('&nbsp;&nbsp;Remove edges incident to the chosen endpoint');
+      codes.push('VC = V');
+      codes.push('');
+      break;
+    case 'bruteforce':
+      codes.push('Initialize current_best = |vertexList|');
+      codes.push('For every possible subset S of V');
+      codes.push('&nbsp;If S is a vertex cover');
+      codes.push('&nbsp;&nbsp;Try to update current_best');
+      codes.push('Return current_best');
+      codes.push('');
+      codes.push('');
+      break;
+    case 'dp_on_tree':
+      codes.push('Root the tree at vertex 0');
+      codes.push('Obtain a postorder traversal of the tree');
+      codes.push('foreach (vertex v in postorder)');
+      codes.push('&nbsp;in(v) = 1 + sum(min(out(u), in(u)) ∀child u of v)');
+      codes.push('&nbsp;out(v) = sum(in(u) ∀child u of v)');
+      codes.push('Reconstruct solution from the value of dp array');
+      codes.push('');
+      break;
+    case 'konig_unweighted':
+      codes.push('Obtain a maximum matching on the graph');
+      codes.push('Let U = unmatched vertices on the left');
+      codes.push('Let Z = Vertices in U or connected to U via');
+      codes.push('        alternating path');
+      codes.push('MVC = (L \\\\ Z) ∪ (R ∩ Z)');
+      codes.push('');
+      codes.push('');
+      break;
+    case 'konig_weighted':
+      codes.push('Construct the flow graph and calculate the maxflow');
+      codes.push('MVC = T component from the left set');
+      codes.push('&nbsp;&nbsp;&nbsp;&nbsp;∪ S component from the right set');
+      codes.push('');
+      codes.push('');
+      codes.push('');
+      codes.push('');
+      break;
+    case 'greedy':
+      codes.push('Root the tree at vertex 0');
+      codes.push('function dfs(u)');
+      codes.push('&nbsp;foreach (children v of u) dfs(v)');
+      codes.push('&nbsp;if u is not covered then');
+      codes.push('&nbsp;&nbsp;if u has parent then take u&apos;s parent');
+      codes.push('&nbsp;&nbsp;else take u');
+      codes.push('dfs(0)');
+      break;
+    default:
+      alert("ERROR!");
+      break;
+    }
+    for (var i = 0; i < 7; i++) {
+      $("#code" + (i + 1)).html(codes[i]);
+    }
+  }
+}
+
+var actionsWidth = 150;
+var statusCodetraceWidth = 430;
+
+var isApproximationsOpen = false;
+var isExamplesOpen = false;
+var isOnTreeOpen = false;
+var isOnBipartiteOpen = false;
+var isBruteforceOpen = false;
+
+function openApproximations() {
+  if (!isApproximationsOpen) {
+    $(".approximations").fadeIn("fast");
+    isApproximationsOpen = true;
+  }
+}
+
+function openExamples() {
+  if (!isExamplesOpen) {
+    $(".examples").fadeIn("fast");
+    isExamplesOpen = true;
+  }
+}
+
+function openOnTree() {
+  if (!isOnTreeOpen) {
+    $('.on_tree').fadeIn("fast");
+    isOnTreeOpen = true;
+  }
+}
+
+function openOnBipartite() {
+  if (!isOnBipartiteOpen) {
+    $('.on_bipartite').fadeIn("fast");
+    isOnBipartiteOpen = true;
+  }
+}
+
+function openBruteforce() {
+  if (!isBruteforceOpen) {
+    $(".bruteforce").fadeIn("fast");
+    isBruteforceOpen = true;
+  }
+}
+
+function closeApproximations() {
+  if (isApproximationsOpen) {
+    $(".approximations").fadeOut("fast");
+    $('#approximations-err').html('');
+    isApproximationsOpen = false;
+  }
+}
+
+function closeExamples() {
+  if (isExamplesOpen) {
+    $(".examples").fadeOut("fast");
+    isExamplesOpen = false;
+  }
+}
+
+function closeOnTree() {
+  if (isOnTreeOpen) {
+    $('.on_tree').fadeOut('fast');
+    $('#on_tree-err').html('');
+    isOnTreeOpen = false;
+  }
+}
+
+function closeOnBipartite() {
+  if (isOnBipartiteOpen) {
+    $('.on_bipartite').fadeOut('fast');
+    $('#on_bipartite-err').html('');
+    isOnBipartiteOpen = false;
+  }
+}
+
+function closeBruteforce() {
+  if (isBruteforceOpen) {
+    $('.bruteforce').fadeOut('fast');
+    $('#bruteforce_err').html('');
+    isBruteforceOpen = false;
+  }
+}
+
+function closeAll() {
+  closeApproximations();
+  closeExamples();
+  closeBruteforce();
+  closeOnTree();
+  closeOnBipartite();
+}
+
+
+function hideEntireActionsPanel() {
+  closeExamples();
+  closeBruteforce();
+  closeOnTree();
+  closeOnBipartite();
+  closeApproximations();
+  hideActionsPanel();
+}
+
+// local
+var mw, gw, randomGraphID;
+var isWeighted = false;
+
+$(function() {
+  $('#play').hide();
+  mw = new MVC();
+  gw = mw.getGraphWidget();
+  var unweighted_samples = [CP3_4_26_2, LINEAR_CHAIN, MVC_U_TWO_APPROX_KILLER, K5, INTERESTING_BIPARTITE, CS4234_SAMPLE];
+  // var weighted_samples = [MVC_U_TWO_APPROX_KILLER, MVC_W_TWO_APPROX_KILLER, EXAMPLE_VERTEX_WEIGHTED_TREE, INTERESTING_BIPARTITE]; // unused for now
+  randomGraphID = -1;
+
+  mw.examples(unweighted_samples[Math.floor(Math.random() * 5)]);
+
+  $("#menu-unweighted").on("click", function() {
+    write(true, true);
+    isWeighted = false;
+    $(".weighted").hide();
+    $(".unweighted").show();
+    $("#menu-unweighted").removeClass("selected-viz");
+    $("#menu-weighted").removeClass("selected-viz");
+    $("#menu-weighted").html("Weighted MVC");
+    $("#menu-unweighted").addClass("selected-viz");
+    $("#menu-unweighted").html("Unweighted Min Vertex Cover");
+    mw.refreshView();
+  });
+
+  $("#menu-weighted").on("click", function() {
+    write(true, true, false);
+    isWeighted = true;
+    $(".unweighted").hide();
+    $(".weighted").show();
+    $("#menu-weighted").removeClass("selected-viz");
+    $("#menu-unweighted").removeClass("selected-viz");
+    $("#menu-unweighted").html("Unweighted MVC");
+    $("#menu-weighted").addClass("selected-viz");
+    $("#menu-weighted").html("Weighted Min Vertex Cover");
+    mw.refreshView();
+  });
+
+  $("#menu-unweighted").click();
+
+  var graphJSON = getQueryVariable("create");
+  if (graphJSON.length > 0) {
+    importjson(graphJSON);
+    window.history.pushState("object or string", "Title", window.location.href.split('?')[0]);
+  }
+
+  $('#draw').click(function() {
+    closeAll();
+  });
+
+  $('#examples').click(function() {
+    closeAll();
+    openExamples();
+  });
+
+  $('#bruteforce').click(function() {
+    closeAll();
+    openBruteforce();
+  });
+
+  $('#on_bipartite').click(function() {
+    closeAll();
+    openOnBipartite();
+  });
+
+  $('#on_tree').click(function() {
+    closeAll();
+    openOnTree();
+  });
+
+  $('#approximations').click(function() {
+    closeAll();
+    openApproximations();
+  });
+});
+
+function importjson(text) {
+  if (isPlaying) stop();
+  if (mode == "exploration") {
+    mw.importjson(text);
+    // closeExamples();
+    isPlaying = false;
+  }
+}
+
+function drawGraph() {
+  if (isPlaying) stop();
+  if (mode == "exploration") {
+    $('#dark-overlay').fadeIn(function() {
+      $('#drawgraph').fadeIn();
+    });
+    mw.startLoop();
+    isPlaying = false;
+  }
+}
+
+function drawDone() {
+  if (!mw.draw()) return false;
+  mw.stopLoop();
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+function drawCancel() {
+  mw.stopLoop();
+  $('#drawgraph').fadeOut();
+  $('#dark-overlay').fadeOut();
+}
+
+function example(id) {
+  if (isPlaying) stop();
+  setTimeout(function() {
+    if ((mode == "exploration") && mw.examples(id)) {
+      $('#progress-bar').slider("option", "max", 0);
+      closeExamples();
+      isPlaying = false;
+    }
+  }, 500);
+}
+
+function bruteforce() {
+  if (isPlaying) stop();
+  commonAction(mw.bruteforce(), 'Bruteforce');
+}
+
+function konig() {
+  if (isPlaying) stop();
+  commonAction(mw.konig(), 'Kőnig&#39;s Theorem');
+}
+
+function greedy() {
+  if (isPlaying) stop();
+  commonAction(mw.greedy(), 'Greedy MVC on Tree');
+}
+
+function dp_on_tree() {
+  if(isPlaying) stop();
+  commonAction(mw.dp_on_tree(), 'DP on Tree');
+}
+
+function deterministic_two_opt() {
+  if (isPlaying) stop();
+  commonAction(mw.deterministic_two_opt(), isWeighted ? 'Bar-Yehuda and Even&apos;s algorithm'
+                                                      : 'Deterministic 2-opt');
+}
+
+function probabilistic_two_opt() {
+  if (isPlaying) stop();
+  commonAction(mw.probabilistic_two_opt(), 'Probabilistic 2-opt');
+}
+</script>
+</body>
+</html>
